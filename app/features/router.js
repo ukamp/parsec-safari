@@ -4,7 +4,10 @@ const titles={
 export function createRouter(doc=document,win=window){
   function show(){
     const page=Object.hasOwn(titles,win.location.hash.slice(1))?win.location.hash.slice(1):'computers';
-    for(const view of doc.querySelectorAll('[data-view]'))view.hidden=view.dataset.view!==page;
+    for(const view of doc.querySelectorAll('[data-view]')){
+      view.hidden=view.dataset.view!==page;
+      view.inert=view.hidden;
+    }
     for(const link of doc.querySelectorAll('[data-page]')){
       if(link.dataset.page===page)link.setAttribute('aria-current','page');
       else link.removeAttribute('aria-current');

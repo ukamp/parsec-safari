@@ -20,3 +20,14 @@ console.log('Fullscreen native, viewport fallback, Escape, scroll restoration an
 
 const controller=fixture();let nativeRequests=0;controller.screen.requestFullscreen=async()=>{nativeRequests++};await controller.view.enter({native:false});assert.equal(nativeRequests,0);assert.equal(controller.doc.fullscreenElement,null);assert.ok(controller.classes.has('screen-expanded'));assert.ok(controller.reports.includes('fullscreen-controller'));await controller.view.exit();assert.equal(controller.classes.size,0);
 console.log('Explicit controller viewport mode skips the native fullscreen API and restores its layout on exit.');
+
+const isolated=fixture('none');
+const sibling={inert:false},alreadyInert={inert:true},sidebar={inert:false};
+const section={children:[isolated.screen,sibling,alreadyInert]};
+const main={children:[section]},body=isolated.doc.body;
+body.children=[main,sidebar];section.parentElement=main;main.parentElement=body;isolated.screen.parentElement=section;
+await isolated.view.enter({native:false});
+assert.equal(sibling.inert,true);assert.equal(sidebar.inert,true);assert.equal(alreadyInert.inert,true);
+await isolated.view.exit();
+assert.equal(sibling.inert,false);assert.equal(sidebar.inert,false);assert.equal(alreadyInert.inert,true);
+console.log('Expanded view makes covered controls inert and restores their original state on exit.');

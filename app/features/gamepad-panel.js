@@ -32,6 +32,7 @@ export function setupGamepads({
   function setMenu(open){
     menuOpen=open;
     $('streamMenu').hidden=!open;
+    $('streamMenu').inert=!open;
     $('streamMenuButton').setAttribute?.('aria-expanded',String(open));
     getClient()?.input.setPaused(open||window.location.hash!=='#stream');
     if(open){
@@ -48,7 +49,6 @@ export function setupGamepads({
     $('fullscreen').onclick();
   };
   $('menuAudio').onclick=()=>$('play').onclick();
-  $('menuDisconnect').onclick=()=>$('stop').onclick();
   $('streamMenu').addEventListener('keydown',event=>{
     if(event.key==='Escape'){
       event.preventDefault();

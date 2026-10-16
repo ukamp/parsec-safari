@@ -68,7 +68,6 @@ export class Input {
       passive:false
     });
     for(const type of ['keydown','keyup'])this.on(v,type,e=>{
-      if(e.code==='Tab')return;
       const key=Enum.Scancodes[e.code];
       if(!key)return;
       e.preventDefault();

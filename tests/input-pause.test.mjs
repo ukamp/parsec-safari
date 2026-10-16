@@ -7,6 +7,10 @@ globalThis.window=target();globalThis.document={...target(),hidden:false};Object
 const video=target(),messages=[];const input=new Input(video,b=>{const v=new DataView(b);messages.push([v.getUint8(12),v.getInt32(0),v.getInt32(4),v.getInt32(8)]);});
 input.attach();const key={code:'KeyA',preventDefault(){}};video.events.keydown(key);assert.deepEqual(messages.at(-1),[0,4,0,1]);input.setPaused(true);assert.deepEqual(messages.at(-1),[0,4,0,0]);let before=messages.length;video.events.keydown(key);video.events.pointerdown({isPrimary:true});window.events.focus();assert.equal(messages.length,before);assert.equal(input.gamepad.paused,true);
 input.setPaused(false);video.events.keydown(key);assert.deepEqual(messages.at(-1),[0,4,0,1]);
+let tabPrevented=false;
+video.events.keydown({code:'Tab',preventDefault(){tabPrevented=true;}});
+assert.equal(tabPrevented,true);assert.deepEqual(messages.at(-1),[0,43,0,1]);
+video.events.keyup({code:'Tab',preventDefault(){}});assert.deepEqual(messages.at(-1),[0,43,0,0]);
 const settings=defaultBindings();input.setBindings(settings);settings.buttons[0]=1;assert.equal(input.bindings.settings.buttons[0],0);input.detach();assert.equal(input.gamepad,null);
 console.log('Menu input pause releases held keys, blocks canvas input, survives focus and copies remapping preferences before teardown.');
 

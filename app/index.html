@@ -80,8 +80,8 @@
 <div id="screen">
 <canvas id="video" width="1280" height="720" tabindex="0" aria-label="Entfernter Bildschirm">
 </canvas>
-<button id="streamMenuButton" type="button" aria-label="Parsec-Menü öffnen" aria-controls="streamMenu" aria-expanded="false">☰</button>
-<div id="streamMenu" role="region" aria-label="Parsec-Webclient-Menü" hidden>
+<button id="streamMenuButton" type="button" tabindex="-1" aria-label="Parsec-Menü öffnen" aria-controls="streamMenu" aria-expanded="false">☰</button>
+<div id="streamMenu" inert role="region" aria-label="Parsec-Webclient-Menü" hidden>
 <h2>Parsec-Menü</h2>
 <p id="fullscreenStatus" role="status">Vollbild noch nicht angefordert.</p>
 <button id="closeMenu" type="button">Zurück zum Stream</button>
@@ -90,7 +90,7 @@
 <p>Wenn RT im Safari-Vollbild die Tastatur öffnet: Controller-Bildschirmansicht wählen. Dabei wird kein natives Safari-Vollbild angefordert; Browserleisten können sichtbar bleiben.</p>
 <button id="menuMute" type="button">Stummschalten</button>
 <button id="menuAudio" type="button">Ton freigeben</button>
-<button id="menuDisconnect" type="button">Verbindung trennen</button>
+<button id="stop" type="button" disabled>Verbindung trennen</button>
 <p id="streamStats" role="status">Noch kein aktiver Stream.</p>
 <p>Solange dieses Menü geöffnet ist, pausieren Eingaben an den PC.</p>
 <details id="padSettings">
@@ -110,12 +110,11 @@
 <p id="bindingStatus" role="status">Xbox-Standard aktiv.</p>
 </details>
 </div>
-<button id="exitFullscreen" type="button" hidden>Ansicht verlassen</button>
+<button id="exitFullscreen" type="button" tabindex="-1" hidden>Ansicht verlassen</button>
 <p id="fullscreenNotice" hidden>
 </p>
 <p id="wakeBadge">Wachhalten wird beim Streamstart angefordert</p>
 </div>
-<button id="stop" type="button" disabled>Verbindung trennen</button>
 <button id="play" type="button" disabled>Ton freigeben</button>
 <button id="fullscreen" type="button">Vollbild</button>
 <p>

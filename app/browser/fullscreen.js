@@ -53,6 +53,26 @@ export class FullscreenView {
     }catch{
     }
   }
+  isolateBackground(){
+    this.background=[];
+    // In CSS fullscreen, covered controls still belong to the focus tree.
+    // Isolate sibling branches, leaving the stream menu and exit usable.
+    let branch=this.screen;
+    while(branch?.parentElement){
+      const parent=branch.parentElement;
+      for(const sibling of parent.children){
+        if(sibling===branch)continue;
+        this.background.push([sibling,sibling.inert]);
+        sibling.inert=true;
+      }
+      if(parent===this.doc.body)break;
+      branch=parent;
+    }
+  }
+  restoreBackground(){
+    for(const [element,inert] of this.background||[])element.inert=inert;
+    this.background=[];
+  }
   async enter({native=true}={}) {
     if(this.expanded)return;
     const operation=++this.operation;
@@ -62,6 +82,7 @@ export class FullscreenView {
     this.expanded=true;
     this.doc.body.style.overflow='hidden';
     this.screen.classList.add('screen-expanded');
+    this.isolateBackground();
     this.exitButton.hidden=false;
     this.notice.hidden=true;
     this.canvas.focus({
@@ -96,6 +117,7 @@ export class FullscreenView {
     this.pending=false;
     this.expanded=false;
     this.screen.classList.remove('screen-expanded');
+    this.restoreBackground();
     this.exitButton.hidden=true;
     this.notice.hidden=true;
     this.doc.body.style.overflow=this.overflow;
