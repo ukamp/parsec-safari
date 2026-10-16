@@ -230,14 +230,22 @@ $('play').onclick=async()=>{
     note('playback-blocked','Wiedergabe konnte nicht gestartet werden. Bitte erneut antippen.');
   }
 };
-$('fullscreen').onclick=()=>{
+function getFullscreenView(){
   if(!fullscreenView)fullscreenView=new FullscreenView({
     screen:$('screen'),canvas:$('video'),exitButton:$('exitFullscreen'),notice:$('fullscreenNotice'),report:stage=>{
       diagnostic(stage);
-      $('fullscreenStatus').textContent=stage==='fullscreen-native'?'Natives Browser-Vollbild aktiv. Systemelemente werden von iPadOS gesteuert.':stage==='fullscreen-viewport'?'Safari hat kein natives Vollbild gewährt. Vergrößerte Bildschirmansicht aktiv; iPadOS-Leisten können sichtbar bleiben.':'Vollbild beendet.';
+      $('fullscreenStatus').textContent=stage==='fullscreen-native'?'Natives Browser-Vollbild aktiv. Systemelemente werden von iPadOS gesteuert.':stage==='fullscreen-controller'?'Controller-Bildschirmansicht ohne natives Safari-Vollbild. Browserleisten können sichtbar bleiben.':stage==='fullscreen-viewport'?'Safari hat kein natives Vollbild gewährt. Vergrößerte Bildschirmansicht aktiv; iPadOS-Leisten können sichtbar bleiben.':'Vollbild beendet.';
     }
   });
-  fullscreenView.toggle();
+  return fullscreenView;
+}
+$('fullscreen').onclick=async()=>{await getFullscreenView().toggle();client?.input.syncGamepad();};
+$('controllerFullscreen').onclick=async()=>{
+  const view=getFullscreenView();
+  gamepads.close();
+  await view.exit();
+  await view.enter({native:false});
+  client?.input.syncGamepad();
 };
 $('download').onclick=()=>{
   client?.reportAudio();
