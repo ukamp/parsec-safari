@@ -26,7 +26,7 @@ const gamepads=setupGamepads({
   getClient:()=>client,$,diagnostic
 });
 setupMediaTests({
-  getClient:()=>client,getController:()=>controller,$,diagnostic
+  getClient:()=>client,getController:()=>controller,$,diagnostic,controls
 });
 function controls(){
   const busy=!!controller;
