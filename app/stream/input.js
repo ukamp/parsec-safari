@@ -38,6 +38,11 @@ export class Input {
   }
   attach(){
     const v=this.video;
+    v.setAttribute?.('inputmode','none');
+    v.setAttribute?.('virtualkeyboardpolicy','manual');
+    this.on(document,'focusin',event=>{
+      if(!this.paused&&!document.hidden&&this.streamFullscreen()&&this.editable(event.target))this.focusStream();
+    },true);
     this.on(v,'pointerdown',e=>{
       if(!e.isPrimary)return;
       e.preventDefault();
@@ -88,10 +93,24 @@ export class Input {
     // emitting a matching window focus. Fullscreen itself owns the stream.
     this.on(document,'fullscreenchange',()=>this.syncGamepad());
     this.on(document,'webkitfullscreenchange',()=>this.syncGamepad());
-    this.gamepad=new GamepadManager((i,b,value)=>this.bindings.button(i,b,value),(i,a,value)=>this.bindings.axis(i,a,value),i=>this.send(Msg.unplug(i)),this.onGamepadStatus,{
+    this.gamepad=new GamepadManager((i,b,value)=>{if(value)this.controllerActivity();this.bindings.button(i,b,value);},(i,a,value)=>{if(value)this.controllerActivity();this.bindings.axis(i,a,value);},i=>this.send(Msg.unplug(i)),this.onGamepadStatus,{
       paused:true
     });
     this.syncGamepad();
+  }
+  editable(element){
+    if(!element||element.disabled||element.readOnly)return false;
+    if(element.isContentEditable)return true;
+    const tag=element.tagName?.toLowerCase();
+    return tag==='textarea'||tag==='input'&&['text','email','password','search','url','tel','number',''].includes(element.type||'');
+  }
+  focusStream(){
+    const active=document.activeElement;
+    if(active!==this.video&&this.editable(active))active.blur();
+    if(document.activeElement!==this.video)this.video.focus({preventScroll:true});
+  }
+  controllerActivity(){
+    if(!this.paused&&!document.hidden&&this.streamFullscreen())this.focusStream();
   }
   streamFullscreen(){
     const element=document.fullscreenElement||document.webkitFullscreenElement;
