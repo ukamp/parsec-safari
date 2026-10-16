@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#102524">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Parsec Safari">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="styles/app.css">
+<title>Parsec Safari · Deine Computer</title>
+</head>
+<body>
+<div class="app-shell">
+<aside class="sidebar">
+<a class="brand" href="#computers">
+<span class="brand-mark">P</span> Parsec Safari</a>
+<span class="edition">COMMUNITY CLIENT · V7</span>
+<nav aria-label="Hauptnavigation">
+<a href="#computers" data-page="computers">Computer</a>
+<a href="#stream" data-page="stream">Stream</a>
+<a href="#settings" data-page="settings">Einstellungen</a>
+<a href="#diagnostics" data-page="diagnostics">Diagnose</a>
+<a href="#help" data-page="help">Hilfe &amp; Funktionen</a>
+</nav>
+<p class="sidebar-note">Dein PC. Auf deinem iPad.<br>Ohne zusätzliche Windows-Software.</p>
+</aside>
+<main>
+<header class="app-header">
+<div>
+<p class="tag">DEIN PERSÖNLICHER WEBCLIENT</p>
+<h1 id="pageTitle">Computer</h1>
+</div>
+<span id="connectionBadge" class="badge">Nicht verbunden</span>
+</header>
+<p id="status" role="status" aria-live="polite">Bereit. Melde dich an, um deine Computer zu sehen.</p>
+<noscript>Bitte JavaScript aktivieren.</noscript>
+<div data-view="computers">
+<section>
+<h2>Bei Parsec anmelden</h2>
+<p>Dein vorhandenes Parsec-Konto. Deine Eingaben gehen vom Browser direkt an <code>kessel-api.parsec.app</code>. Sie werden nicht an einen eigenen Anmeldeserver weitergeleitet. </p>
+<button id="probe" type="button">API-Zugriff ohne Anmeldung prüfen</button>
+<form id="auth" autocomplete="on">
+<label for="email">Parsec-E-Mail-Adresse</label>
+<input id="email" name="username" type="email" required autocomplete="username" autocapitalize="none" spellcheck="false">
+<label for="password">Parsec-Passwort</label>
+<input id="password" name="password" type="password" required autocomplete="current-password">
+<label for="tfa">2FA-Code (optional)</label>
+<input id="tfa" name="tfa" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="32">
+<p>
+<small>Wenn für dein Konto 2FA aktiv ist, trage den aktuellen Code ein. Eine Ablehnung kann auch an Kontofreigaben oder API-Änderungen liegen.</small>
+</p>
+<button id="start" type="submit">Bei Parsec anmelden</button>
+</form>
+<button id="cancel" type="button" hidden>Anmeldung abbrechen</button>
+<button id="logout" type="button" hidden>Sitzung hier verwerfen</button>
+<p>
+<small>Safari kann die Anmeldung über seine Passwortverwaltung ausfüllen. Falls kein Speichern angeboten wird, lege in der App „Passwörter“ einen Eintrag für ukamp.github.io mit deinen Parsec-Zugangsdaten an. Die Webseite selbst speichert Passwort und 2FA-Code nicht. Beide Felder werden nach jedem Versuch geleert. Eine erfolgreiche Sitzungskennung bleibt nur im Arbeitsspeicher dieses Tabs. Das Verwerfen der lokalen Sitzung widerruft eine serverseitige Sitzung bei Parsec nicht automatisch. Der Verbindungsbericht enthält ausschließlich technische Statusereignisse.</small>
+</p>
+</section>
+<section id="hostsPanel" hidden>
+<h2>Deine Computer</h2>
+<p>Der vorhandene Parsec-Host auf Windows muss eingeschaltet und erreichbar sein. Es wird nichts auf dem PC installiert.</p>
+<button id="refresh" type="button">Hosts aktualisieren</button>
+<label for="hostSearch">Computer suchen</label>
+<input id="hostSearch" type="search" placeholder="Name des Computers">
+<div id="hosts">
+</div>
+</section>
+</div>
+<div data-view="stream" hidden>
+<section>
+<h2>Dein Stream</h2>
+<div id="screen">
+<canvas id="video" width="1280" height="720" tabindex="0" aria-label="Entfernter Bildschirm">
+</canvas>
+<button id="streamMenuButton" type="button" aria-label="Parsec-Menü öffnen" aria-controls="streamMenu" aria-expanded="false">☰</button>
+<div id="streamMenu" role="region" aria-label="Parsec-Webclient-Menü" hidden>
+<h2>Parsec-Menü</h2>
+<p id="fullscreenStatus" role="status">Vollbild noch nicht angefordert.</p>
+<button id="closeMenu" type="button">Zurück zum Stream</button>
+<button id="menuFullscreen" type="button">Vollbild umschalten</button>
+<button id="menuMute" type="button">Stummschalten</button>
+<button id="menuAudio" type="button">Ton freigeben</button>
+<button id="menuDisconnect" type="button">Verbindung trennen</button>
+<p id="streamStats" role="status">Noch kein aktiver Stream.</p>
+<p>Solange dieses Menü geöffnet ist, pausieren Eingaben an den PC.</p>
+<details id="padSettings">
+<summary>Xbox-Tastenbelegung anpassen</summary>
+<p>Links steht die physische Taste, rechts die gewünschte Xbox-Funktion. Bei doppelter Belegung werden die beiden Funktionen getauscht.</p>
+<div id="bindingRows">
+</div>
+<p>
+<label>
+<input id="invertLeftY" type="checkbox"> Linken Stick vertikal umkehren</label>
+</p>
+<p>
+<label>
+<input id="invertRightY" type="checkbox"> Rechten Stick vertikal umkehren</label>
+</p>
+<button id="resetBindings" type="button">Xbox-Standard wiederherstellen</button>
+<p id="bindingStatus" role="status">Xbox-Standard aktiv.</p>
+</details>
+</div>
+<button id="exitFullscreen" type="button" hidden>Vollbild verlassen</button>
+<p id="fullscreenNotice" hidden>
+</p>
+<p id="wakeBadge">Wachhalten wird beim Streamstart angefordert</p>
+</div>
+<button id="stop" type="button" disabled>Verbindung trennen</button>
+<button id="play" type="button" disabled>Ton freigeben</button>
+<button id="fullscreen" type="button">Vollbild</button>
+<p>
+<small>Im Vollbild erreichst du das Menü über den transparenten Knopf oben links. Safari-eigene Hinweise, Datum, Uhrzeit und Systemgesten lassen sich durch diese Seite nicht erzwingen oder abschalten. Für weniger Browserleisten: in Safari „Teilen → Zum Home-Bildschirm“ und von dort öffnen; auch dann kann iPadOS Systemelemente anzeigen.</small>
+</p>
+<p>
+<small>Touch bewegt den absoluten Mauszeiger und sendet einen Linksklick. Tastatureingaben werden nur bei fokussiertem Videobild übertragen. Relative Maussteuerung und alle Spiele sind damit nicht garantiert. Verbindungsstatus, Bild, Ton und Eingaben müssen auf dem echten Host geprüft werden.</small>
+</p>
+</section>
+</div>
+<div data-view="settings" hidden>
+<section>
+<h2>Stream-Einstellungen</h2>
+<p>Bitrate und Bildrate lassen sich während der Verbindung anfordern. Eine neue Auflösung wird beim nächsten Verbinden angefordert; der Host entscheidet über die tatsächliche Auflösung.</p>
+<form id="qualityForm" class="settings-grid">
+<label>Qualität<select id="qualityPreset">
+<option value="balanced">Ausgewogen</option>
+<option value="economy">Sparsam</option>
+<option value="quality">Hohe Qualität</option>
+<option value="custom">Benutzerdefiniert</option>
+</select>
+</label>
+<label>Bitrate (Mbit/s)<input id="bitrate" type="number" min="1" max="50" step="1" required>
+</label>
+<label>Bildrate<select id="frameRate">
+<option value="30">30 FPS</option>
+<option value="60">60 FPS</option>
+</select>
+</label>
+<label>Auflösung<select id="resolution">
+<option value="1280x720">1280 × 720</option>
+<option value="1920x1080">1920 × 1080</option>
+<option value="1920x1200">1920 × 1200</option>
+<option value="2560x1440">2560 × 1440</option>
+</select>
+</label>
+<label>Lautstärke<input id="volume" type="range" min="0" max="100" value="100">
+</label>
+<button type="submit">Einstellungen anwenden</button>
+</form>
+<p id="qualityStatus" role="status">Einstellungen werden auf diesem Gerät gespeichert.</p>
+</section>
+<section>
+<h2>Bildschirm wachhalten</h2>
+<p id="wakeStatus" role="status">Wachhalten wird beim ersten Videobild automatisch angefordert und beim Trennen beendet.</p>
+<button id="checkWake" type="button">Wachhalten prüfen</button>
+<p>
+<small>Ohne laufenden Stream prüft der Knopf die Funktion für drei Sekunden. Safari kann die Freigabe verweigern oder zurücknehmen; der Status zeigt das an.</small>
+</p>
+</section>
+<section>
+<h2>Gamepad und Joystick</h2>
+<p>Verbinde einen Bluetooth- oder USB-Controller mit deinem iPad und drücke eine Controller-Taste. Standard-Gamepads können beide Sticks, Trigger und Tasten übertragen. Die lokale Prüfung sendet keine Eingaben an deinen PC.</p>
+<button id="checkGamepad" type="button">Controller lokal prüfen</button>
+<p id="gamepadStatus" role="status">Noch kein Controller geprüft.</p>
+</section>
+</div>
+<div data-view="diagnostics" hidden>
+<section>
+<h2>Ton prüfen</h2>
+<p>Tippe zum Freigeben des Tons während der Verbindung auf „Ton freigeben“. Mit dem lokalen Test prüfst du Opus-Decoder und Browserausgabe ohne Host-Audiodaten.</p>
+<button id="localAudio" type="button">Lokalen Opus-Testton abspielen</button>
+<p id="audioResult" role="status">Noch nicht geprüft.</p>
+</section>
+<section>
+<h2>Videodecoder lokal prüfen</h2>
+<p>Ein synthetisches H.264-Testbild wird direkt im Browser decodiert. Keine Anmeldung und kein Zugriff auf deinen PC.</p>
+<button id="localVideo" type="button">H.264-Decodiertest starten</button>
+<p id="localResult" role="status">Noch nicht geprüft.</p>
+<canvas id="localCanvas" width="64" height="64" style="width:64px;height:64px" hidden>
+</canvas>
+</section>
+<section>
+<h2>Verlauf ohne Zugangsdaten</h2>
+<pre id="log" aria-live="polite">Noch kein Versuch.</pre>
+<button id="download" type="button">Verbindungsbericht herunterladen</button>
+</section>
+</div>
+<div data-view="help" hidden>
+<section>
+<h2>Als App auf dem iPad öffnen</h2>
+<p>In Safari: Teilen → Zum Home-Bildschirm. Das App-Symbol öffnet diesen Client ohne die normale Safari-Adressleiste. iPadOS kann dennoch Systemleisten anzeigen.</p>
+<h3>Anmeldung ausfüllen lassen</h3>
+<p>Die Felder unterstützen Apples Passwort-Autofill. Falls Safari kein Speichern anbietet: in „Passwörter“ einen Eintrag für ukamp.github.io mit deinen Parsec-Zugangsdaten anlegen. Sitzungen bleiben nur im Arbeitsspeicher dieses Tabs.</p>
+<h3>Xbox-Controller</h3>
+<p>Am iPad koppeln, eine Taste drücken und unter „Einstellungen“ lokal prüfen. Die Belegung änderst du im Stream-Menü.</p>
+</section>
+<section>
+<h2>Funktionsumfang</h2>
+<p>Unabhängiger, experimenteller Client. Bild und Ton auf dem iPad wurden vom Nutzer bestätigt. Keine offizielle Parsec-App.</p>
+<ul>
+<li>Enthalten: persönliche Anmeldung mit 2FA, Computerliste und Suche, H.264-Streaming, Opus-Ton, Touch-Maus, Tastatur, Xbox-Belegung, Vollbild, Wachhalten, Qualitätseinstellungen, Live-Statistik und Diagnose.</li>
+<li>Noch offen: Freundeverwaltung, Teams/SSO, Monitorwechsel, Zwischenablage, H.265 und Rumble. Diese Funktionen werden erst mit nachgewiesener API- und Protokollunterstützung ergänzt.</li>
+</ul>
+<p>
+<a href="https://web.parsec.app/" target="_blank" rel="noopener noreferrer">Offizieller Webclient</a> · <a href="../">Safari-Kompatibilitätstest</a> · <a href="https://github.com/ukamp/parsec-safari">Quellcode und Funktionsvergleich</a> · <a href="LICENSE">MIT</a> · <a href="LICENSE-lowlat">Protokollreferenz</a>
+</p>
+</section>
+</div>
+</main>
+</div>
+<script type="module" src="main.js">
+</script>
+</body>
+</html>
