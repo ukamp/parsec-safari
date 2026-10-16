@@ -77,33 +77,44 @@ export class Input {
     this.on(v,'blur',()=>this.release());
     this.on(window,'blur',()=>{
       this.release();
-      this.gamepad?.pause();
+      this.syncGamepad();
     });
-    this.on(window,'focus',()=>{
-      if(!this.paused)this.gamepad?.resume();
-    });
+    this.on(window,'focus',()=>this.syncGamepad());
     this.on(document,'visibilitychange',()=>{
-      if(document.hidden){
-        this.release();
-        this.gamepad?.pause();
-      }else if(!this.paused)this.gamepad?.resume();
+      if(document.hidden)this.release();
+      this.syncGamepad();
     });
+    // Safari may blur the window while entering native fullscreen without
+    // emitting a matching window focus. Fullscreen itself owns the stream.
+    this.on(document,'fullscreenchange',()=>this.syncGamepad());
+    this.on(document,'webkitfullscreenchange',()=>this.syncGamepad());
     this.gamepad=new GamepadManager((i,b,value)=>this.bindings.button(i,b,value),(i,a,value)=>this.bindings.axis(i,a,value),i=>this.send(Msg.unplug(i)),this.onGamepadStatus,{
-      paused:this.paused
+      paused:true
     });
-    if(this.paused)this.gamepad.pause();
+    this.syncGamepad();
+  }
+  streamFullscreen(){
+    const element=document.fullscreenElement||document.webkitFullscreenElement;
+    return element===this.video||!!element?.contains?.(this.video)||
+      !!this.video.parentElement?.classList.contains('screen-expanded');
+  }
+  syncGamepad(){
+    const focused=typeof document.hasFocus!=='function'||document.hasFocus();
+    if(this.paused||document.hidden||(!focused&&!this.streamFullscreen())){
+      this.gamepad?.pause();
+    }else{
+      this.gamepad?.resume();
+    }
   }
   setPaused(paused){
     this.paused=paused;
-    if(paused){
-      this.release();
-      this.gamepad?.pause();
-    }else if(!document.hidden)this.gamepad?.resume();
+    if(paused)this.release();
+    this.syncGamepad();
   }
   setBindings(settings){
     this.gamepad?.pause();
     this.bindings.settings=normalizeBindings(settings);
-    if(!this.paused&&!document.hidden)this.gamepad?.resume();
+    this.syncGamepad();
   }
   setMouseMode(relative,hidden){
     this.video.style.cursor=hidden?'none':'';
