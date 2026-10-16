@@ -1,6 +1,7 @@
+import { t } from '../core/i18n.js';
 import * as Msg from './msg.js';
 // Browser standard layout -> Parsec opcode 4's button indices (not XInput bit flags).
-export const padLabels=['A','B','X','Y','LB','RB','LT','RT','Ansicht / Back','Menü / Start','Linker Stickdruck','Rechter Stickdruck','Steuerkreuz ↑','Steuerkreuz ↓','Steuerkreuz ←','Steuerkreuz →','Xbox / Guide'];
+export const padLabels=['A','B','X','Y','LB','RB','LT','RT',t('Ansicht / Back'),t('Menü / Start'),t('Linker Stickdruck'),t('Rechter Stickdruck'),t('Steuerkreuz ↑'),t('Steuerkreuz ↓'),t('Steuerkreuz ←'),t('Steuerkreuz →'),'Xbox / Guide'];
 const wireButtons=[0,1,2,3,9,10,null,null,4,6,7,8,11,12,13,14,5];
 export const defaultBindings=()=>({
   buttons:padLabels.map((_,i)=>i),invertLeftY:false,invertRightY:false

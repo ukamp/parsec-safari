@@ -1,3 +1,4 @@
+import { t } from '../core/i18n.js';
 import { ScreenAwake } from '../browser/wake-lock.js';
 export function setupWake({
   getClient,$,diagnostic
@@ -7,11 +8,11 @@ export function setupWake({
     if(active&&!wakeController)wakeController=new ScreenAwake({
       status:state=>{
         const text={
-          active:'Wachhalten aktiv – der Bildschirm bleibt während des sichtbaren Streams an.',inactive:'Wachhalten beendet.',waiting:'Wachhalten pausiert, solange die Seite nicht sichtbar ist.',released:'Safari hat das Wachhalten freigegeben. Mit „Wachhalten prüfen“ erneut versuchen.',denied:'Safari hat das Wachhalten nicht gewährt.',unavailable:'Dieser Browser bietet keine Screen-Wake-Lock-API.'
+          active:t('Wachhalten aktiv – der Bildschirm bleibt während des sichtbaren Streams an.'),inactive:t('Wachhalten beendet.'),waiting:t('Wachhalten pausiert, solange die Seite nicht sichtbar ist.'),released:t('Safari hat das Wachhalten freigegeben. Mit „Wachhalten prüfen“ erneut versuchen.'),denied:t('Safari hat das Wachhalten nicht gewährt.'),unavailable:t('Dieser Browser bietet keine Screen-Wake-Lock-API.')
         }[state];
         $('wakeStatus').textContent=text;
-        $('wakeBadge').textContent=state==='active'?'Bildschirm bleibt an':'Wachhalten: '+({
-          inactive:'aus',waiting:'pausiert',released:'freigegeben',denied:'abgelehnt',unavailable:'nicht verfügbar'
+        $('wakeBadge').textContent=state==='active'?t('Bildschirm bleibt an'):t('Wachhalten: ')+({
+          inactive:t('aus'),waiting:t('pausiert'),released:t('freigegeben'),denied:t('abgelehnt'),unavailable:t('nicht verfügbar')
         }[state]||state);
         diagnostic('wake-lock-'+state);
       }

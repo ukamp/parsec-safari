@@ -1,3 +1,4 @@
+import { t } from '../core/i18n.js';
 export class FullscreenView {
   constructor({
     screen,canvas,exitButton,notice,report=()=>{
@@ -49,7 +50,7 @@ export class FullscreenView {
     this.pending=false;
     this.mode=stage==='fullscreen-controller'?'controller':'viewport';
     this.notice.hidden=false;
-    this.notice.textContent='Bildschirmansicht · Browserleisten können sichtbar bleiben';
+    this.notice.textContent=t('Bildschirmansicht · Browserleisten können sichtbar bleiben');
     this.report(stage);
   }
   async leaveNative(){

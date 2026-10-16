@@ -19,7 +19,7 @@
 <aside class="sidebar">
 <a class="brand" href="#computers">
 <span class="brand-mark">P</span> Parsec Safari</a>
-<span class="edition">COMMUNITY CLIENT · V7</span>
+<span class="edition">COMMUNITY CLIENT · 1.0.0</span>
 <nav aria-label="Hauptnavigation">
 <a href="#computers" data-page="computers">Computer</a>
 <a href="#stream" data-page="stream">Stream</a>
@@ -27,12 +27,12 @@
 <a href="#diagnostics" data-page="diagnostics">Diagnose</a>
 <a href="#help" data-page="help">Hilfe &amp; Funktionen</a>
 </nav>
-<p class="sidebar-note">Dein PC. Auf deinem iPad.<br>Ohne zusätzliche Windows-Software.</p>
+
 </aside>
 <main>
 <header class="app-header">
 <div>
-<p class="tag">DEIN PERSÖNLICHER WEBCLIENT</p>
+
 <h1 id="pageTitle">Computer</h1>
 </div>
 <span id="connectionBadge" class="badge">Nicht verbunden</span>
@@ -138,6 +138,9 @@
 <div data-view="settings" hidden>
 <section>
 <h2>Stream-Einstellungen</h2>
+<label for="language">Sprache / Language</label>
+<select id="language"><option value="de">Deutsch</option><option value="en">English</option></select>
+<p>Ein Sprachwechsel lädt die App neu und trennt eine laufende Verbindung.</p>
 <p>Bitrate und Bildrate lassen sich während der Verbindung anfordern. Eine neue Auflösung wird beim nächsten Verbinden angefordert; der Host entscheidet über die tatsächliche Auflösung.</p>
 <form id="qualityForm" class="settings-grid">
 <label>Qualität<select id="qualityPreset">
@@ -199,6 +202,7 @@
 </section>
 <section>
 <h2>Verlauf ohne Zugangsdaten</h2>
+<p>Der Verlauf bleibt im Arbeitsspeicher dieses Tabs. Er enthält technische Ereignisse, Zähler und genaue Zeitstempel, aber keine E-Mail-Adressen, Passwörter, 2FA-Codes, Sitzungskennungen, Hostnamen oder IP-Adressen. Diese Seite überträgt den Bericht nicht automatisch; du kannst ihn selbst herunterladen. Wegen der Zeitstempel ist er nicht vollständig anonym.</p>
 <pre id="log" aria-live="polite">Noch kein Versuch.</pre>
 <button id="download" type="button">Verbindungsbericht herunterladen</button>
 </section>

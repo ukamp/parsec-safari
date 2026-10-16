@@ -1,3 +1,4 @@
+import { t } from '../core/i18n.js';
 import { defaults,normalizeQuality,readPreference,writePreference,streamConfig } from '../core/preferences.js';
 export function setupQuality({
   getClient,$
@@ -31,12 +32,12 @@ export function setupQuality({
     const saved=writePreference('parsec-quality-v1',quality),client=getClient();
     applyVolume();
     const applied=client?.updateQuality(streamConfig(quality));
-    $('qualityStatus').textContent=(saved?'Auf diesem Gerät gespeichert. ':'Nur in diesem Tab aktiv. ')+(client?(applied?'Bitrate und Bildrate angefordert. Neue Auflösung gilt beim nächsten Verbinden.':'Stream noch nicht bereit; die Werte gelten beim nächsten Verbinden.'):'Gilt beim nächsten Verbinden.');
+    $('qualityStatus').textContent=(saved?t('Auf diesem Gerät gespeichert. '):t('Nur in diesem Tab aktiv. '))+(client?(applied?t('Bitrate und Bildrate angefordert. Neue Auflösung gilt beim nächsten Verbinden.'):t('Stream noch nicht bereit; die Werte gelten beim nächsten Verbinden.')):t('Gilt beim nächsten Verbinden.'));
   };
   $('menuMute').onclick=()=>{
     muted=!muted;
     applyVolume();
-    $('menuMute').textContent=muted?'Ton einschalten':'Stummschalten';
+    $('menuMute').textContent=muted?t('Ton einschalten'):t('Stummschalten');
     $('menuMute').setAttribute('aria-pressed',String(muted));
   };
   return {

@@ -1,3 +1,4 @@
+import { t,language } from '../core/i18n.js';
 export class HostList {
   constructor(container,search,onConnect,doc=document){
     Object.assign(this,{
@@ -19,23 +20,23 @@ export class HostList {
   }
   render(){
     this.container.textContent='';
-    const query=this.search.value.toLocaleLowerCase('de').trim();
-    const visible=this.hosts.filter(h=>h.name.toLocaleLowerCase('de').includes(query)).sort((a,b)=>a.name.localeCompare(b.name,'de'));
+    const query=this.search.value.toLocaleLowerCase(language).trim();
+    const visible=this.hosts.filter(h=>h.name.toLocaleLowerCase(language).includes(query)).sort((a,b)=>a.name.localeCompare(b.name,language));
     for(const host of visible){
       const card=this.doc.createElement('article');
       card.className='host-card';
       const title=this.doc.createElement('h3');
       title.textContent=host.name;
       const text=this.doc.createElement('p');
-      text.textContent='Von Parsec gemeldeter Computer';
+      text.textContent=t('Von Parsec gemeldeter Computer');
       const button=this.doc.createElement('button');
       button.type='button';
-      button.textContent='Verbinden';
-      button.setAttribute('aria-label',host.name+' verbinden');
+      button.textContent=t('Verbinden');
+      button.setAttribute('aria-label',host.name+' · '+t('Verbinden'));
       button.onclick=()=>this.onConnect(host.peer_id);
       card.append(title,text,button);
       this.container.appendChild(card);
     }
-    if(!visible.length)this.container.textContent=this.hosts.length?'Kein Computer passt zu deiner Suche.':'Keine Computer gemeldet. Prüfe, ob dein vorhandener Parsec-Host läuft.';
+    if(!visible.length)this.container.textContent=this.hosts.length?t('Kein Computer passt zu deiner Suche.'):t('Keine Computer gemeldet. Prüfe, ob dein vorhandener Parsec-Host läuft.');
   }
 }

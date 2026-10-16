@@ -1,3 +1,4 @@
+import { t } from '../core/i18n.js';
 export class StreamStatistics {
   constructor(element){
     this.element=element;
@@ -14,7 +15,7 @@ export class StreamStatistics {
       const v=client.videoPlayer.snapshot(),now=performance.now(),seconds=(now-this.previous.time)/1000;
       if(seconds<=0)return;
       const fps=Math.max(0,(v.decoded-this.previous.decoded)/seconds),mbps=Math.max(0,(v.receivedBytes-this.previous.bytes)*8/seconds/1e6);
-      this.element.textContent=`${v.width||'—'} × ${v.height||'—'} · ${fps.toFixed(0)} decodierte FPS · ${mbps.toFixed(1)} Mbit/s Video · ${v.dropped} verworfene Pakete`;
+      this.element.textContent=`${v.width||'—'} × ${v.height||'—'} · ${fps.toFixed(0)}${t(' decodierte FPS · ')}${mbps.toFixed(1)} Mbit/s Video · ${v.dropped}${t(' verworfene Pakete')}`;
       this.previous={
         time:now,decoded:v.decoded,bytes:v.receivedBytes
       };
@@ -23,6 +24,6 @@ export class StreamStatistics {
   stop(){
     clearInterval(this.timer);
     this.timer=null;
-    this.element.textContent='Noch kein aktiver Stream.';
+    this.element.textContent=t('Noch kein aktiver Stream.');
   }
 }

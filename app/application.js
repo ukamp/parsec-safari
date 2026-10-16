@@ -1,3 +1,4 @@
+import { t } from './core/i18n.js';
 import { createSessionStore } from './core/session-store.js';
 import { Client } from './stream/client.js';
 import { FullscreenView } from './browser/fullscreen.js';
@@ -13,7 +14,7 @@ import { setupWake } from './features/wake-controller.js';
 import { setupMediaTests } from './features/media-tests.js';
 const $=id=>document.getElementById(id);
 const sessionStore=createSessionStore();
-let session=null,client=null,generation=0,controller=null,pollTimer=null,frameTimer=null,fullscreenView=null,streamState='Verbindung wird aufgebaut';
+let session=null,client=null,generation=0,controller=null,pollTimer=null,frameTimer=null,fullscreenView=null,streamState=t('Verbindung wird aufgebaut');
 const diagnostics=createDiagnostics($),{
   note,diagnostic
 }=diagnostics;
@@ -32,7 +33,7 @@ setupMediaTests({
 });
 function controls(){
   const busy=!!controller;
-  $('connectionBadge').textContent=client?streamState:session?'Angemeldet':'Nicht verbunden';
+  $('connectionBadge').textContent=client?streamState:session?t('Angemeldet'):t('Nicht verbunden');
   $('auth').hidden=!!session;
   $('start').disabled=busy||!!session;
   for(const id of ['email','password','tfa'])$(id).disabled=busy||!!session;
@@ -69,7 +70,7 @@ function cancel(){
 }
 $('cancel').onclick=()=>{
   cancel();
-  note('auth-cancelled','Anmeldeversuch abgebrochen.');
+  note('auth-cancelled',t('Anmeldeversuch abgebrochen.'));
 };
 $('logout').onclick=()=>{
   stop();
@@ -82,7 +83,7 @@ $('logout').onclick=()=>{
   $('tfa').value='';
   hostList.clear();
   controls();
-  note('local-session-cleared','Lokale Sitzung verworfen. Die Freigabe bei Parsec bleibt gegebenenfalls bestehen.');
+  note('local-session-cleared',t('Lokale Sitzung verworfen. Die Freigabe bei Parsec bleibt gegebenenfalls bestehen.'));
 };
 $('auth').onsubmit=async event=>{
   event.preventDefault();
@@ -91,7 +92,7 @@ $('auth').onsubmit=async event=>{
   let password=$('password').value;
   let tfa=$('tfa').value.trim();
   if(!email||!password){
-    note('credentials-required','Bitte Parsec-E-Mail-Adresse und Passwort eintragen.');
+    note('credentials-required',t('Bitte Parsec-E-Mail-Adresse und Passwort eintragen.'));
     return;
   }
   const id=++generation;
@@ -99,7 +100,7 @@ $('auth').onsubmit=async event=>{
   controller=activeController;
   const timeout=setTimeout(()=>activeController.abort(),15000);
   controls();
-  note('personal-auth-start','Anmeldung wird direkt an Parsec gesendet …');
+  note('personal-auth-start',t('Anmeldung wird direkt an Parsec gesendet …'));
   try{
     const result=await authenticatePersonal({
       email,password,tfa
@@ -112,24 +113,24 @@ $('auth').onsubmit=async event=>{
     if((result.status!==200&&result.status!==201)||result.malformed||!result.id){
       controller=null;
       controls();
-      const reason=result.status===403?'Bitte 2FA-Code, Kontofreigabe und Zugangsdaten prüfen.':result.status===429?'Zu viele Versuche. Bitte warten und nicht wiederholt anmelden.':result.malformed?'Die Antwort passt nicht zum dokumentierten älteren Anmeldeformat.':'Zugangsdaten, Kontofreigabe oder API-Version können die Ursache sein.';
-      note('personal-auth-http-'+result.status+(result.malformed?'-malformed':''),'Anmeldung nicht bestätigt (HTTP '+result.status+'). '+reason);
+      const reason=result.status===403?t('Bitte 2FA-Code, Kontofreigabe und Zugangsdaten prüfen.'):result.status===429?t('Zu viele Versuche. Bitte warten und nicht wiederholt anmelden.'):result.malformed?t('Die Antwort passt nicht zum dokumentierten älteren Anmeldeformat.'):t('Zugangsdaten, Kontofreigabe oder API-Version können die Ursache sein.');
+      note('personal-auth-http-'+result.status+(result.malformed?'-malformed':''),t('Anmeldung nicht bestätigt (HTTP ')+result.status+'). '+reason);
       return;
     }
     session=result.id;
     if($('remember').checked){
-      if(!sessionStore.save(session))note('session-storage-unavailable','Angemeldet bleiben konnte in diesem Browser nicht gespeichert werden.');
+      if(!sessionStore.save(session))note('session-storage-unavailable',t('Angemeldet bleiben konnte in diesem Browser nicht gespeichert werden.'));
     }else sessionStore.clear();
     controller=null;
     $('email').value='';
     controls();
-    note('personal-authenticated','Parsec hat eine Sitzungskennung zurückgegeben. Hosts werden geladen …');
+    note('personal-authenticated',t('Parsec hat eine Sitzungskennung zurückgegeben. Hosts werden geladen …'));
     await hosts();
   }catch{
     if(id!==generation)return;
     controller=null;
     controls();
-    note('personal-auth-unreadable','Keine lesbare Anmeldeantwort. Zeitlimit, Netzwerk oder CORS können die Ursache sein. Keine Anmeldung bestätigt.');
+    note('personal-auth-unreadable',t('Keine lesbare Anmeldeantwort. Zeitlimit, Netzwerk oder CORS können die Ursache sein. Keine Anmeldung bestätigt.'));
   }finally{
     clearTimeout(timeout);
     password='';
@@ -142,7 +143,7 @@ async function hosts(){
   if(!session||client)return;
   const id=generation,token=session;
   $('refresh').disabled=true;
-  $('hosts').textContent='Hosts werden geladen …';
+  $('hosts').textContent=t('Hosts werden geladen …');
   try{
     const r=await request('/v2/hosts?mode=desktop&public=false',{
       headers:{
@@ -154,16 +155,16 @@ async function hosts(){
       session=null;
       sessionStore.clear();
       hostList.clear();
-      note('session-expired','Die Sitzung ist abgelaufen. Bitte erneut anmelden.');
+      note('session-expired',t('Die Sitzung ist abgelaufen. Bitte erneut anmelden.'));
       return;
     }
     if(r.status!==200||!Array.isArray(r.data))throw apiError(r.status);
     hostList.set(r.data);
-    note('hosts-loaded','Hostliste geladen. Wähle deinen vorhandenen Windows-Host.');
+    note('hosts-loaded',t('Hostliste geladen. Wähle deinen vorhandenen Windows-Host.'));
   }catch(e){
     if(id!==generation)return;
-    $('hosts').textContent='Hostliste nicht abrufbar. Sitzung, Browserfreigabe (CORS) und API-Version prüfen.';
-    note('host-list-failed','Hostliste konnte nicht geladen werden.');
+    $('hosts').textContent=t('Hostliste nicht abrufbar. Sitzung, Browserfreigabe (CORS) und API-Version prüfen.');
+    note('host-list-failed',t('Hostliste konnte nicht geladen werden.'));
   }finally{
     controls();
   }
@@ -172,12 +173,12 @@ $('refresh').onclick=hosts;
 async function connect(peer){
   if(!session||client)return;
   if(!window.RTCPeerConnection){
-    note('webrtc-unavailable','WebRTC ist nicht verfügbar.');
+    note('webrtc-unavailable',t('WebRTC ist nicht verfügbar.'));
     return;
   }if(!window.VideoDecoder||!window.EncodedVideoChunk){
-    note('webcodecs-unavailable','Dieser Test benötigt den H.264-Decoder von WebCodecs. Bitte einen Browser mit VideoDecoder verwenden.');
+    note('webcodecs-unavailable',t('Dieser Test benötigt den H.264-Decoder von WebCodecs. Bitte einen Browser mit VideoDecoder verwenden.'));
     return;
-  }streamState='Verbindung wird aufgebaut';note('connecting','Experimenteller Verbindungsaufbau … Noch keine Verbindung bestätigt.');
+  }streamState=t('Verbindung wird aufgebaut');note('connecting',t('Experimenteller Verbindungsaufbau … Noch keine Verbindung bestätigt.'));
   let current;
   try{
     current=new Client($('video'),event=>{
@@ -188,18 +189,18 @@ async function connect(peer){
       }if(event.type==='diagnostic'){
         diagnostic(event.stage,event.metrics);
         return;
-      }if(event.type==='connect'){streamState='Warte auf Bild';controls();
-        note('control-open','Transportkanal offen. Warte auf Stream-Antwort und Videobild …');
+      }if(event.type==='connect'){streamState=t('Warte auf Bild');controls();
+        note('control-open',t('Transportkanal offen. Warte auf Stream-Antwort und Videobild …'));
         frameTimer=setTimeout(()=>{
           if(client!==current)return;
           stop();
-          note('video-timeout','Steuerkanal war offen, aber innerhalb von 20 Sekunden wurde kein Videobild bestätigt.');
+          note('video-timeout',t('Steuerkanal war offen, aber innerhalb von 20 Sekunden wurde kein Videobild bestätigt.'));
         },20000);
-      }else if(event.type==='frame'){streamState='Stream aktiv';controls();
+      }else if(event.type==='frame'){streamState=t('Stream aktiv');controls();
         wake.setActive(true);
         statistics.start(current);
         clearTimeout(frameTimer);
-        note('video-frame-decoded','Erstes Videobild decodiert und dargestellt. Bitte Bildfluss, Ton und Eingaben prüfen.');
+        note('video-frame-decoded',t('Erstes Videobild decodiert und dargestellt. Bitte Bildfluss, Ton und Eingaben prüfen.'));
       }else if(event.type==='exit'){
         statistics.stop();
         wake.stop();
@@ -207,7 +208,7 @@ async function connect(peer){
         clearTimeout(frameTimer);
         client=null;
         controls();
-        note('connection-ended-'+Number(event.code),'Verbindung beendet (Code '+Number(event.code)+'). Protokoll, Hostfreigabe oder Netzwerk können die Ursache sein.');
+        note('connection-ended-'+Number(event.code),t('Verbindung beendet (Code ')+Number(event.code)+t('). Protokoll, Hostfreigabe oder Netzwerk können die Ursache sein.'));
       }else if(event.type==='stage'){
         note(event.stage,event.text);
       }
@@ -224,18 +225,18 @@ async function connect(peer){
     await current.connect(session,peer,quality.config());
   }catch(e){
     stop();
-    note('connection-setup-failed','Verbindungsaufbau fehlgeschlagen. Der experimentelle Adapter ist nicht als kompatibel bestätigt.');
+    note('connection-setup-failed',t('Verbindungsaufbau fehlgeschlagen. Der experimentelle Adapter ist nicht als kompatibel bestätigt.'));
   }
 }
 $('stop').onclick=$('menuDisconnect').onclick=()=>{
   stop();
-  note('disconnected-by-user','Verbindung getrennt.');
+  note('disconnected-by-user',t('Verbindung getrennt.'));
 };
 function getFullscreenView(){
   if(!fullscreenView)fullscreenView=new FullscreenView({
     screen:$('screen'),canvas:$('video'),exitButton:$('exitFullscreen'),notice:$('fullscreenNotice'),report:stage=>{
       diagnostic(stage);
-      $('fullscreenStatus').textContent=stage==='fullscreen-exit-blocked'?'Safari hat das Vollbild noch nicht verlassen. Bitte über Safaris X schließen und erneut Controller-Bildschirmansicht wählen.':stage==='fullscreen-native'?'Natives Browser-Vollbild aktiv. Systemelemente werden von iPadOS gesteuert.':stage==='fullscreen-controller'?'Controller-Bildschirmansicht ohne natives Safari-Vollbild. Browserleisten können sichtbar bleiben.':stage==='fullscreen-viewport'?'Safari hat kein natives Vollbild gewährt. Vergrößerte Bildschirmansicht aktiv; iPadOS-Leisten können sichtbar bleiben.':'Vollbild beendet.';
+      $('fullscreenStatus').textContent=stage==='fullscreen-exit-blocked'?t('Safari hat das Vollbild noch nicht verlassen. Bitte über Safaris X schließen und erneut Controller-Bildschirmansicht wählen.'):stage==='fullscreen-native'?t('Natives Browser-Vollbild aktiv. Systemelemente werden von iPadOS gesteuert.'):stage==='fullscreen-controller'?t('Controller-Bildschirmansicht ohne natives Safari-Vollbild. Browserleisten können sichtbar bleiben.'):stage==='fullscreen-viewport'?t('Safari hat kein natives Vollbild gewährt. Vergrößerte Bildschirmansicht aktiv; iPadOS-Leisten können sichtbar bleiben.'):t('Vollbild beendet.');
     }
   });
   return fullscreenView;
@@ -250,7 +251,7 @@ $('controllerFullscreen').onclick=async()=>{
 $('download').onclick=()=>{
   client?.reportAudio();
   const blob=new Blob([JSON.stringify({
-    version:2,build:'app-v7',experimental:true,events:diagnostics.events()
+    version:2,build:'1.0.0',experimental:true,events:diagnostics.events()
   },null,2)],{
     type:'application/json'
   }),url=URL.createObjectURL(blob),a=document.createElement('a');
@@ -268,17 +269,17 @@ controls();
 $('probe').onclick=async()=>{
   if(controller||session||client)return;
   $('probe').disabled=true;
-  note('api-probe-start','API-Zugriff aus diesem Browser wird ohne echte Sitzung geprüft …');
+  note('api-probe-start',t('API-Zugriff aus diesem Browser wird ohne echte Sitzung geprüft …'));
   try{
     const r=await request('/v2/hosts?mode=desktop&public=false',{
       headers:{
         Authorization:'Bearer safari-compatibility-test-not-a-session'
       }
     });
-    if(r.status===401)note('api-probe-401','API-Antwort ist im Browser lesbar (HTTP 401 wie erwartet). Das bestätigt den API-Zugriff, noch keine Anmeldung.');
-    else note('api-probe-http-'+r.status,'API antwortet mit HTTP '+r.status+'. Anmeldung und Verbindung sind damit nicht bestätigt.');
+    if(r.status===401)note('api-probe-401',t('API-Antwort ist im Browser lesbar (HTTP 401 wie erwartet). Das bestätigt den API-Zugriff, noch keine Anmeldung.'));
+    else note('api-probe-http-'+r.status,t('API antwortet mit HTTP ')+r.status+t('. Anmeldung und Verbindung sind damit nicht bestätigt.'));
   }catch{
-    note('api-probe-unreadable','API-Antwort nicht lesbar. CORS oder Netzwerk können einen direkten Zugriff von GitHub Pages verhindern.');
+    note('api-probe-unreadable',t('API-Antwort nicht lesbar. CORS oder Netzwerk können einen direkten Zugriff von GitHub Pages verhindern.'));
   }finally{
     $('probe').disabled=false;
   }

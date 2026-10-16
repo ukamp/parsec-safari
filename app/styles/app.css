@@ -244,7 +244,7 @@ select{
   min-height:48px
 }
 #streamMenuButton::after{
-  content:" Menü"
+  content:var(--menu-label," Menü")
 }
 #screen.screen-expanded #streamMenuButton:hover,#screen.screen-expanded #streamMenuButton:focus-visible{
   opacity:1

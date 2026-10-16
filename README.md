@@ -1,10 +1,12 @@
-# Parsec Safari
+# Parsec Safari 1.0.0
 
 An independent, experimental Parsec web client focused on iPad Safari. It uses an existing Parsec host; no additional software is installed on Windows.
 
 **Open:** https://ukamp.github.io/parsec-safari/app/
 
 The owner confirmed picture and sound on iPad in the earlier streaming prototype. The new app structure retains that protocol path and adds computer navigation/search, quality presets, volume/mute, stream statistics, Xbox remapping, browser wake lock, password-autofill markup and a Home Screen manifest. Full parity with the official client is not yet implemented; see [feature status and roadmap](docs/FEATURES.md).
+
+The interface supports German and English. English system locales default to English; a saved choice under Settings → Sprache / Language overrides detection. Changing language reloads the app and ends an active stream.
 
 ## Structure
 
@@ -17,6 +19,10 @@ The existing GitHub Actions Pages workflow fetches the historical MIT modules fr
 For a development checkout with the same pinned `vendor-src/` available, use `npm run build` and `npm test` (Node and Python required). Serve `_site/` over HTTP to inspect locally. These are developer/CI steps, not installation requirements for the Windows host or iPad.
 
 `/personal-test/` redirects to `/app/`; existing bookmarks keep working. The repository root remains the standalone compatibility check.
+
+## Diagnostics
+
+Reports contain technical events, numeric/boolean counters and exact timestamps. The app excludes email addresses, passwords, 2FA codes, session tokens, host names and IP addresses. Reports remain in tab memory until downloaded manually and are not automatically uploaded. Exact timestamps can allow correlation, so reports are not claimed to be fully anonymous.
 
 ## Security and licensing
 

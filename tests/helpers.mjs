@@ -1,3 +1,5 @@
+// Existing regression fixtures use German; language selection has its own tests.
+Object.defineProperty(globalThis.navigator,'language',{value:'de-DE',configurable:true});
 import {readdirSync} from 'node:fs';
 import {pathToFileURL} from 'node:url';
 const directory=new URL('../_site/app/',import.meta.url);
