@@ -27,10 +27,10 @@ export class PadBindings {
   }
   axis(pad,axis,value){
     if(axis<0||axis>3)return;
-    let signed=value;
-    if(axis===1||axis===3){
-      signed=-signed;
-      if(axis===1?this.settings.invertLeftY:this.settings.invertRightY)signed=-signed;
-    }this.send(Msg.axis(axis,Math.round(signed*(signed<0?32768:32767)),pad));
+    // The existing host path uses opposite vertical conventions for the
+    // left and right sticks. Keep right-stick up negative by default.
+    let signed=axis===1?-value:value;
+    if(axis===1&&this.settings.invertLeftY||axis===3&&this.settings.invertRightY)signed=-signed;
+    this.send(Msg.axis(axis,Math.round(signed*(signed<0?32768:32767)),pad));
   }
 }
