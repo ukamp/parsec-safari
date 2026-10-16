@@ -17,3 +17,6 @@ for(const kind of ['none','denied']){const f=fixture(kind);await f.view.enter();
 const escape=fixture();await escape.view.enter();escape.doc.fullscreenElement=null;escape.callbacks.fullscreenchange();assert.equal(escape.classes.size,0);
 const race=fixture('none');let finish;race.screen.requestFullscreen=()=>new Promise(resolve=>finish=()=>{race.doc.fullscreenElement=race.screen;race.callbacks.fullscreenchange();resolve();});const pending=race.view.enter();await race.view.exit();finish();await pending;assert.equal(race.doc.fullscreenElement,null);assert.equal(race.classes.size,0);
 console.log('Fullscreen native, viewport fallback, Escape, scroll restoration and pending-request cancellation passed.');
+
+const controller=fixture();let nativeRequests=0;controller.screen.requestFullscreen=async()=>{nativeRequests++};await controller.view.enter({native:false});assert.equal(nativeRequests,0);assert.equal(controller.doc.fullscreenElement,null);assert.ok(controller.classes.has('screen-expanded'));assert.ok(controller.reports.includes('fullscreen-controller'));await controller.view.exit();assert.equal(controller.classes.size,0);
+console.log('Explicit controller viewport mode skips the native fullscreen API and restores its layout on exit.');
