@@ -38,13 +38,13 @@ export class FullscreenView {
   native(){
     return this.doc.fullscreenElement||this.doc.webkitFullscreenElement||null;
   }
-  fallback(){
+  fallback(stage='fullscreen-viewport'){
     if(!this.expanded)return;
     clearTimeout(this.timer);
     this.pending=false;
     this.notice.hidden=false;
     this.notice.textContent='Bildschirmansicht · Browserleisten können sichtbar bleiben';
-    this.report('fullscreen-viewport');
+    this.report(stage);
   }
   async leaveNative(){
     try{
@@ -53,7 +53,7 @@ export class FullscreenView {
     }catch{
     }
   }
-  async enter() {
+  async enter({native=true}={}) {
     if(this.expanded)return;
     const operation=++this.operation;
     this.scroll=[this.win.scrollX||0,this.win.scrollY||0];
@@ -68,6 +68,7 @@ export class FullscreenView {
       preventScroll:true
     });
     try{
+      if(!native){this.fallback('fullscreen-controller');return;}
       if(this.screen.requestFullscreen){
         await this.screen.requestFullscreen({
           navigationUI:'hide'
