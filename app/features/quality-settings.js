@@ -3,18 +3,13 @@ export function setupQuality({
   getClient,$
 }){
   let quality=readPreference('parsec-quality-v1',defaults(),normalizeQuality),muted=false;
+  const presets={balanced:defaults(),economy:{...defaults(),bitrate:4,frameRate:30},quality:{...defaults(),bitrate:20,resolution:'1920x1080'}};
   const fill=()=>{
+    $('qualityPreset').value=Object.entries(presets).find(([,preset])=>['bitrate','frameRate','resolution'].every(key=>preset[key]===quality[key]))?.[0]||'custom';
     for(const id of ['bitrate','frameRate','resolution','volume'])$(id).value=String(quality[id]);
   };
   fill();
   $('qualityPreset').onchange=()=>{
-    const presets={
-      balanced:defaults(),economy:{
-        ...defaults(),bitrate:4,frameRate:30
-      },quality:{
-        ...defaults(),bitrate:20,resolution:'1920x1080'
-      }
-    };
     if(presets[$('qualityPreset').value]){
       quality={
         ...presets[$('qualityPreset').value],volume:quality.volume
