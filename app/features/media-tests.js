@@ -3,7 +3,7 @@ import { VideoPlayer } from '../stream/video.js';
 import { audioSamples } from './audio-sample.js';
 import { sample } from './video-sample.js';
 export function setupMediaTests({
-  getClient,getController,$,diagnostic
+  getClient,getController,$,diagnostic,controls
 }){
   $('localVideo').onclick=async()=>{
     const client=getClient(),controller=getController();
