@@ -1,0 +1,108 @@
+export class Signal {
+  constructor(onFatal,onDiagnostic=()=>{
+  }){
+    this.onFatal=onFatal;
+    this.onDiagnostic=onDiagnostic;
+    this.id=crypto.randomUUID?crypto.randomUUID():Array.from(crypto.getRandomValues(new Uint8Array(24)),x=>x.toString(16).padStart(2,'0')).join('');
+    this.ws=null;
+    this.closed=false;
+    this.timer=null;
+    this.creds=null;
+    this.pending=[];
+  }
+  getAttemptId(){
+    return this.id;
+  }
+  connect(host,port,token,peer,creds,onCandidate){
+    this.peer=peer;
+    this.onCandidate=onCandidate;
+    this.ws=new WebSocket('wss://kessel-ws.parsec.app/?session_id=_&role=client&version=1&sdk_version=0',token);
+    this.timer=setTimeout(()=>this.fail(-3003),45000);
+    this.ws.onopen=()=>{
+      this.onDiagnostic('signal-open');
+      this.emit({
+        action:'offer',version:1,payload:{
+          to:peer,attempt_id:this.id,secret:'',data:{
+            ver_data:1,creds,mode:2,versions:{
+              p2p:1,bud:1,init:1,video:1,audio:1,control:1
+            }
+          }
+        }
+      });
+      this.onDiagnostic('signal-offer-sent');
+    };
+    this.ws.onerror=()=>{
+      if(!this.established)this.fail(-3001);
+    };
+    this.ws.onclose=()=>{
+      if(!this.closed&&!this.established)this.fail(-3000);
+    };
+    this.ws.onmessage=event=>{
+      try{
+        const m=JSON.parse(event.data),p=m.payload||{
+        };
+        if(p.attempt_id&&p.attempt_id!==this.id)return;
+        if(m.action==='answer_relay'){
+          if(!p.approved){
+            this.onDiagnostic('signal-denied');
+            this.fail(-6101);
+            return;
+          }this.onDiagnostic('signal-approved');
+          this.creds=p.data?.creds;
+          if(!this.creds){
+            this.fail(-3002);
+            return;
+          }for(const c of this.pending.splice(0))this.candidate(c);
+        }else if(m.action==='candex_relay'){
+          if(this.creds)this.candidate(p.data);
+          else this.pending.push(p.data);
+        }else if(m.action==='close')this.fail(-3008);
+      }catch{
+        this.onDiagnostic('signal-unreadable');
+        this.fail(-3002);
+      }
+    };
+  }
+  candidate(data){
+    if(!data||!this.creds)return;
+    this.onCandidate({
+      candidate_ip:data.ip,candidate_port:data.port,from_stun:data.from_stun,sync:data.sync
+    },this.creds);
+  }
+  send(token,c){
+    if(this.closed||!this.ws||this.ws.readyState!==WebSocket.OPEN)return;
+    this.emit({
+      action:'candex',version:1,payload:{
+        to:this.peer,attempt_id:this.id,data:{
+          ver_data:1,versions:{
+            p2p:1,bud:1,init:1,video:1,audio:1,control:1
+          },ip:c.candidate_ip,port:c.candidate_port,from_stun:c.from_stun,lan:c.lan,sync:c.sync
+        }
+      }
+    });
+  }
+  emit(m){
+    if(this.ws?.readyState===WebSocket.OPEN)this.ws.send(JSON.stringify(m));
+  }
+  connected(){
+    this.established=true;
+    clearTimeout(this.timer);
+  }
+  fail(code){
+    if(this.closed)return;
+    this.close();
+    this.onFatal(code);
+  }
+  close(){
+    this.closed=true;
+    clearTimeout(this.timer);
+    if(this.ws){
+      this.ws.onclose=null;
+      this.ws.onerror=null;
+      this.ws.onmessage=null;
+      this.ws.close(1000);
+      this.ws=null;
+    }this.pending=[];
+    this.creds=null;
+  }
+}
