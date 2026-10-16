@@ -11,7 +11,7 @@ import { setupGamepads } from './features/gamepad-panel.js';
 import { setupWake } from './features/wake-controller.js';
 import { setupMediaTests } from './features/media-tests.js';
 const $=id=>document.getElementById(id);
-let session=null,client=null,generation=0,controller=null,pollTimer=null,frameTimer=null,fullscreenView=null;
+let session=null,client=null,generation=0,controller=null,pollTimer=null,frameTimer=null,fullscreenView=null,streamState='Verbindung wird aufgebaut';
 const diagnostics=createDiagnostics($),{
   note,diagnostic
 }=diagnostics;
@@ -30,7 +30,7 @@ setupMediaTests({
 });
 function controls(){
   const busy=!!controller;
-  $('connectionBadge').textContent=client?'Stream aktiv':session?'Angemeldet':'Nicht verbunden';
+  $('connectionBadge').textContent=client?streamState:session?'Angemeldet':'Nicht verbunden';
   $('auth').hidden=!!session;
   $('start').disabled=busy||!!session;
   for(const id of ['email','password','tfa'])$(id).disabled=busy||!!session;
@@ -163,7 +163,7 @@ async function connect(peer){
   }if(!window.VideoDecoder||!window.EncodedVideoChunk){
     note('webcodecs-unavailable','Dieser Test benötigt den H.264-Decoder von WebCodecs. Bitte einen Browser mit VideoDecoder verwenden.');
     return;
-  }note('connecting','Experimenteller Verbindungsaufbau … Noch keine Verbindung bestätigt.');
+  }streamState='Verbindung wird aufgebaut';note('connecting','Experimenteller Verbindungsaufbau … Noch keine Verbindung bestätigt.');
   let current;
   try{
     current=new Client($('video'),event=>{
@@ -174,14 +174,14 @@ async function connect(peer){
       }if(event.type==='diagnostic'){
         diagnostic(event.stage,event.metrics);
         return;
-      }if(event.type==='connect'){
+      }if(event.type==='connect'){streamState='Warte auf Bild';controls();
         note('control-open','Transportkanal offen. Warte auf Stream-Antwort und Videobild …');
         frameTimer=setTimeout(()=>{
           if(client!==current)return;
           stop();
           note('video-timeout','Steuerkanal war offen, aber innerhalb von 20 Sekunden wurde kein Videobild bestätigt.');
         },20000);
-      }else if(event.type==='frame'){
+      }else if(event.type==='frame'){streamState='Stream aktiv';controls();
         wake.setActive(true);
         statistics.start(current);
         clearTimeout(frameTimer);
