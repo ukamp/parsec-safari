@@ -34,3 +34,14 @@ subprocess.run(["node", "--input-type=module"], input=transport_test, text=True,
 
 root_page = Path("_site/index.html")
 root_page.write_text(root_page.read_text().replace("<main>", '<main><p><a href="client/">Experimentellen Verbindungsclient öffnen</a></p>', 1))
+
+# Version all module URLs to prevent mixed cached client revisions.
+import os
+revision = os.environ.get("GITHUB_SHA", "local")[:12]
+assets = out / ("assets-" + revision)
+assets.mkdir(exist_ok=True)
+shutil.move(str(out / "src"), str(assets / "src"))
+shutil.move(str(out / "app.js"), str(assets / "app.js"))
+page = out / "index.html"
+page.write_text(page.read_text().replace('src="app.js"', 'src="assets-' + revision + '/app.js"'))
+root_page.write_text(root_page.read_text().replace('href="client/"', 'href="client/?v=' + revision + '"'))
