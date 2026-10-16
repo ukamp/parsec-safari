@@ -18,6 +18,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Fetch pinned MIT client modules
+        uses: actions/checkout@v4
+        with:
+          repository: evshiron/parsec-web-client
+          ref: ddfaeb64c0a54f5ef86ea41a753ad15360a8535c
+          path: vendor-src
+          persist-credentials: false
       - name: Validate JavaScript
         run: |
           node <<'NODE'
@@ -33,6 +40,8 @@ jobs:
           mkdir _site
           cp index.html _site/
           touch _site/.nojekyll
+      - name: Build and check experimental client
+        run: python3 scripts/build-client.py
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
