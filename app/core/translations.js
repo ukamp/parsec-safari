@@ -1,4 +1,5 @@
 export const english={
+  "API-Zugriff prüfen": "Test API access",
   "Computer": "Computers",
   "Deine Computer": "Your computers",
   "Dein Stream": "Your stream",

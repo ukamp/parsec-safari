@@ -43,7 +43,6 @@
 <section>
 <h2>Bei Parsec anmelden</h2>
 <p>Dein vorhandenes Parsec-Konto. Deine Eingaben gehen vom Browser direkt an <code>kessel-api.parsec.app</code>. Sie werden nicht an einen eigenen Anmeldeserver weitergeleitet. </p>
-<button id="probe" type="button">API-Zugriff ohne Anmeldung prüfen</button>
 <form id="auth" autocomplete="on">
 <label for="email">Parsec-E-Mail-Adresse</label>
 <input id="email" name="username" type="email" required autocomplete="username" autocapitalize="none" spellcheck="false">
@@ -186,6 +185,10 @@
 </section>
 </div>
 <div data-view="diagnostics" hidden>
+<section>
+<h2>API-Zugriff prüfen</h2>
+<button id="probe" type="button">API-Zugriff ohne Anmeldung prüfen</button>
+</section>
 <section>
 <h2>Ton prüfen</h2>
 <p>Der Ton wird beim Verbinden freigegeben. Mit dem lokalen Test prüfst du Opus-Decoder und Browserausgabe ohne Host-Audiodaten.</p>
