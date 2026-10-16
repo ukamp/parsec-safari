@@ -16,7 +16,11 @@ The application is an independent static ES-module client. GitHub Pages serves i
 
 The coordinator owns the active account session in memory and destroys the client before clearing it. An opt-in session store persists only the bearer token for at most 30 days, restores it on startup, and clears it on logout or an authorization rejection. Passwords and 2FA codes are never stored. Each client owns its transport, decoders and input listeners. Each feature owns its controls and accepts a getter for the current client instead of caching a disconnected instance. A generation counter rejects stale authentication/host responses. Diagnostics contain selected numeric/boolean counters and known stages; no host names, addresses, account IDs, credentials or session tokens.
 
-Validated quality/controller preferences and explicitly remembered bearer sessions use localStorage. Credentials are left to the browser's password manager. No service worker caches API traffic. Revisioned JS/CSS URLs prevent mixed revisions after deployment. The main HTML remains a stable entry point.
+Validated quality/controller preferences, the language selection and explicitly remembered bearer sessions use localStorage. Credentials are left to the browser's password manager. No service worker caches API traffic. RT/focus diagnostics record numeric counters and focus-target categories, not element contents or device identifiers. Exact timestamps remain in history; the export is not claimed to be fully anonymous.
+
+The fullscreen controller waits for native Safari exit before switching modes and ignores late native-exit events after entering Controller view. Hardware-independent fixtures cover delayed/prefixed exit and duplicate events; actual iPadOS chrome and the RT focus issue remain device-dependent.
+
+Revisioned JS/CSS URLs prevent mixed revisions after deployment. The main HTML remains a stable entry point.
 
 ## Extending the client
 
