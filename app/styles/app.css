@@ -128,16 +128,8 @@ small{
 }
 
 #exitFullscreen{
-  position:absolute;
-  z-index:2;
-  top:max(8px,env(safe-area-inset-top));
-  right:max(8px,env(safe-area-inset-right));
-  margin:0;
-  background:#16312ee6;
-  color:white;
-  border:1px solid #829991;
-  font-size:14px;
-  min-height:44px
+  background:#b7f3cd;
+  color:#102524
 }
 
 #fullscreenNotice{
@@ -250,17 +242,6 @@ select{
 }
 #streamMenuButton::after{
   content:" Menü"
-}
-#screen.screen-expanded #exitFullscreen{
-  display:inline-flex;
-  align-items:center;
-  z-index:5;
-  top:max(28px,calc(env(safe-area-inset-top) + 12px));
-  right:max(12px,env(safe-area-inset-right));
-  background:#b7f3cd;
-  color:#102524;
-  opacity:1;
-  min-height:48px
 }
 #screen.screen-expanded #streamMenuButton:hover,#screen.screen-expanded #streamMenuButton:focus-visible{
   opacity:1
