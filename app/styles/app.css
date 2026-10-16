@@ -167,7 +167,8 @@ small{
 }
 #streamMenuButton{
   position:absolute;
-  left:max(10px,env(safe-area-inset-left));
+  right:max(16px,calc(env(safe-area-inset-right) + 12px));
+  left:auto;
   top:max(10px,env(safe-area-inset-top));
   z-index:3;
   background:#10252466;
@@ -232,11 +233,13 @@ select{
 #screen.screen-expanded #wakeBadge,#screen.screen-expanded #fullscreenNotice{
   display:none!important
 }
+/* Safari's native close control occupies the upper-left corner. */
 #screen.screen-expanded #streamMenuButton{
-  opacity:.9;
-  background:#16312ef2;
+  opacity:.65;
+  background:#10252466;
   top:max(28px,calc(env(safe-area-inset-top) + 12px));
-  left:max(12px,env(safe-area-inset-left));
+  right:max(16px,calc(env(safe-area-inset-right) + 12px));
+  left:auto;
   margin:0;
   min-height:48px
 }
