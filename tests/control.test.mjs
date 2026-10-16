@@ -1,0 +1,15 @@
+import {asset} from './helpers.mjs';
+import assert from 'node:assert/strict';
+const Msg = await import(asset('stream/msg.js'));
+const init=Msg.init({server_resolution_x:1280,server_resolution_y:720});
+const v=new DataView(init);assert.equal(v.getUint8(12),11);assert.equal(v.getInt32(0),init.byteLength-13);assert.equal(v.getInt32(4),0);assert.equal(v.getInt32(8),0);assert.equal(new Uint8Array(init).at(-1),0);
+const body=JSON.parse(new TextDecoder().decode(new Uint8Array(init,13,init.byteLength-14)));
+assert.deepEqual(Object.keys(body),['_version','_max_w','_max_h','_flags','resolutionX','resolutionY','mediaContainer','refreshRate']);
+assert.equal(body._version,1);assert.equal(body.mediaContainer,0);assert.equal(body._flags,0);
+assert.deepEqual([...new Uint8Array(Msg.motion(1,258,-2))],[0,0,0,1,0,0,1,2,255,255,255,254,3]);
+assert.deepEqual([...new Uint8Array(Msg.reinit())],[0,0,0,0,0,0,0,0,0,0,0,1,13]);
+const settings=Msg.config({encoder_bitrate:8});assert.equal(new DataView(settings).getUint8(12),17);assert.equal(new DataView(settings).getInt32(4),11);
+const status=new Uint8Array([255,255,255,248,0,0,0,0,0,0,0,0,10]);assert.equal(Msg.unpack(status.buffer).data0,-8);assert.equal(Msg.unpack(status.buffer).type,10);
+const cursor=new ArrayBuffer(34);new DataView(cursor).setUint8(12,9);new DataView(cursor).setUint16(32,768);assert.equal(Msg.unpack(cursor).hidden,true);assert.equal(Msg.unpack(cursor).relative,true);
+assert.throws(()=>Msg.unpack(new ArrayBuffer(12)));new DataView(cursor).setInt32(16,1);assert.throws(()=>Msg.unpack(cursor));
+console.log('Modern wire fixtures: opcode offset, argument order, NUL-terminated init JSON, settings, refresh, cursor bounds and host status passed.');

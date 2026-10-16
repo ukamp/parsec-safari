@@ -1,0 +1,10 @@
+import {asset} from './helpers.mjs';
+import assert from 'node:assert/strict';
+const {GamepadManager} = await import(asset('stream/gamepad.js'));
+let pads=[];const events=[],status=[];const p=new GamepadManager((...x)=>events.push(['button',...x]),(...x)=>events.push(['axis',...x]),i=>events.push(['unplug',i]),s=>status.push(s),{provider:()=>pads,schedule:()=>1,cancel(){}});
+const pad={mapping:'standard',connected:true,buttons:Array.from({length:17},()=>({value:0,pressed:false})),axes:[0,0,0,0]};pads=[pad];pad.buttons[0]={value:1,pressed:true};p._poll();assert.ok(events.some(x=>x[0]==='button'&&x[2]===0&&x[3]===1));
+events.length=0;pad.axes[0]=.08;p._poll();assert.equal(events.length,0);pad.axes[0]=1;p._poll();assert.deepEqual(events.at(-1),['axis',0,0,1]);
+pad.buttons[6]={value:.5,pressed:true};p._poll();assert.deepEqual(events.at(-1),['button',0,6,.5]);p.pause();assert.ok(events.some(x=>x[0]==='axis'&&x[3]===0));assert.ok(events.some(x=>x[0]==='button'&&x[2]===6&&x[3]===0));assert.equal(status.at(-1).paused,true);
+events.length=0;p.resume();assert.ok(events.some(x=>x[0]==='button'&&x[3]===1));pad.connected=false;p._poll();assert.equal(events.at(-1)[0],'unplug');
+pads=[{...pad,connected:true,mapping:''}];events.length=0;p._poll();assert.equal(events.length,0);assert.equal(status.at(-1).standardGamepads,0);
+p.destroy();console.log('Gamepad held-at-connect, deadzone, trigger pressure, pause/release, reconnect and nonstandard-layout checks passed.');
