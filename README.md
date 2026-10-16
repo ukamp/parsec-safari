@@ -1,0 +1,25 @@
+# Parsec Safari
+
+An independent, experimental Parsec web client focused on iPad Safari. It uses an existing Parsec host; no additional software is installed on Windows.
+
+**Open:** https://ukamp.github.io/parsec-safari/app/
+
+The owner confirmed picture and sound on iPad in the earlier streaming prototype. The new app structure retains that protocol path and adds computer navigation/search, quality presets, volume/mute, stream statistics, Xbox remapping, browser wake lock, password-autofill markup and a Home Screen manifest. Full parity with the official client is not yet implemented; see [feature status and roadmap](docs/FEATURES.md).
+
+## Structure
+
+See [architecture](docs/ARCHITECTURE.md). Application code is ordinary JavaScript, HTML and CSS under `app/`; tests live under `tests/`. There are no production npm dependencies and no embedded source-code blobs in the builder.
+
+## Build and test
+
+The existing GitHub Actions Pages workflow fetches the historical MIT modules from `evshiron/parsec-web-client` at `ddfaeb64c0a54f5ef86ea41a753ad15360a8535c` into `vendor-src/`, then runs `python3 scripts/build-client.py`. That compatibility entry point builds the app and runs all regression tests.
+
+For a development checkout with the same pinned `vendor-src/` available, use `npm run build` and `npm test` (Node and Python required). Serve `_site/` over HTTP to inspect locally. These are developer/CI steps, not installation requirements for the Windows host or iPad.
+
+`/personal-test/` redirects to `/app/`; existing bookmarks keep working. The repository root remains the standalone compatibility check.
+
+## Security and licensing
+
+Account credentials are sent directly to `https://kessel-api.parsec.app`; authentication/session values are never persisted by this app or included in reports. Only quality and controller preferences are stored locally. Use Safari/Apple Passwords for credential autofill. Page closure discards the local session; it does not revoke the server-side Parsec session.
+
+Historical vendor modules retain their MIT license at the published `app/LICENSE`. Protocol adaptations cite the independent MIT lowlat implementation at `7b4dc4ae79990ea8c59a108c80b3c89b695c3cb4`; see `app/LICENSE-lowlat`. No proprietary Parsec bundle is redistributed. New project source is MIT licensed; see [LICENSE](LICENSE).
