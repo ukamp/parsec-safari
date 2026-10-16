@@ -237,11 +237,30 @@ select{
   font-size:14px
 }
 
-#screen.screen-expanded #exitFullscreen,#screen.screen-expanded #wakeBadge,#screen.screen-expanded #fullscreenNotice{
+#screen.screen-expanded #wakeBadge,#screen.screen-expanded #fullscreenNotice{
   display:none!important
 }
 #screen.screen-expanded #streamMenuButton{
-  opacity:.18
+  opacity:.9;
+  background:#16312ef2;
+  top:max(28px,calc(env(safe-area-inset-top) + 12px));
+  left:max(12px,env(safe-area-inset-left));
+  margin:0;
+  min-height:48px
+}
+#streamMenuButton::after{
+  content:" Menü"
+}
+#screen.screen-expanded #exitFullscreen{
+  display:inline-flex;
+  align-items:center;
+  z-index:5;
+  top:max(28px,calc(env(safe-area-inset-top) + 12px));
+  right:max(12px,env(safe-area-inset-right));
+  background:#b7f3cd;
+  color:#102524;
+  opacity:1;
+  min-height:48px
 }
 #screen.screen-expanded #streamMenuButton:hover,#screen.screen-expanded #streamMenuButton:focus-visible{
   opacity:1
