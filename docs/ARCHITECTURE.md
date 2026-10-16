@@ -24,4 +24,4 @@ Implement a protocol/API adapter first, add measured fixtures, and then expose a
 
 ## Entry points
 
-`/app/` is the product interface. `/personal-test/` and `/client/` redirect to it to retain existing bookmarks. The repository root retains the standalone Safari compatibility diagnosis.
+The site root is the product interface. `/app/`, `/personal-test/` and `/client/` redirect to it, preserving query strings and hashes. `/compatibility/` retains the standalone Safari diagnosis. The manifest keeps the former `/app/` identity so installed apps can migrate while the scope and start URL move to the site root.

@@ -1,7 +1,7 @@
 {
   "name": "Parsec Safari",
   "short_name": "Parsec Safari",
-  "id": "./",
+  "id": "./app/",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",

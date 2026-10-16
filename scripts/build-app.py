@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parent.parent
 SITE = ROOT / '_site'
 SOURCE = ROOT / 'app'
 REVISION = os.environ.get('GITHUB_SHA', 'local')[:12]
-OUTPUT = SITE / 'app'
+OUTPUT = SITE
 ASSETS = OUTPUT / ('assets-' + REVISION)
 
 if OUTPUT.exists():
@@ -40,14 +40,23 @@ for source in ASSETS.rglob('*.js'):
         if specifier.startswith('.'):
             assert (source.parent / specifier).is_file(), f'Missing import: {source}: {specifier}'
 
-# Preserve bookmarks while moving the application out of the diagnostic route.
-for route in ['personal-test', 'client']:
+# Keep the original browser capability test available at its own route.
+compatibility = SITE / 'compatibility'
+compatibility.mkdir()
+(compatibility / 'index.html').write_text((ROOT / 'index.html').read_text().replace('<main>', '<main><p><a href="../">Parsec Safari App</a></p>', 1))
+(SITE / '.nojekyll').touch()
+
+# Preserve old bookmarks and Home Screen launch URLs, including route hashes.
+for route in ['app', 'personal-test', 'client']:
     target = SITE / route
-    if target.exists():
-        shutil.rmtree(target)
-    target.mkdir(parents=True)
-    (target / 'index.html').write_text('<!doctype html><html lang="de"><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=../app/"><title>Parsec Safari</title><a href="../app/">Parsec Safari öffnen</a></html>')
-root_page = SITE / 'index.html'
-if root_page.exists():
-    root_page.write_text(root_page.read_text().replace('<main>', '<main><p><a href="app/">Parsec Safari App öffnen</a></p>', 1))
-print('App built: /app/; versioned modules and imports validated.')
+    target.mkdir()
+    (target / 'index.html').write_text('<!doctype html><html lang="en"><meta charset="utf-8"><title>Parsec Safari</title><script>const target=new URL("../",location.href);target.search=location.search;target.hash=location.hash;location.replace(target.href);</script><noscript><meta http-equiv="refresh" content="0;url=../"></noscript><p>Parsec Safari has moved: <a href="../">Open the app</a></p></html>')
+
+# Retain the installed app identity and its former manifest URL.
+import json
+legacy_manifest = json.loads((SOURCE / 'manifest.webmanifest').read_text())
+legacy_manifest.update(id='./', start_url='../', scope='../')
+for icon in legacy_manifest['icons']:
+    icon['src'] = '../' + icon['src']
+(SITE / 'app' / 'manifest.webmanifest').write_text(json.dumps(legacy_manifest, indent=2))
+print('App built at site root; legacy redirects and compatibility test prepared.')
