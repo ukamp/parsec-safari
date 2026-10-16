@@ -41,7 +41,7 @@ function controls(){
   $('hostsPanel').hidden=!session;
   $('refresh').disabled=busy||!!client;
   $('stop').disabled=!client;
-  $('play').disabled=!client;
+  $('menuDisconnect').disabled=!client;
 }
 function apiError(status){
   return new Error('HTTP '+status)
@@ -227,22 +227,9 @@ async function connect(peer){
     note('connection-setup-failed','Verbindungsaufbau fehlgeschlagen. Der experimentelle Adapter ist nicht als kompatibel bestätigt.');
   }
 }
-$('stop').onclick=()=>{
+$('stop').onclick=$('menuDisconnect').onclick=()=>{
   stop();
   note('disconnected-by-user','Verbindung getrennt.');
-};
-$('play').onclick=async()=>{
-  if(!client)return;
-  const active=client;
-  try{
-    const running=await active.unlockAudio();
-    if(client!==active)return;
-    active.reportAudio();
-    note(running?'playback-resumed':'playback-blocked',running?'Audioausgabe ist aktiv. Ob Host-Ton ankommt, zeigt der Verbindungsbericht.':'Audioausgabe ist noch blockiert oder unterbrochen. Bitte erneut auf Ton freigeben tippen.');
-  }catch{
-    if(client!==active)return;
-    note('playback-blocked','Wiedergabe konnte nicht gestartet werden. Bitte erneut antippen.');
-  }
 };
 function getFullscreenView(){
   if(!fullscreenView)fullscreenView=new FullscreenView({

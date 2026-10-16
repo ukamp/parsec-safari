@@ -48,7 +48,6 @@ export function setupGamepads({
     setMenu(false);
     $('fullscreen').onclick();
   };
-  $('menuAudio').onclick=()=>$('play').onclick();
   $('streamMenu').addEventListener('keydown',event=>{
     if(event.key==='Escape'){
       event.preventDefault();

@@ -90,8 +90,7 @@
 <button id="controllerFullscreen" type="button">Controller-Bildschirmansicht</button>
 <p>Wenn RT im Safari-Vollbild die Tastatur öffnet: Controller-Bildschirmansicht wählen. Dabei wird kein natives Safari-Vollbild angefordert; Browserleisten können sichtbar bleiben.</p>
 <button id="menuMute" type="button">Stummschalten</button>
-<button id="menuAudio" type="button">Ton freigeben</button>
-<button id="stop" type="button" disabled>Verbindung trennen</button>
+<button id="menuDisconnect" type="button" disabled>Verbindung trennen</button>
 <p id="streamStats" role="status">Noch kein aktiver Stream.</p>
 <p>Solange dieses Menü geöffnet ist, pausieren Eingaben an den PC.</p>
 <details id="padSettings">
@@ -115,8 +114,8 @@
 </p>
 <p id="wakeBadge">Wachhalten wird beim Streamstart angefordert</p>
 </div>
-<button id="play" type="button" disabled>Ton freigeben</button>
 <button id="fullscreen" type="button">Vollbild</button>
+<button id="stop" type="button" disabled>Verbindung trennen</button>
 <p>
 <small>Der halbtransparente Menüknopf oben rechts öffnet die Einstellungen. „Ansicht verlassen“ im Parsec-Menü beendet die vergrößerte Ansicht. Safari-eigene Hinweise, Datum, Uhrzeit und Systemgesten lassen sich durch diese Seite nicht erzwingen oder abschalten. Für weniger Browserleisten: in Safari „Teilen → Zum Home-Bildschirm“ und von dort öffnen; auch dann kann iPadOS Systemelemente anzeigen.</small>
 </p>
@@ -175,7 +174,7 @@
 <div data-view="diagnostics" hidden>
 <section>
 <h2>Ton prüfen</h2>
-<p>Tippe zum Freigeben des Tons während der Verbindung auf „Ton freigeben“. Mit dem lokalen Test prüfst du Opus-Decoder und Browserausgabe ohne Host-Audiodaten.</p>
+<p>Der Ton wird beim Verbinden freigegeben. Mit dem lokalen Test prüfst du Opus-Decoder und Browserausgabe ohne Host-Audiodaten.</p>
 <button id="localAudio" type="button">Lokalen Opus-Testton abspielen</button>
 <p id="audioResult" role="status">Noch nicht geprüft.</p>
 </section>
