@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {asset} from './helpers.mjs';
+const {createSessionStore}=await import(asset('core/session-store.js'));
+const data=new Map();
+const storage={getItem:k=>data.get(k),setItem:(k,v)=>data.set(k,v),removeItem:k=>data.delete(k)};
+let now=1000;
+const store=createSessionStore(()=>storage,()=>now);
+assert.equal(store.load(),null);
+assert.equal(store.save('synthetic-session'),true);
+assert.equal(store.load(),'synthetic-session');
+now+=31*24*60*60*1000;
+assert.equal(store.load(),null);
+assert.equal(data.size,0);
+store.save('synthetic-session');store.clear();assert.equal(store.load(),null);
+data.set('parsec-safari.session.v1','invalid');assert.equal(store.load(),null);
+const blocked=createSessionStore(()=>{throw Error('blocked')});
+assert.equal(blocked.save('synthetic-session'),false);assert.equal(blocked.load(),null);blocked.clear();
+console.log('Remembered session persistence, expiry, logout, malformed and blocked storage passed');

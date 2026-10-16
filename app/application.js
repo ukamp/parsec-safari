@@ -1,3 +1,4 @@
+import { createSessionStore } from './core/session-store.js';
 import { Client } from './stream/client.js';
 import { FullscreenView } from './browser/fullscreen.js';
 import { authenticatePersonal } from './core/personal-auth.js';
@@ -11,6 +12,7 @@ import { setupGamepads } from './features/gamepad-panel.js';
 import { setupWake } from './features/wake-controller.js';
 import { setupMediaTests } from './features/media-tests.js';
 const $=id=>document.getElementById(id);
+const sessionStore=createSessionStore();
 let session=null,client=null,generation=0,controller=null,pollTimer=null,frameTimer=null,fullscreenView=null,streamState='Verbindung wird aufgebaut';
 const diagnostics=createDiagnostics($),{
   note,diagnostic
@@ -73,6 +75,8 @@ $('logout').onclick=()=>{
   stop();
   cancel();
   session=null;
+  sessionStore.clear();
+  $('remember').checked=false;
   $('email').value='';
   $('password').value='';
   $('tfa').value='';
@@ -113,6 +117,9 @@ $('auth').onsubmit=async event=>{
       return;
     }
     session=result.id;
+    if($('remember').checked){
+      if(!sessionStore.save(session))note('session-storage-unavailable','Angemeldet bleiben konnte in diesem Browser nicht gespeichert werden.');
+    }else sessionStore.clear();
     controller=null;
     $('email').value='';
     controls();
@@ -143,6 +150,13 @@ async function hosts(){
       }
     });
     if(id!==generation||token!==session)return;
+    if(r.status===401||r.status===403){
+      session=null;
+      sessionStore.clear();
+      hostList.clear();
+      note('session-expired','Die Sitzung ist abgelaufen. Bitte erneut anmelden.');
+      return;
+    }
     if(r.status!==200||!Array.isArray(r.data))throw apiError(r.status);
     hostList.set(r.data);
     note('hosts-loaded','Hostliste geladen. Wähle deinen vorhandenen Windows-Host.');
@@ -284,3 +298,7 @@ $('probe').onclick=async()=>{
   }
 };
 window.addEventListener('hashchange',()=>client?.input.setPaused(window.location.hash!=='#stream'||gamepads.isMenuOpen()));
+
+// Validate a remembered session with Parsec before showing any hosts.
+session=sessionStore.load();
+if(session){$('remember').checked=true;controls();void hosts();}

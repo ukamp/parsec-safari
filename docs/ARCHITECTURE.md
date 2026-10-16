@@ -13,9 +13,9 @@ The application is an independent static ES-module client. GitHub Pages serves i
 
 ## State and ownership
 
-The coordinator owns the account session only in memory and destroys the client before clearing it. Each client owns its transport, decoders and input listeners. Each feature owns its controls and accepts a getter for the current client instead of caching a disconnected instance. A generation counter rejects stale authentication/host responses. Diagnostics contain selected numeric/boolean counters and known stages; no host names, addresses, account IDs, credentials or session tokens.
+The coordinator owns the active account session in memory and destroys the client before clearing it. An opt-in session store persists only the bearer token for at most 30 days, restores it on startup, and clears it on logout or an authorization rejection. Passwords and 2FA codes are never stored. Each client owns its transport, decoders and input listeners. Each feature owns its controls and accepts a getter for the current client instead of caching a disconnected instance. A generation counter rejects stale authentication/host responses. Diagnostics contain selected numeric/boolean counters and known stages; no host names, addresses, account IDs, credentials or session tokens.
 
-Only validated quality and controller preferences use localStorage. Credentials are left to the browser's password manager. No service worker caches API traffic. Revisioned JS/CSS URLs prevent mixed revisions after deployment. The main HTML remains a stable entry point.
+Validated quality/controller preferences and explicitly remembered bearer sessions use localStorage. Credentials are left to the browser's password manager. No service worker caches API traffic. Revisioned JS/CSS URLs prevent mixed revisions after deployment. The main HTML remains a stable entry point.
 
 ## Extending the client
 

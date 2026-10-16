@@ -54,12 +54,14 @@
 <p>
 <small>Wenn für dein Konto 2FA aktiv ist, trage den aktuellen Code ein. Eine Ablehnung kann auch an Kontofreigaben oder API-Änderungen liegen.</small>
 </p>
+<label><input id="remember" type="checkbox"> Angemeldet bleiben</label>
+<small>Speichert die Sitzung auf diesem Gerät für höchstens 30 Tage, sofern Parsec sie nicht früher beendet. Nur auf deinem eigenen Gerät aktivieren.</small>
 <button id="start" type="submit">Bei Parsec anmelden</button>
 </form>
 <button id="cancel" type="button" hidden>Anmeldung abbrechen</button>
 <button id="logout" type="button" hidden>Sitzung hier verwerfen</button>
 <p>
-<small>Safari kann die Anmeldung über seine Passwortverwaltung ausfüllen. Falls kein Speichern angeboten wird, lege in der App „Passwörter“ einen Eintrag für ukamp.github.io mit deinen Parsec-Zugangsdaten an. Die Webseite selbst speichert Passwort und 2FA-Code nicht. Beide Felder werden nach jedem Versuch geleert. Eine erfolgreiche Sitzungskennung bleibt nur im Arbeitsspeicher dieses Tabs. Das Verwerfen der lokalen Sitzung widerruft eine serverseitige Sitzung bei Parsec nicht automatisch. Der Verbindungsbericht enthält ausschließlich technische Statusereignisse.</small>
+<small>Safari kann die Anmeldung über seine Passwortverwaltung ausfüllen. Falls kein Speichern angeboten wird, lege in der App „Passwörter“ einen Eintrag für ukamp.github.io mit deinen Parsec-Zugangsdaten an. Die Webseite selbst speichert Passwort und 2FA-Code nicht. Beide Felder werden nach jedem Versuch geleert. Mit „Angemeldet bleiben“ wird ausschließlich die Sitzungskennung auf diesem Gerät gespeichert. Ohne diese Option bleibt sie im Arbeitsspeicher dieses Tabs. Das Verwerfen der lokalen Sitzung widerruft eine serverseitige Sitzung bei Parsec nicht automatisch. Der Verbindungsbericht enthält ausschließlich technische Statusereignisse.</small>
 </p>
 </section>
 <section id="hostsPanel" hidden>
@@ -197,7 +199,7 @@
 <h2>Als App auf dem iPad öffnen</h2>
 <p>In Safari: Teilen → Zum Home-Bildschirm. Das App-Symbol öffnet diesen Client ohne die normale Safari-Adressleiste. iPadOS kann dennoch Systemleisten anzeigen.</p>
 <h3>Anmeldung ausfüllen lassen</h3>
-<p>Die Felder unterstützen Apples Passwort-Autofill. Falls Safari kein Speichern anbietet: in „Passwörter“ einen Eintrag für ukamp.github.io mit deinen Parsec-Zugangsdaten anlegen. Sitzungen bleiben nur im Arbeitsspeicher dieses Tabs.</p>
+<p>Die Felder unterstützen Apples Passwort-Autofill. Falls Safari kein Speichern anbietet: in „Passwörter“ einen Eintrag für ukamp.github.io mit deinen Parsec-Zugangsdaten anlegen. Mit „Angemeldet bleiben“ kannst du die Sitzung auf diesem Gerät speichern. „Sitzung hier verwerfen“ entfernt sie wieder.</p>
 <h3>Xbox-Controller</h3>
 <p>Am iPad koppeln, eine Taste drücken und unter „Einstellungen“ lokal prüfen. Die Belegung änderst du im Stream-Menü.</p>
 </section>

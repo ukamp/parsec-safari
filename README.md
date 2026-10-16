@@ -20,6 +20,6 @@ For a development checkout with the same pinned `vendor-src/` available, use `np
 
 ## Security and licensing
 
-Account credentials are sent directly to `https://kessel-api.parsec.app`; authentication/session values are never persisted by this app or included in reports. Only quality and controller preferences are stored locally. Use Safari/Apple Passwords for credential autofill. Page closure discards the local session; it does not revoke the server-side Parsec session.
+Account credentials are sent directly to `https://kessel-api.parsec.app`. Passwords and 2FA codes are never persisted or included in reports. The optional “Angemeldet bleiben” checkbox stores only the bearer session in localStorage for at most 30 days; Parsec can invalidate it sooner. Restored sessions are checked by loading the host list; HTTP 401/403 removes the saved session. Logout clears storage. Without opt-in, the session stays in memory. Use this option only on a trusted device: same-origin scripts can access localStorage. Quality and controller preferences are also stored locally. Use Safari/Apple Passwords for credential autofill. Clearing the local session does not revoke the server-side Parsec session.
 
 Historical vendor modules retain their MIT license at the published `app/LICENSE`. Protocol adaptations cite the independent MIT lowlat implementation at `7b4dc4ae79990ea8c59a108c80b3c89b695c3cb4`; see `app/LICENSE-lowlat`. No proprietary Parsec bundle is redistributed. New project source is MIT licensed; see [LICENSE](LICENSE).
