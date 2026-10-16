@@ -28,15 +28,15 @@ export class HostList {
       const title=this.doc.createElement('h3');
       title.textContent=host.name;
       const text=this.doc.createElement('p');
-      text.textContent=t('Von Parsec gemeldeter Computer');
+      text.textContent=t("text.computerReportedByParsec");
       const button=this.doc.createElement('button');
       button.type='button';
-      button.textContent=t('Verbinden');
-      button.setAttribute('aria-label',host.name+' · '+t('Verbinden'));
+      button.textContent=t("text.connect");
+      button.setAttribute('aria-label',host.name+' · '+t("text.connect"));
       button.onclick=()=>this.onConnect(host.peer_id);
       card.append(title,text,button);
       this.container.appendChild(card);
     }
-    if(!visible.length)this.container.textContent=this.hosts.length?t('Kein Computer passt zu deiner Suche.'):t('Keine Computer gemeldet. Prüfe, ob dein vorhandener Parsec-Host läuft.');
+    if(!visible.length)this.container.textContent=this.hosts.length?t("text.noComputersMatchYourSearch"):t("text.noComputersReportedCheckThatYourExistingParsecHost");
   }
 }

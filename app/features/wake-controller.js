@@ -8,11 +8,11 @@ export function setupWake({
     if(active&&!wakeController)wakeController=new ScreenAwake({
       status:state=>{
         const text={
-          active:t('Wachhalten aktiv – der Bildschirm bleibt während des sichtbaren Streams an.'),inactive:t('Wachhalten beendet.'),waiting:t('Wachhalten pausiert, solange die Seite nicht sichtbar ist.'),released:t('Safari hat das Wachhalten freigegeben. Mit „Wachhalten prüfen“ erneut versuchen.'),denied:t('Safari hat das Wachhalten nicht gewährt.'),unavailable:t('Dieser Browser bietet keine Screen-Wake-Lock-API.')
+          active:t("text.wakeLockActiveTheScreenStaysOnWhileThe"),inactive:t("text.wakeLockEnded"),waiting:t("text.wakeLockIsPausedWhileThePageIsHidden"),released:t("text.safariReleasedTheWakeLockUseTestScreenWake"),denied:t("text.safariDidNotGrantAWakeLock"),unavailable:t("text.thisBrowserDoesNotSupportTheScreenWakeLock")
         }[state];
         $('wakeStatus').textContent=text;
-        $('wakeBadge').textContent=state==='active'?t('Bildschirm bleibt an'):t('Wachhalten: ')+({
-          inactive:t('aus'),waiting:t('pausiert'),released:t('freigegeben'),denied:t('abgelehnt'),unavailable:t('nicht verfügbar')
+        $('wakeBadge').textContent=state==='active'?t("text.screenStaysOn"):t("text.wakeLock")+({
+          inactive:t("text.off2"),waiting:t("text.paused"),released:t("text.released"),denied:t("text.denied"),unavailable:t("text.unavailable")
         }[state]||state);
         diagnostic('wake-lock-'+state);
       }

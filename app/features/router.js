@@ -1,6 +1,6 @@
 import { t } from '../core/i18n.js';
 const titles={
-  computers:t('Deine Computer'),stream:t('Dein Stream'),settings:t('Einstellungen'),diagnostics:t('Diagnose'),help:t('Hilfe & Funktionen')
+  computers:t("computers.title"),stream:t("stream.title"),settings:t("navigation.settings"),diagnostics:t("navigation.diagnostics"),help:t("navigation.help")
 };
 export function createRouter(doc=document,win=window){
   function show(){

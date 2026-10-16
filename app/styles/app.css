@@ -244,7 +244,7 @@ select{
   min-height:48px
 }
 #streamMenuButton::after{
-  content:var(--menu-label," Menü")
+  content:var(--menu-label,"")
 }
 #screen.screen-expanded #streamMenuButton:hover,#screen.screen-expanded #streamMenuButton:focus-visible{
   opacity:1
@@ -487,3 +487,8 @@ input,select{
 
 }
 
+
+/* Avoid exposing unresolved translation markers while modules load. */
+html:not([data-localized]) .app-shell{
+  visibility:hidden
+}

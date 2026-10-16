@@ -7,7 +7,7 @@ export function setupGamepads({
 }){
   let padSettings=readPreference('parsec-pad-bindings-v1',defaultBindings(),normalizeBindings),menuOpen=false,bindingsReady=false,controllerMonitor=null,lastPadCounts='';
   function showGamepad(status){
-    $('gamepadStatus').textContent=!status.gamepads?t('Kein Controller erkannt. Am iPad koppeln und eine Controller-Taste drücken.'):!status.standardGamepads?t('Controller erkannt, aber ohne Standardbelegung. Eine passende Zuordnung ist noch erforderlich.'):status.paused?t('Controller-Eingaben pausiert.'):status.standardGamepads+t(' Standard-Gamepad(s) erkannt · ')+status.activeInputs+t(' aktive Eingaben.')+((status.pressedButtons||[]).length?t(' Tasten: ')+status.pressedButtons.map(i=>padLabels[i]+' → '+(padLabels[padSettings.buttons[i]]||t('Aus'))).join(', '):'');
+    $('gamepadStatus').textContent=!status.gamepads?t("text.noControllerDetectedPairItWithYourIPadAnd"):!status.standardGamepads?t("text.controllerDetectedWithoutStandardMappingACompatibleMappingIs"):status.paused?t("text.controllerInputPaused"):status.standardGamepads+t("text.standardGamepadSDetected")+status.activeInputs+t("text.activeInputs")+((status.pressedButtons||[]).length?t("text.buttons")+status.pressedButtons.map(i=>padLabels[i]+' → '+(padLabels[padSettings.buttons[i]]||t("text.off"))).join(', '):'');
     const key=status.gamepads+':'+status.standardGamepads;
     if(key!==lastPadCounts){
       lastPadCounts=key;
@@ -20,14 +20,14 @@ export function setupGamepads({
     if(controllerMonitor){
       controllerMonitor.destroy();
       controllerMonitor=null;
-      $('checkGamepad').textContent=t('Controller lokal prüfen');
+      $('checkGamepad').textContent=t("text.testControllerLocally");
       return;
     }
     controllerMonitor=new GamepadManager(()=>{
     },()=>{
     },()=>{
     },showGamepad);
-    $('checkGamepad').textContent=t('Controllerprüfung beenden');
+    $('checkGamepad').textContent=t("text.stopControllerTest");
   };
   window.addEventListener('pagehide',()=>controllerMonitor?.destroy());
   function setMenu(open){
@@ -60,9 +60,9 @@ export function setupGamepads({
     getClient()?.input.setBindings(padSettings);
     try{
       localStorage.setItem('parsec-pad-bindings-v1',JSON.stringify(padSettings));
-      $('bindingStatus').textContent=t('Controllerbelegung auf diesem Gerät gespeichert.');
+      $('bindingStatus').textContent=t("text.controllerMappingSavedOnThisDevice");
     }catch{
-      $('bindingStatus').textContent=t('Controllerbelegung nur für diesen Tab aktiv.');
+      $('bindingStatus').textContent=t("text.controllerMappingActiveOnlyInThisTab");
     }
   }
   function refreshBindings(){
@@ -87,7 +87,7 @@ export function setupGamepads({
       target++){
         const option=document.createElement('option');
         option.value=String(target);
-        option.textContent=target===-1?t('Nicht übertragen'):padLabels[target];
+        option.textContent=target===-1?t("text.doNotForward"):padLabels[target];
         select.appendChild(option);
       }
       select.onchange=()=>{

@@ -3,7 +3,7 @@
 The application is an independent static ES-module client. GitHub Pages serves it; there is no application backend and no additional Windows installation.
 
 - `app/application.js`: coordinates volatile account and connection state, request cancellation, host selection and teardown.
-- `app/core/i18n.js` and `translations.js`: German/English UI text, saved language override, English system detection, and initial static-shell translation. Remote host names are never translated; no DOM mutation observer is used. Language changes reload the app.
+- `app/core/i18n.js` and `translations.js`: German/English UI text, saved language override, English system detection, and explicit static-shell translation markers. The catalog maps stable English symbolic keys to `{de, en}` text pairs; application code calls `t(key)`, and HTML uses `{{key}}` markers. CI checks that every reference exists in both languages. Remote host names are never translated; no DOM mutation observer is used. Language changes reload the app.
 - `app/core/`: direct Parsec API transport, personal authentication, allowlisted diagnostics and validated local preferences.
 - `app/stream/`: signaling, WebRTC transport, binary control protocol, H.264 video, Opus audio and input translation. Keep these interfaces stable when changing UI.
 - `app/browser/`: fullscreen and screen wake lock, including denial and visibility handling.

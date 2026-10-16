@@ -50,7 +50,7 @@ export class FullscreenView {
     this.pending=false;
     this.mode=stage==='fullscreen-controller'?'controller':'viewport';
     this.notice.hidden=false;
-    this.notice.textContent=t('Bildschirmansicht · Browserleisten können sichtbar bleiben');
+    this.notice.textContent=t("text.expandedViewBrowserBarsMayRemainVisible");
     this.report(stage);
   }
   async leaveNative(){

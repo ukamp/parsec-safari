@@ -10,14 +10,14 @@ export function setupMediaTests({
     const client=getClient(),controller=getController();
     if(client||controller||$('localVideo').disabled)return;
     if(!window.VideoDecoder||!window.EncodedVideoChunk){
-      $('localResult').textContent=t('WebCodecs ist hier nicht verfügbar.');
+      $('localResult').textContent=t("text.webcodecsIsUnavailableHere");
       diagnostic('local-video-unavailable');
       return;
     }
     $('localCanvas').hidden=false;
     $('localVideo').disabled=true;
     $('start').disabled=true;
-    $('localResult').textContent=t('Synthetisches H.264-Bild wird decodiert …');
+    $('localResult').textContent=t("text.decodingASyntheticH264Image");
     let tester,timer;
     try{
       await new Promise((resolve,reject)=>{
@@ -27,10 +27,10 @@ export function setupMediaTests({
         tester.push(sample.buffer);
       });
       diagnostic('local-video-decoded',tester.snapshot());
-      $('localResult').textContent=t('Bestanden: H.264-Testbild decodiert und auf Canvas dargestellt. Keine Parsec-Verbindung getestet.');
+      $('localResult').textContent=t("text.passedH264TestImageDecodedAndDisplayedOn");
     }catch{
       diagnostic('local-video-failed');
-      $('localResult').textContent=t('Der lokale H.264-Decodiertest ist fehlgeschlagen. Bitte den Bericht herunterladen.');
+      $('localResult').textContent=t("text.theLocalH264DecoderTestFailedPleaseDownload");
     }
     finally{
       clearTimeout(timer);
@@ -43,7 +43,7 @@ export function setupMediaTests({
     const client=getClient(),controller=getController();
     if($('localAudio').disabled)return;
     $('localAudio').disabled=true;
-    $('audioResult').textContent=t('Opus-Testton wird vorbereitet …');
+    $('audioResult').textContent=t("text.preparingOpusTestTone");
     const active=client,player=active?.audioPlayer||new AudioPlayer((stage,metrics)=>diagnostic('local-'+stage,metrics));
     try{
       const running=await player.unlock();
@@ -54,10 +54,10 @@ export function setupMediaTests({
       await new Promise(resolve=>setTimeout(resolve,600));
       const metrics=player.snapshot();
       diagnostic('local-audio-summary',metrics);
-      $('audioResult').textContent=player.scheduledFrames>before?t('Opus-Testton decodiert und zur Ausgabe eingeplant. Bitte prüfen, ob du den kurzen Ton hörst.'):t('Kein Testton eingeplant. Bitte Bericht herunterladen.');
+      $('audioResult').textContent=player.scheduledFrames>before?t("text.opusTestToneDecodedAndScheduledForPlaybackPlease"):t("text.noTestToneWasScheduledPleaseDownloadTheReport");
     }catch{
       diagnostic('local-audio-failed',player.snapshot());
-      $('audioResult').textContent=t('Audiofreigabe oder Opus-Decodierung fehlgeschlagen. Bitte Bericht herunterladen.');
+      $('audioResult').textContent=t("text.audioUnlockOrOpusDecodingFailedPleaseDownloadThe");
     }
     finally{
       if(!active)player.destroy();

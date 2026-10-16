@@ -32,12 +32,12 @@ export function setupQuality({
     const saved=writePreference('parsec-quality-v1',quality),client=getClient();
     applyVolume();
     const applied=client?.updateQuality(streamConfig(quality));
-    $('qualityStatus').textContent=(saved?t('Auf diesem Gerät gespeichert. '):t('Nur in diesem Tab aktiv. '))+(client?(applied?t('Bitrate und Bildrate angefordert. Neue Auflösung gilt beim nächsten Verbinden.'):t('Stream noch nicht bereit; die Werte gelten beim nächsten Verbinden.')):t('Gilt beim nächsten Verbinden.'));
+    $('qualityStatus').textContent=(saved?t("text.savedOnThisDevice"):t("text.activeOnlyInThisTab"))+(client?(applied?t("text.bitrateAndFrameRateRequestedNewResolutionAppliesOn"):t("text.streamNotReadyYetTheseSettingsApplyOnThe")):t("text.appliesOnTheNextConnection"));
   };
   $('menuMute').onclick=()=>{
     muted=!muted;
     applyVolume();
-    $('menuMute').textContent=muted?t('Ton einschalten'):t('Stummschalten');
+    $('menuMute').textContent=muted?t("audio.unmute"):t("audio.mute");
     $('menuMute').setAttribute('aria-pressed',String(muted));
   };
   return {
