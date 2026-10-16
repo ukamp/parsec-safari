@@ -15,7 +15,7 @@ const settings=defaultBindings();input.setBindings(settings);settings.buttons[0]
 console.log('Menu input pause releases held keys, blocks canvas input, survives focus and copies remapping preferences before teardown.');
 
 let focused=true;document.hasFocus=()=>focused;const controllerVideo=target();let focusCalls=0,blurCalls=0;controllerVideo.focus=()=>focusCalls++;controllerVideo.setAttribute=()=>{};const text={tagName:'INPUT',type:'password',blur(){blurCalls++}};document.activeElement=text;
-const pad={connected:true,mapping:'standard',axes:[0,0,0,0],buttons:Array.from({length:17},()=>({value:0,pressed:false}))};Object.defineProperty(navigator,'getGamepads',{value:()=>[pad],configurable:true});const forwarded=[];const controllerInput=new Input(controllerVideo,buffer=>{const v=new DataView(buffer);forwarded.push([v.getUint8(12),v.getInt32(0),v.getInt32(4)])});controllerInput.attach();
+const pad={connected:true,mapping:'standard',axes:[0,0,0,0],buttons:Array.from({length:17},()=>({value:0,pressed:false}))};Object.defineProperty(navigator,'getGamepads',{value:()=>[pad],configurable:true});const forwarded=[],trace=[];const controllerInput=new Input(controllerVideo,buffer=>{const v=new DataView(buffer);forwarded.push([v.getUint8(12),v.getInt32(0),v.getInt32(4)])},()=>{},(stage,metrics)=>trace.push({stage,metrics}));controllerInput.attach();
 for(const mode of ['normal','native','webkit','viewport']){
  document.fullscreenElement=mode==='native'?{contains:element=>element===controllerVideo}:null;document.webkitFullscreenElement=mode==='webkit'?{contains:element=>element===controllerVideo}:null;controllerVideo.parentElement={classList:{contains:()=>mode==='viewport'}};
  forwarded.length=0;
@@ -25,5 +25,8 @@ for(const mode of ['normal','native','webkit','viewport']){
  assert.deepEqual(forwarded.filter(m=>m[0]===5&&m[1]===5),[[5,5,32767],[5,5,0],[5,5,32767],[5,5,0]],mode);
  assert.equal(focusCalls,0,mode);assert.equal(blurCalls,0,mode);assert.equal(document.activeElement,text,mode);
 }
+assert.equal(trace.filter(x=>x.stage==='controller-window-blur').at(-1).metrics.focusLosses,8);
+assert.equal(trace.filter(x=>x.stage==='controller-rt').at(-1).metrics.rtPresses,8);
+assert.equal(trace.filter(x=>x.stage==='controller-rt').at(-1).metrics.rtReleases,8);
 controllerInput.setPaused(true);window.events.focus();document.events.fullscreenchange();assert.equal(controllerInput.gamepad.paused,true);controllerInput.setPaused(false);document.hidden=true;document.events.visibilitychange();assert.equal(controllerInput.gamepad.paused,true);document.hidden=false;document.events.visibilitychange();assert.equal(controllerInput.gamepad.paused,false);controllerInput.detach();
 console.log('Double RT presses forward analog down/up without DOM focus or blur in normal/native/WebKit/controller views; menu/background still suspend.');

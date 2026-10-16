@@ -10,9 +10,14 @@ export class FullscreenView {
     this.pending=false;
     this.timer=null;
     this.operation=0;
+    this.mode=null;
     const changed=()=>{
+      if(this.mode==='switching'||this.mode==='exiting')return;
       const native=this.native();
       if(native===this.screen&&!this.expanded){
+        this.leaveNative();
+        return;
+      }if(native===this.screen&&this.mode!=='native'){
         this.leaveNative();
         return;
       }if(native===this.screen){
@@ -20,7 +25,7 @@ export class FullscreenView {
         this.pending=false;
         this.notice.hidden=true;
         this.report('fullscreen-native');
-      }else if(this.expanded&&!this.pending)this.restore();
+      }else if(this.expanded&&!this.pending&&this.mode==='native')this.restore();
     };
     doc.addEventListener('fullscreenchange',changed);
     doc.addEventListener('webkitfullscreenchange',changed);
@@ -42,16 +47,45 @@ export class FullscreenView {
     if(!this.expanded)return;
     clearTimeout(this.timer);
     this.pending=false;
+    this.mode=stage==='fullscreen-controller'?'controller':'viewport';
     this.notice.hidden=false;
     this.notice.textContent='Bildschirmansicht · Browserleisten können sichtbar bleiben';
     this.report(stage);
   }
   async leaveNative(){
     try{
+      if(this.native()!==this.screen)return true;
       if(this.doc.exitFullscreen)await this.doc.exitFullscreen();
       else if(this.doc.webkitExitFullscreen)this.doc.webkitExitFullscreen();
-    }catch{
+      // Safari's prefixed API returns before its fullscreen animation ends.
+      if(this.native()===this.screen)await new Promise(resolve=>{
+        const started=Date.now();
+        const timer=setInterval(()=>{
+          if(this.native()!==this.screen||Date.now()-started>=1800){
+            clearInterval(timer);
+            resolve();
+          }
+        },25);
+      });
+    }catch{}
+    return this.native()!==this.screen;
+  }
+  async controller(){
+    if(!this.expanded)return this.enter({native:false});
+    const operation=++this.operation;
+    this.pending=true;
+    this.mode='switching';
+    const left=await this.leaveNative();
+    if(operation!==this.operation)return;
+    if(!left){
+      this.pending=false;
+      this.mode='native';
+      this.report('fullscreen-exit-blocked');
+      return;
     }
+    // Keep the same opaque stream surface; no restore/re-entry flash.
+    this.fallback('fullscreen-controller');
+    this.canvas.focus({preventScroll:true});
   }
   isolateBackground(){
     this.background=[];
@@ -79,6 +113,7 @@ export class FullscreenView {
     this.scroll=[this.win.scrollX||0,this.win.scrollY||0];
     this.overflow=this.doc.body.style.overflow;
     this.pending=true;
+    this.mode=native?'native':'controller';
     this.expanded=true;
     this.doc.body.style.overflow='hidden';
     this.screen.classList.add('screen-expanded');
@@ -116,6 +151,7 @@ export class FullscreenView {
     clearTimeout(this.timer);
     this.pending=false;
     this.expanded=false;
+    this.mode=null;
     this.screen.classList.remove('screen-expanded');
     this.restoreBackground();
     this.exitButton.hidden=true;
@@ -131,12 +167,14 @@ export class FullscreenView {
     if(!this.expanded)return;
     this.operation++;
     this.pending=true;
-    try{
-      if(this.native()===this.screen){
-        if(this.doc.exitFullscreen)await this.doc.exitFullscreen();
-        else if(this.doc.webkitExitFullscreen)this.doc.webkitExitFullscreen();
+    if(this.native()===this.screen){
+      this.mode='exiting';
+      if(!await this.leaveNative()){
+        this.pending=false;
+        this.mode='native';
+        this.report('fullscreen-exit-blocked');
+        return;
       }
-    }catch{
     }
     this.restore();
   }

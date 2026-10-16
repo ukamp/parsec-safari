@@ -28,7 +28,7 @@ export class Client {
       if(this.connected)this.rtc?.send(buf,0);
     },status=>this.onEvent({
       type:'gamepad',status
-    }));
+    }),(stage,metrics)=>this.diagnostic(stage,metrics));
     this.visible=()=>{
       if(this.connected&&!document.hidden)this.rtc?.send(Msg.reinit(),0);
     };

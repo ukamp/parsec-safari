@@ -31,3 +31,24 @@ assert.equal(sibling.inert,true);assert.equal(sidebar.inert,true);assert.equal(a
 await isolated.view.exit();
 assert.equal(sibling.inert,false);assert.equal(sidebar.inert,false);assert.equal(alreadyInert.inert,true);
 console.log('Expanded view makes covered controls inert and restores their original state on exit.');
+
+// Safari's prefixed exit returns immediately; its event arrives later.
+const delayed=fixture('none');
+delayed.screen.webkitRequestFullscreen=()=>{delayed.doc.webkitFullscreenElement=delayed.screen;delayed.callbacks.webkitfullscreenchange();};
+delete delayed.doc.exitFullscreen;
+let finishExit;
+delayed.doc.webkitExitFullscreen=()=>{finishExit=()=>{delayed.doc.webkitFullscreenElement=null;delayed.callbacks.webkitfullscreenchange();};};
+await delayed.view.enter();
+const switching=delayed.view.controller();
+assert.equal(delayed.view.mode,'switching');
+assert.equal(delayed.classes.has('screen-expanded'),true);
+finishExit();await switching;
+assert.equal(delayed.view.mode,'controller');
+assert.equal(delayed.classes.has('screen-expanded'),true);
+assert.equal(delayed.doc.body.style.overflow,'hidden');
+delayed.callbacks.webkitfullscreenchange();delayed.callbacks.fullscreenchange();
+assert.equal(delayed.view.expanded,true);
+assert.equal(delayed.view.mode,'controller');
+await delayed.view.exit();
+assert.equal(delayed.doc.body.style.overflow,'auto');
+console.log('Delayed Safari exit and duplicate fullscreen events preserve controller view without rebuilding its surface.');

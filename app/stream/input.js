@@ -4,7 +4,12 @@ import { PadBindings,normalizeBindings } from './pad-bindings.js';
 import { GamepadManager } from './gamepad.js';
 export class Input {
   constructor(video,send,onGamepadStatus=()=>{
-  }){
+  },diagnostic=()=>{}){
+    this.diagnostic=diagnostic;
+    this.rtValues=[0,0,0,0];
+    this.rtPresses=0;
+    this.rtReleases=0;
+    this.focusLosses=0;
     this.paused=false;
     this.bindings=new PadBindings(send);
     this.onGamepadStatus=onGamepadStatus;
@@ -78,7 +83,12 @@ export class Input {
     this.on(v,'blur',()=>this.release());
     this.on(window,'blur',()=>{
       this.release();
+      this.focusLosses++;
+      this.reportController('controller-window-blur');
       this.syncGamepad();
+    });
+    this.on(document,'focusin',()=>{
+      if(!this.paused)this.reportController('controller-focus-changed');
     });
     this.on(window,'focus',()=>this.syncGamepad());
     this.on(document,'visibilitychange',()=>{
@@ -89,10 +99,28 @@ export class Input {
     // suspension and page visibility decide whether gamepads are forwarded.
     this.on(document,'fullscreenchange',()=>this.syncGamepad());
     this.on(document,'webkitfullscreenchange',()=>this.syncGamepad());
-    this.gamepad=new GamepadManager((i,b,value)=>this.bindings.button(i,b,value),(i,a,value)=>this.bindings.axis(i,a,value),i=>this.send(Msg.unplug(i)),this.onGamepadStatus,{
+    this.gamepad=new GamepadManager((i,b,value)=>{
+      if(b===7){
+        if(value>0&&!this.rtValues[i])this.rtPresses++;
+        if(!value&&this.rtValues[i]>0)this.rtReleases++;
+        this.rtValues[i]=value;
+        this.reportController('controller-rt');
+      }
+      this.bindings.button(i,b,value);
+    },(i,a,value)=>this.bindings.axis(i,a,value),i=>this.send(Msg.unplug(i)),this.onGamepadStatus,{
       paused:true
     });
     this.syncGamepad();
+  }
+  reportController(stage){
+    this.diagnostic(stage,{
+      rtPresses:this.rtPresses,rtReleases:this.rtReleases,
+      rtValue:Math.max(...this.rtValues),focusLosses:this.focusLosses,
+      pageFocused:document.hasFocus?.()??true,
+      focusTarget:document.activeElement===this.video?0:
+        /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName)?1:
+        document.activeElement?.tagName==='BUTTON'?2:3
+    });
   }
   syncGamepad(){
     if(this.paused||document.hidden){
