@@ -14,7 +14,7 @@ export class Client {
     this.connected=false;
     this.rtc=null;
     this.signal=null;
-    this.configured=false;this.hostVideoConfig=null;this.hostConfigured=false;this.explicitOutputForConnection=false;this.displayReadbackTimer=null;this.hostConfigRetryTimer=null;this.pendingDisplayChoice=null;
+    this.configured=false;this.hostVideoConfig=null;this.hostConfigured=false;this.explicitOutputForConnection=false;this.displayReadbackTimer=null;this.hostConfigRetryTimer=null;this.pendingDisplayChoice=null;this.startupDisplayChoice=null;this.displaysReceived=false;
     this.controlPackets=0;
     this.audioPackets=0;
     this.audioBytes=0;
@@ -57,7 +57,7 @@ export class Client {
       cfg.video_codec='h264';this.diagnostic('hevc-browser-unavailable');this.onEvent({type:'codec',state:'unavailable'});
     }
     if(this.closed)return;
-    this.config=cfg;this.hevcAttempt=cfg.video_codec==='hevc';this.fellBack=false;
+    this.config=cfg;this.startupDisplayChoice=typeof cfg.output==='string'&&cfg.output?cfg.output:null;this.hevcAttempt=cfg.video_codec==='hevc';this.fellBack=false;
     this.videoPlayer.setHevc(this.hevcAttempt);
     this.signal=new Signal(code=>this.destroy(code),stage=>this.once(stage));
     this.rtc=new RTC(peer,this.signal.getAttemptId(),candidate=>this.signal?.send(token,candidate),code=>this.destroy(code));
@@ -108,9 +108,9 @@ export class Client {
             this.reportDisplayMapping('-reply');
             this.emitDisplays();
             if(this.pendingDisplayChoice){const choice=this.pendingDisplayChoice;this.pendingDisplayChoice=null;this.selectDisplay(choice);}
-            else if(!this.hostConfigured){this.sendInitialSettings(true);}
+            else if(!this.restoreDisplayChoice()&&!this.hostConfigured){this.sendInitialSettings(true);}
           }
-          if(data?.displays){this.displays=data.displays;this.diagnostic('host-displays-received',{displayCount:this.displays.length});this.emitDisplays();if(this.hostVideoConfig&&!this.hostConfigured)this.sendInitialSettings(true);}
+          if(data?.displays){this.displays=data.displays;this.displaysReceived=true;this.diagnostic('host-displays-received',{displayCount:this.displays.length});this.emitDisplays();if(!this.restoreDisplayChoice()&&this.hostVideoConfig&&!this.hostConfigured)this.sendInitialSettings(true);}
         }
         else if(type===20)this.input.rumble(message.data0,message.data1,message.data2);
         else if(type===21){
@@ -170,6 +170,18 @@ export class Client {
       this.diagnostic('host-video-slot-'+i+suffix,{videoIndex:i,displayIndex:this.displays.findIndex(d=>d.id===slot.output)+1,selectedMatch:!!this.config?.output&&slot.output===this.config.output,width:slot.resolutionX,height:slot.resolutionY});
     }
   }
+  restoreDisplayChoice(){
+    const id=this.startupDisplayChoice;
+    if(!id||!this.displaysReceived)return false;
+    if(!this.displays.some(display=>display.id===id)){
+      this.startupDisplayChoice=null;this.diagnostic('saved-display-unavailable');return false;
+    }
+    if(!this.hostVideoConfig)return false;
+    // Consume before sending: delayed metadata must never replay the selection.
+    this.startupDisplayChoice=null;
+    const sent=this.selectDisplay(id);
+    this.diagnostic(sent?'saved-display-applied':'saved-display-send-failed');return sent;
+  }
   settingsConfig(){
     if(!this.explicitOutputForConnection)return null;
     if(!this.displays.some(display=>display.id===this.config?.output))return null;
@@ -220,6 +232,7 @@ export class Client {
   }
   selectDisplay(id){
     if(!this.connected||this.closed||!this.displays.some(display=>display.id===id))return false;
+    this.startupDisplayChoice=null;
     if(!this.hostVideoConfig){this.pendingDisplayChoice=id;this.diagnostic('display-selection-queued');this.onEvent({type:'host-config-pending'});return this.loadHostConfig();}
     const previous=this.config.output,previousExplicit=this.explicitOutputForConnection;
     this.config.output=id;this.explicitOutputForConnection=true;
@@ -247,7 +260,7 @@ export class Client {
   destroy(code=0) {
     if(this.closed)return;
     clearTimeout(this.displayReadbackTimer);this.displayReadbackTimer=null;
-    clearTimeout(this.hostConfigRetryTimer);this.hostConfigRetryTimer=null;this.pendingDisplayChoice=null;
+    clearTimeout(this.hostConfigRetryTimer);this.hostConfigRetryTimer=null;this.pendingDisplayChoice=null;this.startupDisplayChoice=null;
     this.diagnostic('audio-summary',this.audioPlayer.snapshot());
     this.diagnostic('video-summary',this.videoPlayer.snapshot());
     this.diagnostic('transport-summary',{

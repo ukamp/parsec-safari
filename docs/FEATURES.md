@@ -74,3 +74,8 @@ Manual display selection triggers one debounced settings GET. Actual video-size 
 
 ### 1.3.12 missing configuration recovery
 Display list without host video settings no longer silently rejects a choice: post-first-frame GET retries are bounded, choices queue until a real response, and missing metadata has a visible status. Wrong-monitor resizing remains unresolved.
+
+### 1.3.13 explicit display restoration
+User confirms manual monitor and resolution changes. Startup replays the saved output ID once after fresh list validation and host config arrival. No stored choice or missing ID means no automatic resize. Manual override wins. Windows monitor numbers are not inferred from list order.
+
+Remembered sessions are reloaded and validated after a Safari page-cache return; explicit logout still clears storage. Passwords and two-factor codes are never stored by the app. Lifecycle regression coverage includes return and logout.

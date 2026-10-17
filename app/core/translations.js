@@ -2,7 +2,7 @@
 export const translations={
 "display.configPending":{"de":"Monitorwahl vorgemerkt. Host-Konfiguration wird erneut angefordert; noch kein Wechsel gesendet.","en":"Display choice queued. Requesting host configuration again; no switch has been sent yet."},
 "display.configUnavailable":{"de":"Der Host antwortet nicht mit seiner Videokonfiguration. Monitorwahl noch nicht ausgeführt; Diagnosebericht prüfen.","en":"The host has not returned its video configuration. Display choice has not been applied; check the diagnostic report."},
-"display.explicitRequired":{"de":"Automatische Auflösungsänderung pausiert. Wähle den gewünschten Monitor in dieser Verbindung ausdrücklich aus; erst dann werden Monitor und Auflösung angefordert.","en":"Automatic resolution changes are paused. Explicitly select the desired display in this connection before display and resolution settings are requested."},
+"display.explicitRequired":{"de":"Wähle den gewünschten Monitor einmal ausdrücklich aus. Diese Monitor-ID wird beim nächsten Verbinden wiederverwendet. Ohne gültige gespeicherte Auswahl bleibt die Host-Auflösung unverändert.","en":"Select the desired display explicitly once. Its ID will be reused on the next connection. Without a valid saved selection, the host resolution is left unchanged."},
 "diagnostics.enableDetail":{"de":"Detailprotokoll aktivieren","en":"Enable detailed logging"},
 "diagnostics.recordingOn":{"de":"Detailprotokoll aktiv. Neue Ereignisse werden aufgezeichnet.","en":"Detailed logging is on. New events are being recorded."},
 "diagnostics.recordingOff":{"de":"Detailprotokoll aus. Keine neuen Logeinträge; Statusanzeigen bleiben aktiv.","en":"Detailed logging is off. No new log entries; status indicators remain active."},

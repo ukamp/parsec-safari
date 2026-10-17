@@ -323,7 +323,7 @@ $('resumeStream').onclick=()=>{if(session&&lastPeer&&!client&&reconnect.timer===
 $('download').onclick=()=>{
   client?.reportAudio();
   const blob=new Blob([JSON.stringify({
-    version:2,build:'1.3.12',experimental:true,diagnosticsEnabled:diagnostics.enabled(),events:diagnostics.events()
+    version:2,build:'1.3.13',experimental:true,diagnosticsEnabled:diagnostics.enabled(),events:diagnostics.events()
   },null,2)],{
     type:'application/json'
   }),url=URL.createObjectURL(blob),a=document.createElement('a');
@@ -359,8 +359,13 @@ $('probe').onclick=async()=>{
 window.addEventListener('hashchange',()=>client?.input.setPaused(window.location.hash!=='#stream'||gamepads.isMenuOpen()));
 
 // Validate a remembered session with Parsec before showing any hosts.
-session=sessionStore.load();
-if(session){$('remember').checked=true;controls();void hosts();}
+function restoreRememberedSession(){
+  if(session)return;
+  session=sessionStore.load();
+  if(session){$('remember').checked=true;controls();return hosts();}
+}
+void restoreRememberedSession();
+window.addEventListener('pageshow',event=>{if(event.persisted)return restoreRememberedSession();});
 
 document.addEventListener('visibilitychange',()=>{if(document.hidden)reconnect.stop();});
 

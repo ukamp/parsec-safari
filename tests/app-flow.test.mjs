@@ -7,7 +7,8 @@ function element(id) {
   return elements.get(id);
 }
 globalThis.document = { querySelectorAll(){return []}, currentScript: null, documentElement:{lang:'de'},addEventListener(){}, getElementById: element, createElement: tag => ({ tag, click() {},setAttribute(){},addEventListener(){}, appendChild() {} }) };
-globalThis.window = {location:{hash:''}, addEventListener() {} };
+const windowEvents=new Map();
+globalThis.window = {location:{hash:''}, addEventListener(name,handler) { windowEvents.set(name,handler); } };
 let mode = 'rejected';
 globalThis.fetch = async (url, options) => {
   if (mode === 'cancel') return new Promise((resolve, reject) => options.signal.addEventListener('abort', () => reject(new Error('aborted')), { once: true }));
@@ -56,6 +57,12 @@ assert.equal(element('start').disabled, true);
 assert.equal(element('email').value, '');
 assert.equal(element('password').value, '');
 assert.equal(element('tfa').value, '');
+windowEvents.get('pagehide')();
+assert.equal(element('authPanel').hidden,false);
+assert.equal(saved.size,1);
+await windowEvents.get('pageshow')({persisted:true});
+assert.equal(element('authPanel').hidden,true);
+assert.equal(element('logout').hidden,false);
 let reportBlob;
 const oldCreate = URL.createObjectURL;
 URL.createObjectURL = blob => { reportBlob = blob; return 'blob:synthetic-report'; };
@@ -64,6 +71,9 @@ const report = await reportBlob.text();
 for (const secret of ['person@example.invalid', 'synthetic-private-password', 'synthetic-private-session', '654321']) assert.equal(report.includes(secret), false);
 URL.createObjectURL = oldCreate;
 element('logout').onclick();
+assert.equal(saved.size,0);
+windowEvents.get('pagehide')();
+await windowEvents.get('pageshow')({persisted:true});
 assert.equal(saved.size,0);
 assert.equal(element('hostsPanel').hidden, true);
 assert.equal(element('authPanel').hidden,false);
