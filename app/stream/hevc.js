@@ -34,5 +34,5 @@ export function inspectHevc(bytes){
   return {codec,key,nals:units.length,units};
 }
 export async function supportsHevc(){
-  try{return !!(await globalThis.VideoDecoder?.isConfigSupported({codec:'hvc1.1.6.L93.B0',optimizeForLatency:true,hardwareAcceleration:'prefer-hardware'}))?.supported;}catch{return false;}
+  try{return !!(await globalThis.VideoDecoder?.isConfigSupported({codec:'hvc1.1.6.L93.B0',optimizeForLatency:true}))?.supported;}catch{return false;}
 }

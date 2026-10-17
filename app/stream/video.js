@@ -100,7 +100,7 @@ export class VideoPlayer {
       }
     });
     this.decoder.configure({
-      codec,optimizeForLatency:true,hardwareAcceleration:'prefer-hardware'
+      codec,optimizeForLatency:true
     });
     this.diag('video-decoder-configured');
   }
