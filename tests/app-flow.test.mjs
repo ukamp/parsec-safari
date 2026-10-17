@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 
 const elements = new Map();
 function element(id) {
-  if (!elements.has(id)) elements.set(id, { id, value: '', textContent: '', children: [], disabled: false, hidden: false, appendChild(child) { this.children.push(child); }, addEventListener() {}, removeAttribute() {}, focus() {}, click() {} });
+  if (!elements.has(id)) elements.set(id, { id, value: '', textContent: '', children: [], disabled: false, hidden: false, appendChild(child) { this.children.push(child); }, addEventListener() {}, setAttribute() {}, removeAttribute() {}, focus() {}, click() {} });
   return elements.get(id);
 }
-globalThis.document = { querySelectorAll(){return []}, currentScript: null, getElementById: element, createElement: tag => ({ tag, click() {}, appendChild() {} }) };
+globalThis.document = { querySelectorAll(){return []}, currentScript: null, documentElement:{lang:'de'},addEventListener(){}, getElementById: element, createElement: tag => ({ tag, click() {},setAttribute(){},addEventListener(){}, appendChild() {} }) };
 globalThis.window = {location:{hash:''}, addEventListener() {} };
 let mode = 'rejected';
 globalThis.fetch = async (url, options) => {

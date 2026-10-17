@@ -5,7 +5,7 @@ const {defaultBindings} = await import(asset('stream/pad-bindings.js'));
 function target(){return {events:{},addEventListener(type,fn){this.events[type]=fn;},removeEventListener(){},style:{},focus(){},getBoundingClientRect(){return {left:0,top:0,width:1280,height:720};},width:1280,height:720,setPointerCapture(){}};}
 globalThis.window=target();globalThis.document={...target(),hidden:false};Object.defineProperty(navigator,'getGamepads',{value:()=>[],configurable:true});
 const video=target(),messages=[];const input=new Input(video,b=>{const v=new DataView(b);messages.push([v.getUint8(12),v.getInt32(0),v.getInt32(4),v.getInt32(8)]);});
-input.attach();const key={code:'KeyA',preventDefault(){}};video.events.keydown(key);assert.deepEqual(messages.at(-1),[0,4,0,1]);input.setPaused(true);assert.deepEqual(messages.at(-1),[0,4,0,0]);let before=messages.length;video.events.keydown(key);video.events.pointerdown({isPrimary:true});window.events.focus();assert.equal(messages.length,before);assert.equal(input.gamepad.paused,true);
+input.attach();const key={code:'KeyA',preventDefault(){}};video.events.keydown(key);assert.deepEqual(messages.at(-1),[0,4,0,1]);input.setPaused(true);assert.ok(messages.some(m=>JSON.stringify(m)==='[0,4,0,0]'));assert.deepEqual(messages.at(-1),[24,0,0,0]);let before=messages.length;video.events.keydown(key);video.events.pointerdown({isPrimary:true});window.events.focus();assert.equal(messages.length,before);assert.equal(input.gamepad.paused,true);
 input.setPaused(false);video.events.keydown(key);assert.deepEqual(messages.at(-1),[0,4,0,1]);
 let tabPrevented=false;
 video.events.keydown({code:'Tab',preventDefault(){tabPrevented=true;}});
@@ -30,3 +30,15 @@ assert.equal(trace.filter(x=>x.stage==='controller-rt').at(-1).metrics.rtPresses
 assert.equal(trace.filter(x=>x.stage==='controller-rt').at(-1).metrics.rtReleases,8);
 controllerInput.setPaused(true);window.events.focus();document.events.fullscreenchange();assert.equal(controllerInput.gamepad.paused,true);controllerInput.setPaused(false);document.hidden=true;document.events.visibilitychange();assert.equal(controllerInput.gamepad.paused,true);document.hidden=false;document.events.visibilitychange();assert.equal(controllerInput.gamepad.paused,false);controllerInput.detach();
 console.log('Double RT presses forward analog down/up without DOM focus or blur in normal/native/WebKit/controller views; menu/background still suspend.');
+const blockedInput=new Input(target(),()=>{});blockedInput.attach();
+blockedInput.setBlocked(true);assert.equal(blockedInput.gamepad.paused,true);
+blockedInput.setPaused(true);blockedInput.setBlocked(false);assert.equal(blockedInput.gamepad.paused,true);
+blockedInput.setPaused(false);assert.equal(blockedInput.gamepad.paused,false);blockedInput.detach();
+console.log('Host input blocking and menu suspension are independent and cannot resume each other.');
+let effects=[];const actuator={playEffect:(type,value)=>{effects.push({type,value});return Promise.resolve();},reset:()=>Promise.resolve()};
+Object.defineProperty(navigator,'getGamepads',{value:()=>[{vibrationActuator:actuator}],configurable:true});
+const hapticInput=new Input(target(),()=>{});hapticInput.configurePointer({rumble:true});
+hapticInput.rumble(0,65535,32768);assert.equal(effects.length,1);assert.equal(effects[0].value.duration,120);assert.equal(effects[0].value.strongMagnitude,1);
+hapticInput.rumble(7,65535,0);hapticInput.rumble(0,-1,0);assert.equal(effects.length,1);
+hapticInput.paused=true;hapticInput.rumble(0,65535,0);assert.equal(effects.length,1);
+console.log('Host rumble is opt-in, range-checked, bounded and suspended with input.');

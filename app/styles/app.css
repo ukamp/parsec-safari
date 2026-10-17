@@ -492,3 +492,14 @@ input,select{
 html:not([data-localized]) .app-shell{
   visibility:hidden
 }
+
+input[type=checkbox]{width:auto;min-height:24px}
+#videoViewport{overflow:hidden;width:100%;background:#000}
+#screen.screen-expanded #videoViewport{width:100%;height:100%}
+#video{transform-origin:center center}
+#friends{white-space:pre-wrap;overflow-wrap:anywhere}
+
+#keyboardPanel{position:absolute;z-index:6;bottom:0;left:0;right:0;max-height:55%;overflow:auto;background:#102524f5;padding:12px max(12px,env(safe-area-inset-left)) max(12px,env(safe-area-inset-bottom))}
+#keyboardText{width:100%;font:inherit;color:inherit;background:#142c27;border:1px solid #6e8a80;border-radius:8px}
+#specialKeys{display:flex;flex-wrap:wrap;gap:4px}
+#specialKeys button[aria-pressed=true]{outline:2px solid #ffffff;background:#6ac49b}

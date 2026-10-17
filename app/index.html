@@ -20,7 +20,7 @@
 <aside class="sidebar">
 <a class="brand" href="#computers">
 <span class="brand-mark">P</span> Parsec Safari</a>
-<span class="edition">COMMUNITY CLIENT · 1.0.0</span>
+<span class="edition">COMMUNITY CLIENT · 1.1.0</span>
 <nav aria-label="Hauptnavigation">
 <a href="#computers" data-page="computers">{{navigation.computers}}</a>
 <a href="#stream" data-page="stream">Stream</a>
@@ -67,18 +67,29 @@
 <h2>{{computers.title}}</h2>
 <p>{{text.yourExistingWindowsParsecHostMustBeRunningAnd}}</p>
 <button id="refresh" type="button">{{text.refreshHosts}}</button>
+<p id="hostsUpdated" role="status"></p>
 <label for="hostSearch">{{text.searchComputers}}</label>
 <input id="hostSearch" type="search" placeholder="{{computers.searchPlaceholder}}">
 <div id="hosts">
 </div>
+</section>
+<section id="accountPanel" hidden>
+<h2>{{account.title}}</h2>
+<p id="accountInfo"></p>
+<button id="accountRefresh" type="button">{{account.refresh}}</button>
+<h3>{{friends.title}}</h3>
+<pre id="friends"></pre>
+<p>{{account.apiHelp}}</p>
 </section>
 </div>
 <div data-view="stream" hidden>
 <section>
 <h2>{{stream.title}}</h2>
 <div id="screen">
+<div id="videoViewport">
 <canvas id="video" width="1280" height="720" tabindex="0" aria-label="{{text.remoteScreen}}">
 </canvas>
+</div>
 <button id="streamMenuButton" type="button" tabindex="-1" aria-label="{{stream.openMenu}}" aria-controls="streamMenu" aria-expanded="false">☰</button>
 <div id="streamMenu" inert role="region" aria-label="{{text.parsecWebClientMenu}}" hidden>
 <h2>{{text.parsecMenu}}</h2>
@@ -87,6 +98,7 @@
 <button id="exitFullscreen" type="button" hidden>{{stream.leaveView}}</button>
 <button id="menuFullscreen" type="button">{{text.toggleFullscreen}}</button>
 <button id="controllerFullscreen" type="button">{{stream.controllerView}}</button>
+<button id="showKeyboard" type="button">{{keyboard.show}}</button>
 <details id="homeScreenHelp">
 <summary>{{install.addToHomeScreen}}</summary>
 <p>{{text.openParsecSafariAsAnAppWithoutTheUsual}}</p>
@@ -101,6 +113,24 @@
 <p>{{text.ifRTOpensTheKeyboardInSafariFullscreenChoose}}</p>
 <button id="menuMute" type="button">{{audio.mute}}</button>
 <button id="menuDisconnect" type="button" disabled>{{stream.disconnect}}</button>
+<label>{{display.title}} <select id="displaySelection" disabled></select></label>
+<p id="displayStatus">{{display.waiting}}</p>
+<button id="pip" type="button">{{pip.show}}</button>
+<p id="pipStatus">{{pip.help}}</p>
+<details>
+<summary>{{pointer.title}}</summary>
+<label>{{pointer.mode}} <select id="pointerMode"><option value="direct">{{pointer.direct}}</option><option value="touchpad">{{pointer.touchpad}}</option></select></label>
+<label><input id="allowRumble" type="checkbox"> {{controller.allowRumble}}</label>
+<label>{{pointer.sensitivity}} <input id="pointerSensitivity" type="range" min="0.25" max="3" step="0.25" value="1"></label>
+<p>{{pointer.gestures}}</p>
+<label>{{pointer.zoom}} <input id="streamZoom" type="range" min="1" max="3" step="0.05" value="1"></label>
+<span id="zoomStatus">100%</span>
+<label>{{pointer.panX}} <input id="panX" type="range" min="-50" max="50" value="0"></label>
+<label>{{pointer.panY}} <input id="panY" type="range" min="-50" max="50" value="0"></label>
+<button id="resetZoom" type="button">{{pointer.resetZoom}}</button>
+<button id="pointerLock" type="button">{{pointer.lock}}</button>
+<p id="pointerLockStatus" role="status"></p>
+</details>
 <p id="streamStats" role="status">{{stream.noActiveStream}}</p>
 <p>{{text.inputToYourPCIsPausedWhileThisMenu}}</p>
 <details id="padSettings">
@@ -120,6 +150,14 @@
 <p id="bindingStatus" role="status">{{text.xboxDefaultsActive}}</p>
 </details>
 </div>
+<div id="keyboardPanel" hidden>
+<button id="closeKeyboard" type="button">{{keyboard.close}}</button>
+<label for="keyboardText">{{keyboard.text}}</label>
+<textarea id="keyboardText" maxlength="256" autocorrect="off" autocomplete="off" autocapitalize="off" spellcheck="false" rows="1"></textarea>
+<div id="specialKeys"></div>
+<p id="keyboardStatus" role="status">{{keyboard.layoutHelp}}</p>
+</div>
+<video id="pipVideo" muted playsinline hidden style="position:absolute;bottom:8px;right:8px;width:160px;z-index:2"></video>
 <p id="fullscreenNotice" hidden>
 </p>
 <p id="wakeBadge">{{text.screenWakeLockRequestedWhenStreamingStarts}}</p>
@@ -137,6 +175,10 @@
 <div data-view="settings" hidden>
 <section>
 <h2>{{text.streamSettings}}</h2>
+<label><input id="autoReconnect" type="checkbox"> {{connection.autoReconnect}}</label>
+<label><input id="controllerSafe" type="checkbox"> {{stream.controllerSafe}}</label>
+<p>{{stream.controllerSafeHelp}}</p>
+<label><input id="showAvatars" type="checkbox"> {{account.showAvatars}}</label>
 <label for="language">{{settings.language}}</label>
 <select id="language"><option value="de">{{language.german}}</option><option value="en">{{language.english}}</option></select>
 <p>{{text.changingLanguageReloadsTheAppAndDisconnectsAnyActive}}</p>
@@ -157,12 +199,23 @@
 </select>
 </label>
 <label>{{text.resolution}}<select id="resolution">
+<option value="1024x768">1024 × 768</option>
 <option value="1280x720">1280 × 720</option>
+<option value="1280x800">1280 × 800</option>
+<option value="1366x768">1366 × 768</option>
+<option value="1600x900">1600 × 900</option>
+<option value="1680x1050">1680 × 1050</option>
 <option value="1920x1080">1920 × 1080</option>
 <option value="1920x1200">1920 × 1200</option>
 <option value="2560x1440">2560 × 1440</option>
+<option value="2560x1600">2560 × 1600</option>
+<option value="3440x1440">3440 × 1440</option>
+<option value="3840x2160">3840 × 2160</option>
 </select>
 </label>
+<label><input id="constantFps" type="checkbox"> {{quality.constantFps}}</label>
+<label><input id="startMuted" type="checkbox"> {{quality.startMuted}}</label>
+<label><input id="rememberStream" type="checkbox"> {{quality.rememberStream}}</label>
 <label>{{text.volume}}<input id="volume" type="range" min="0" max="100" value="100">
 </label>
 <button type="submit">{{text.applySettings}}</button>
@@ -185,6 +238,9 @@
 </section>
 </div>
 <div data-view="diagnostics" hidden>
+<section><h2>{{capabilities.title}}</h2>
+<button id="capabilityCheck" type="button">{{capabilities.check}}</button>
+<pre id="capabilityStatus">{{capabilities.protocolLimits}}</pre></section>
 <section>
 <h2>{{diagnostics.apiTitle}}</h2>
 <button id="probe" type="button">{{diagnostics.testApiAccess}}</button>

@@ -1,4 +1,6 @@
-# Feature status — 1.0.0 (2026-10-16)
+# Feature status — 1.1.0 (2026-10-17)
+
+See [the 1.1.0 implementation matrix](IMPLEMENTATION-1.1.md) for current selected-feature details and explicit blocked capabilities.
 
 This project is not affiliated with Parsec. Full parity with the official web client is a goal, not the current release status.
 
@@ -14,7 +16,7 @@ Reference: [official web-app guide](https://support.parsec.app/hc/en-us/articles
 | Video | H.264 / WebCodecs | Owner confirmed real iPad streaming on prior release; refactor retains wire format and decoder, regression fixtures |
 | Audio | Opus / native or WASM | Owner confirmed sound on prior release; real synthetic WASM decoding test |
 | Xbox controller | Standard mapping + remap | Wire indices, trigger ranges, release and remapping tested; owner reports intermittent RT focus loss, mainly in native fullscreen; unresolved on physical iPad |
-| Touch pointer and keyboard | Implemented | Canvas-focused keyboard; input pauses in menus, on background and outside stream view |
+| Touch / keyboard / zoom | Implemented with limits | Direct/touchpad, gestures, zoom, ASCII text and special keys; hardware/iPad validation pending |
 | Fullscreen / Controller view | Native API + non-native expanded view | Delayed Safari exit and duplicate-event tests; switching keeps the stream surface. OS bars/window frames may remain; physical rendering still needs validation |
 | Screen wake lock | Implemented | API denial/release/visibility tests; browser/OS may revoke |
 | Quality presets / volume | Implemented | Local validation; bitrate/FPS request can be sent during stream; host decides actual quality; resolution requested on next connection |
@@ -23,11 +25,13 @@ Reference: [official web-app guide](https://support.parsec.app/hc/en-us/articles
 | Diagnostics | Implemented | Bounded, rate-limited local history/export; API check and local codec tests under Diagnostics; RT/focus counters; exact timestamps mean not fully anonymous |
 | Navigation / stream menu | Implemented | Translucent top-right menu; disconnect both in menu and below stream; leave-view action inside menu |
 | Root hosting / old links | Implemented | Site root serves app; /app/, /personal-test/, /client/ redirect with query/hash; capability test under /compatibility/ |
-| Friends and friend requests | Open | No verified API adapter yet |
+| Account profile / friends | Read-only, conditional | /me and /friendships; unavailable and stale-session handling; live API/Safari validation pending |
+| Friend requests | Open | No verified mutation contract |
 | Teams / SAML SSO | Open | Official matrix lists it; requires verified authentication integration and account entitlement |
-| Monitor switching | Open | Official web feature; no verified host metadata / control adapter yet |
+| Monitor switching | Conditional / experimental | Enabled only after valid host display data; sends observed output ID; physical confirmation pending |
 | H.265 | Open | Do not advertise until packet framing and Safari configurations are tested |
-| Clipboard / shared links / rumble | Open | Requires separately verified browser, protocol and permission behavior |
+| Rumble | Conditional / experimental | Opt-in bounded pulses for observed host events and available actuator |
+| Clipboard / shared links | Open | Remote protocol not verified |
 | Microphone / camera / extra screens / enhanced pen | Not in baseline | Not listed as supported by official web matrix; would require additional browser/host integration |
 
 ## Roadmap

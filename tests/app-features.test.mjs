@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import {asset} from './helpers.mjs';
 const {normalizeQuality,streamConfig,readPreference,writePreference}=await import(asset('core/preferences.js'));
-assert.deepEqual(normalizeQuality({bitrate:999,frameRate:120,resolution:'oops',volume:-5}),{bitrate:8,frameRate:60,resolution:'1280x720',volume:100});
-assert.deepEqual(streamConfig({bitrate:20,frameRate:30,resolution:'1920x1200',volume:40}),{encoder_bitrate:20,encoder_fps:30,server_resolution_x:1920,server_resolution_y:1200});
+assert.deepEqual(normalizeQuality({bitrate:999,frameRate:120,resolution:'oops',volume:-5}),{bitrate:8,frameRate:60,resolution:'1280x720',volume:100,constantFps:false});
+assert.deepEqual(streamConfig({bitrate:20,frameRate:30,resolution:'1920x1200',volume:40}),{encoder_bitrate:20,encoder_fps:30,server_resolution_x:1920,server_resolution_y:1200,full_fps:false});
 globalThis.localStorage={getItem(){return '{invalid';},setItem(){throw Error('denied');}};assert.equal(readPreference('test',5),5);assert.equal(writePreference('test',5),false);
 const {createApi}=await import(asset('core/api.js'));const abort=new AbortController();abort.abort();let options;const api=createApi(()=>abort.signal,async(url,opts)=>{options=opts;assert.ok(url.startsWith('https://kessel-api.parsec.app/'));return {status:200,json:async()=>({data:[]})};});await api('/v2/hosts');assert.equal(options.signal.aborted,true);assert.equal(options.cache,'no-store');assert.equal(options.credentials,'omit');await assert.rejects(()=>api('//other.invalid/'));
 const {createDiagnostics}=await import(asset('core/diagnostics.js'));const elements={status:{},log:{}};const diag=createDiagnostics(id=>elements[id]);for(let i=0;i<400;i++)diag.diagnostic('stage-'+i,{decoded:i,password:'secret',hostCode:-8});const events=diag.events();assert.equal(events.length,300);assert.equal(JSON.stringify(events).includes('secret'),false);diag.diagnostic('stage-399',{decoded:888});assert.equal(diag.events().length,300);

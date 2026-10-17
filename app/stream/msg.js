@@ -19,14 +19,15 @@ export function init(cfg={
   return text(11,0,JSON.stringify({
     _version:1,_max_w:60000,_max_h:60000,_flags:0,
     resolutionX:cfg.server_resolution_x||1280,resolutionY:cfg.server_resolution_y||720,
-    mediaContainer:0,refreshRate:60
+    mediaContainer:0,refreshRate:cfg.encoder_fps||60
   }));
 }
 export function config(cfg={
 }) {
   return text(17,11,JSON.stringify({
     video:[{
-      encoderMaxBitrate:cfg.encoder_bitrate||8,encoderFPS:cfg.encoder_fps||60,fullFPS:false
+      encoderMaxBitrate:cfg.encoder_bitrate||8,encoderFPS:cfg.encoder_fps||60,fullFPS:cfg.full_fps===true,
+      ...(typeof cfg.output==='string'?{output:cfg.output}:{})
     }]
   }));
 }

@@ -7,7 +7,10 @@ The application is an independent static ES-module client. GitHub Pages serves i
 - `app/core/`: direct Parsec API transport, personal authentication, allowlisted diagnostics and validated local preferences.
 - `app/stream/`: signaling, WebRTC transport, binary control protocol, H.264 video, Opus audio and input translation. Keep these interfaces stable when changing UI.
 - `app/browser/`: fullscreen and screen wake lock, including denial and visibility handling.
-- `app/features/`: computer cards/search, router, quality profiles, stream statistics, gamepad/menu UI and isolated local media tests.
+- `app/features/`: host metadata/account API views, router, quality/playback preferences, stream statistics, gamepad/menu UI, zoom/pointer controls, deliberate software keyboard, browser capability checks and isolated local media tests.
+- `app/core/reconnect.js`: bounded retries for known local network failures; cancellation invalidates pending callbacks.
+- `app/stream/touch.js`: independent pointer gesture state machine; cancellation releases any drag.
+- `app/stream/host-data.js`: bounded display-list parsing; untrusted user-data text is never logged.
 - `app/styles/`: responsive app layout and stream overlay styles.
 - `tests/`: hardware-independent regression tests against the built artifact. Includes real legacy WASM Opus decoding; video decoding and remote peers are mocked where noted.
 - `scripts/build-app.py`: copies versioned source assets, adds the pinned MIT enum/Opus vendor modules, validates imports/syntax, and writes compatibility redirects. No application source or tests are embedded in Python.
@@ -29,3 +32,7 @@ Implement a protocol/API adapter first, add measured fixtures, and then expose a
 ## Entry points
 
 The site root is the product interface. `/app/`, `/personal-test/` and `/client/` redirect to it, preserving query strings and hashes. `/compatibility/` retains the standalone Safari diagnosis. The manifest keeps the former `/app/` identity so installed apps can migrate while the scope and start URL move to the site root.
+
+## 1.1.0 capability boundaries
+
+See [the implementation matrix](IMPLEMENTATION-1.1.md). Conditional display/Rumble/PiP support never implies current host or iPad support. H.265 decoding capability is reported separately from the unsupported H.265 stream pipeline. The local report still excludes host/account/friend values and network candidates.

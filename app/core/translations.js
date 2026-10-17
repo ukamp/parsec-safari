@@ -413,12 +413,12 @@ export const translations={
     "en": "Independent, experimental client. The user has confirmed video and audio on iPad. This is not an official Parsec app."
   },
   "text.includedPersonalSignInWith2FAComputerListAnd": {
-    "de": "Enthalten: persönliche Anmeldung mit 2FA, Computerliste und Suche, H.264-Streaming, Opus-Ton, Touch-Maus, Tastatur, Xbox-Belegung, Vollbild, Wachhalten, Qualitätseinstellungen, Live-Statistik und Diagnose.",
-    "en": "Included: personal sign-in with 2FA, computer list and search, H.264 streaming, Opus audio, touch mouse, keyboard, Xbox remapping, fullscreen, wake lock, quality settings, live statistics and diagnostics."
+    "de": "Enthalten: Anmeldung mit 2FA, optionale Kontodaten und Freundesliste, Hostdetails, H.264/Opus, Touchpad und Gesten, Zoom, Sondertasten, Controllerbelegung, bedingte Monitorauswahl, kurze Vibration, Wiederverbindung, Wachhalten und Diagnose. API-, Host- und Browser-Unterstützung werden benötigt.",
+    "en": "Included: sign-in with 2FA, optional account/friend lists, host details, H.264/Opus, touchpad and gestures, zoom, special keys, controller mapping, conditional monitor selection, short vibration, reconnect, wake lock and diagnostics. API, host and browser support are required."
   },
   "text.notYetAvailableFriendsTeamsSSOMonitorSwitchingClipboard": {
-    "de": "Noch offen: Freundeverwaltung, Teams/SSO, Monitorwechsel, Zwischenablage, H.265 und Rumble. Diese Funktionen werden erst mit nachgewiesener API- und Protokollunterstützung ergänzt.",
-    "en": "Not yet available: friends, Teams/SSO, monitor switching, clipboard, H.265 and rumble. These require verified API and protocol support."
+    "de": "Noch offen: Freundschaftsanfragen, serverseitiger Sitzungswiderruf, Teams/SSO, Remote-Zwischenablage und H.265. Der RT-Fokusverlust ist nicht nachweislich behoben; die Controlleransicht umgeht natives Safari-Vollbild.",
+    "en": "Still open: friend requests, server-side session revocation, Teams/SSO, remote clipboard and H.265. RT focus loss is not confirmed fixed; Controller view avoids native Safari fullscreen."
   },
   "text.officialWebClient": {
     "de": "Offizieller Webclient",
@@ -811,5 +811,269 @@ export const translations={
   "language.english": {
     "de": "Englisch",
     "en": "English"
+  },
+  "connection.retrying": {
+    "de": "Wiederverbindung, Versuch",
+    "en": "Reconnecting, attempt"
+  },
+  "connection.autoReconnect": {
+    "de": "Bei Netzwerkfehlern automatisch wiederverbinden (max. 3 Versuche)",
+    "en": "Reconnect after network failures (up to 3 attempts)"
+  },
+  "stream.controllerSafe": {
+    "de": "Controllerfreundliche Vollansicht auf dem iPad bevorzugen",
+    "en": "Prefer controller-safe expanded view on iPad"
+  },
+  "stream.controllerSafeHelp": {
+    "de": "Vermeidet natives Safari-Vollbild, in dem RT Fokusprobleme verursachen kann. iPadOS-Leisten können sichtbar bleiben. Dies ist eine Umgehung, kein bestätigter Safari-Fix.",
+    "en": "Avoids native Safari fullscreen, where RT can cause focus problems. iPadOS bars may remain visible. This is a workaround, not a confirmed Safari fix."
+  },
+  "stream.controllerSafeActive": {
+    "de": "Controlleransicht statt nativem Safari-Vollbild aktiviert, um RT-Probleme zu umgehen.",
+    "en": "Controller view opened instead of native Safari fullscreen to avoid RT issues."
+  },
+  "account.title": {
+    "de": "Dein Konto",
+    "en": "Your account"
+  },
+  "account.loading": {
+    "de": "Wird geladen …",
+    "en": "Loading …"
+  },
+  "account.refresh": {
+    "de": "Konto und Freunde aktualisieren",
+    "en": "Refresh account and friends"
+  },
+  "account.unavailable": {
+    "de": "Diese API-Funktion ist für diese Sitzung nicht verfügbar.",
+    "en": "This API feature is unavailable for this session."
+  },
+  "account.networkUnavailable": {
+    "de": "Die API-Antwort ist nicht lesbar. Netzwerk oder Browserfreigabe prüfen.",
+    "en": "The API response is unreadable. Check the network or browser access."
+  },
+  "account.apiHelp": {
+    "de": "Diese Listen verwenden lesende Parsec-Aufrufe. Nicht verfügbare Funktionen werden angezeigt; Konto- und Freundesdaten gelangen nicht in den Diagnosebericht.",
+    "en": "These lists use read-only Parsec requests. Unavailable features are shown; account and friend data are not included in diagnostic reports."
+  },
+  "account.showAvatars": {
+    "de": "Profilbilder der Hostbesitzer von Parsec laden",
+    "en": "Load host owners' profile images from Parsec"
+  },
+  "friends.title": {
+    "de": "Freunde",
+    "en": "Friends"
+  },
+  "friends.empty": {
+    "de": "Keine Freunde gemeldet.",
+    "en": "No friends reported."
+  },
+  "hosts.onlineReported": {
+    "de": "Von Parsec als online gemeldet",
+    "en": "Reported online by Parsec"
+  },
+  "hosts.offlineReported": {
+    "de": "Von Parsec als offline gemeldet",
+    "en": "Reported offline by Parsec"
+  },
+  "hosts.statusUnknown": {
+    "de": "Online-Status nicht gemeldet",
+    "en": "Online status not reported"
+  },
+  "hosts.build": {
+    "de": "Host-Version",
+    "en": "Host version"
+  },
+  "hosts.updatedAt": {
+    "de": "Zuletzt erfolgreich aktualisiert:",
+    "en": "Last successfully refreshed:"
+  },
+  "quality.constantFps": {
+    "de": "Konstante FPS beim Host anfordern",
+    "en": "Request constant FPS from the host"
+  },
+  "quality.startMuted": {
+    "de": "Neue Verbindungen stumm starten",
+    "en": "Start new connections muted"
+  },
+  "quality.rememberStream": {
+    "de": "Letzte Stream-Einstellungen und Stummschaltung merken",
+    "en": "Remember stream settings and mute state"
+  },
+  "pointer.title": {
+    "de": "Touch, Zoom und Maus",
+    "en": "Touch, zoom and mouse"
+  },
+  "pointer.mode": {
+    "de": "Touch-Modus",
+    "en": "Touch mode"
+  },
+  "pointer.direct": {
+    "de": "Direkte Touch-Maus",
+    "en": "Direct touch mouse"
+  },
+  "pointer.touchpad": {
+    "de": "Touchpad",
+    "en": "Touchpad"
+  },
+  "pointer.sensitivity": {
+    "de": "Mausempfindlichkeit",
+    "en": "Mouse sensitivity"
+  },
+  "pointer.gestures": {
+    "de": "Kurz tippen: Linksklick. Lang drücken und bewegen: Ziehen. Mit zwei Fingern tippen: Rechtsklick. Mit zwei Fingern verschieben: Scrollen. Finger auseinanderziehen: Zoom.",
+    "en": "Tap: left click. Hold and move: drag. Two-finger tap: right click. Move two fingers: scroll. Pinch: zoom."
+  },
+  "pointer.zoom": {
+    "de": "Bild vergrößern",
+    "en": "Zoom image"
+  },
+  "pointer.panX": {
+    "de": "Bildausschnitt horizontal",
+    "en": "Horizontal view position"
+  },
+  "pointer.panY": {
+    "de": "Bildausschnitt vertikal",
+    "en": "Vertical view position"
+  },
+  "pointer.resetZoom": {
+    "de": "Zoom zurücksetzen",
+    "en": "Reset zoom"
+  },
+  "pointer.lock": {
+    "de": "Relative Maus aktivieren",
+    "en": "Enable relative mouse"
+  },
+  "pointer.unavailable": {
+    "de": "Pointer Lock wird hier nicht unterstützt oder es besteht keine Verbindung.",
+    "en": "Pointer Lock is unavailable here or no stream is connected."
+  },
+  "pointer.locked": {
+    "de": "Relative Maus aktiv. Zum Beenden Escape drücken.",
+    "en": "Relative mouse active. Press Escape to leave."
+  },
+  "pointer.requested": {
+    "de": "Relative Maus angefordert. Der Browser entscheidet über die Freigabe.",
+    "en": "Relative mouse requested. The browser decides whether to grant it."
+  },
+  "pointer.denied": {
+    "de": "Der Browser hat die relative Maus nicht freigegeben.",
+    "en": "The browser did not grant relative mouse control."
+  },
+  "pointer.unlocked": {
+    "de": "Relative Maus beendet.",
+    "en": "Relative mouse ended."
+  },
+  "keyboard.show": {
+    "de": "Tastatur und Sondertasten öffnen",
+    "en": "Open keyboard and special keys"
+  },
+  "keyboard.close": {
+    "de": "Tastatur schließen",
+    "en": "Close keyboard"
+  },
+  "keyboard.text": {
+    "de": "Text an den PC senden",
+    "en": "Send text to the PC"
+  },
+  "keyboard.layoutHelp": {
+    "de": "Texteingabe unterstützt lateinische ASCII-Buchstaben, Ziffern und einfache Satzzeichen als Tastendrücke. Das Tastaturlayout des Hosts bestimmt die Ausgabe. Sondertasten funktionieren direkt.",
+    "en": "Text input supports ASCII letters, numbers and basic punctuation as key presses. The host keyboard layout determines the output. Special keys work directly."
+  },
+  "keyboard.unsupported": {
+    "de": "Dieser Text enthält noch nicht unterstützte Zeichen und wurde nicht gesendet. Verwende dafür eine Hardwaretastatur.",
+    "en": "This text contains unsupported characters and was not sent. Use a hardware keyboard for them."
+  },
+  "keyboard.paused": {
+    "de": "Keine Eingabe gesendet: Stream fehlt oder Eingaben sind pausiert.",
+    "en": "No input sent: no stream or input is paused."
+  },
+  "display.title": {
+    "de": "Monitor",
+    "en": "Monitor"
+  },
+  "display.waiting": {
+    "de": "Monitorauswahl wird erst verfügbar, wenn der Host eine gültige Displayliste sendet.",
+    "en": "Monitor selection becomes available only when the host sends a valid display list."
+  },
+  "display.available": {
+    "de": "Vom Host gemeldete Monitore. Ein Wechsel ist eine Anfrage an den Host.",
+    "en": "Monitors reported by the host. Switching sends a request to the host."
+  },
+  "display.unavailable": {
+    "de": "Keine gültige Displayliste oder kein verfügbarer Steuerkanal.",
+    "en": "No valid display list or no available control channel."
+  },
+  "display.requested": {
+    "de": "Monitorwechsel angefordert; ob der Host ihn ausführt, muss im Stream geprüft werden.",
+    "en": "Monitor switch requested; check the stream to confirm that the host applies it."
+  },
+  "controller.allowRumble": {
+    "de": "Kurze Controller-Vibration erlauben, falls Host und Browser sie unterstützen",
+    "en": "Allow short controller vibrations if supported by the host and browser"
+  },
+  "statistics.queue": {
+    "de": "Decoder-Warteschlange",
+    "en": "Decoder queue"
+  },
+  "statistics.hostEncode": {
+    "de": "Host-Encodezeit",
+    "en": "Host encode time"
+  },
+  "statistics.transportRtt": {
+    "de": "Transport-RTT (keine Gesamtlatenz)",
+    "en": "Transport RTT (not end-to-end latency)"
+  },
+  "pip.show": {
+    "de": "Bild-in-Bild versuchen",
+    "en": "Try picture-in-picture"
+  },
+  "pip.help": {
+    "de": "Experimentell: nur das Videobild. Audio und Weiterbetrieb im Hintergrund werden dadurch nicht garantiert.",
+    "en": "Experimental: video only. This does not guarantee audio or continued background operation."
+  },
+  "pip.unavailable": {
+    "de": "Bild-in-Bild ist in diesem Browser oder ohne Stream nicht verfügbar.",
+    "en": "Picture-in-picture is unavailable in this browser or without a stream."
+  },
+  "pip.denied": {
+    "de": "Bild-in-Bild wurde nicht freigegeben. Falls die Vorschau läuft, kannst du erneut auf den Knopf tippen.",
+    "en": "Picture-in-picture was not granted. If the preview is playing, you can tap the button again."
+  },
+  "pip.active": {
+    "de": "Bild-in-Bild angefordert. Die Ausführung im Hintergrund bleibt vom Browser abhängig.",
+    "en": "Picture-in-picture requested. Background execution remains controlled by the browser."
+  },
+  "capabilities.title": {
+    "de": "Browser- und Protokollfunktionen",
+    "en": "Browser and protocol capabilities"
+  },
+  "capabilities.check": {
+    "de": "Lokale Browserfunktionen prüfen",
+    "en": "Check local browser capabilities"
+  },
+  "capabilities.protocolLimits": {
+    "de": "H.265-Streaming, Remote-Zwischenablage, Freundschaftsanfragen, serverseitiger Sitzungswiderruf und Teams/SSO sind noch nicht implementiert. Decoder- oder Browser-Unterstützung allein bestätigt diese Funktionen nicht.",
+    "en": "H.265 streaming, remote clipboard, friend requests, server-side session revocation and Teams/SSO are not implemented yet. Decoder or browser support alone does not confirm these features."
+  },
+  "capabilities.hevcDecoder": {
+    "de": "Browser meldet H.265-Decoder",
+    "en": "Browser reports an H.265 decoder"
+  },
+  "capabilities.localHaptics": {
+    "de": "Lokaler Controller meldet Vibrationsfunktion",
+    "en": "Local controller reports haptic support"
+  },
+  "common.yes": {
+    "de": "Ja",
+    "en": "Yes"
+  },
+  "common.no": {
+    "de": "Nein",
+    "en": "No"
+  },
+  "account.moreAvailable": {
+    "de": "Weitere Einträge werden von der API gemeldet; die Liste ist möglicherweise unvollständig.",
+    "en": "The API reports more entries; this list may be incomplete."
   }
 };

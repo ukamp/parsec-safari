@@ -1,3 +1,4 @@
+import { hostData } from './host-data.js';
 import * as Msg from './msg.js';
 import { AudioPlayer } from './audio.js';
 import { Input } from './input.js';
@@ -18,6 +19,7 @@ export class Client {
     this.audioBytes=0;
     this.shutter=false;
     this.seen=new Set();
+    this.displays=[];this.hostEncodeMs=null;
     this.audioPlayer=new AudioPlayer((stage,metrics)=>this.diagnostic(stage,metrics));
     this.videoPlayer=new VideoPlayer(video,()=>this.destroy(-6106),(stage,metrics)=>this.diagnostic(stage,metrics),()=>this.onEvent({
       type:'frame'
@@ -51,6 +53,7 @@ export class Client {
   }
   async connect(token,peer,cfg={
   }) {
+    this.config={...cfg};
     this.signal=new Signal(code=>this.destroy(code),stage=>this.once(stage));
     this.rtc=new RTC(peer,this.signal.getAttemptId(),candidate=>this.signal?.send(token,candidate),code=>this.destroy(code));
     this.stream=new StreamRequest({
@@ -60,6 +63,7 @@ export class Client {
       if(this.closed)return;
       this.connected=true;
       this.signal.connected();
+      this.rtc.send(Msg.release(),0);
       this.input.attach();
       this.onEvent({
         type:'connect'
@@ -82,9 +86,18 @@ export class Client {
         }
         else if(type===16){
           this.shutter=!!code;
+          this.input.setBlocked(this.shutter);
           this.once(this.shutter?'host-input-blocked':'host-input-enabled');
         }
-        else if(type===21)this.once('host-encode-report');
+        else if(type===17){
+          const data=hostData(message,e.data);
+          if(data?.displays){this.displays=data.displays;this.onEvent({type:'displays',displays:this.displays});}
+        }
+        else if(type===20)this.input.rumble(message.data0,message.data1,message.data2);
+        else if(type===21){
+          if(code===1&&message.data1>=0&&message.data1<=1000000)this.hostEncodeMs=message.data1/1000;
+          this.once('host-encode-report');
+        }
         // No host text, chat, cursor pixels, credentials or IPs are logged.
         else this.once('host-control-type-'+type);
       } catch {
@@ -122,7 +135,22 @@ export class Client {
   }
   updateQuality(config){
     if(!this.connected||this.closed)return false;
-    return this.rtc.send(Msg.config(config),0);
+    this.config={...this.config,...config};
+    return this.rtc.send(Msg.config(this.config),0);
+  }
+  selectDisplay(id){
+    if(!this.displays.some(display=>display.id===id))return false;
+    return this.updateQuality({output:id});
+  }
+  async transportStats(){
+    try{
+      const reports=await this.rtc?.rtc.getStats?.();
+      let rtt=null;
+      reports?.forEach(report=>{
+        if(report.type==='candidate-pair'&&report.state==='succeeded'&&(report.nominated||report.selected)&&Number.isFinite(report.currentRoundTripTime))rtt=report.currentRoundTripTime*1000;
+      });
+      return rtt;
+    }catch{return null;}
   }
   reportAudio(){
     this.diagnostic('audio-summary',this.audioPlayer.snapshot());
@@ -135,7 +163,7 @@ export class Client {
       controlPackets:this.controlPackets,audioPackets:this.audioPackets,audioBytes:this.audioBytes,streamRequested:!!this.stream?.started,shutter:this.shutter
     });
     try{
-      if(this.connected)this.rtc?.send(Msg.abort(),0);
+      if(this.connected){this.rtc?.send(Msg.release(),0);this.rtc?.send(Msg.abort(),0);}
     }catch{
     }this.closed=true;
     this.stream?.close();

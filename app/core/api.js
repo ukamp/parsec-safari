@@ -19,7 +19,7 @@ export function createApi(getSignal=()=>null,fetcher=fetch){
       }catch{
       }
       return {
-        status:response.status,data:body?.data
+        status:response.status,data:body?.data,hasMore:body?.has_more===true
       };
     }finally{
       clearTimeout(timer);

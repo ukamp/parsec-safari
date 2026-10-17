@@ -1,3 +1,4 @@
+export const isAppleTouch=nav=>/iPad|iPhone|Mac/.test(nav.userAgent||'')&&nav.maxTouchPoints>1;
 import { t } from '../core/i18n.js';
 export class FullscreenView {
   constructor({

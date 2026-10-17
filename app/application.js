@@ -1,7 +1,13 @@
+import { setupBrowserCapabilities } from './features/browser-capabilities.js';
+import { setupKeyboard } from './features/keyboard.js';
+import { setupViewport } from './features/viewport.js';
+import { AccountView } from './features/account.js';
+import { Reconnect } from './core/reconnect.js';
+import { readPreference,writePreference } from './core/preferences.js';
 import { t } from './core/i18n.js';
 import { createSessionStore } from './core/session-store.js';
 import { Client } from './stream/client.js';
-import { FullscreenView } from './browser/fullscreen.js';
+import { FullscreenView,isAppleTouch } from './browser/fullscreen.js';
 import { authenticatePersonal } from './core/personal-auth.js';
 import { createApi } from './core/api.js';
 import { createDiagnostics } from './core/diagnostics.js';
@@ -20,6 +26,12 @@ const diagnostics=createDiagnostics($),{
 }=diagnostics;
 const request=createApi(()=>controller?.signal),router=createRouter();
 const hostList=new HostList($('hosts'),$('hostSearch'),peer=>connect(peer));
+const account=new AccountView({$,request,getSession:()=>session});
+$('accountRefresh').onclick=()=>account.load();
+$('showAvatars').checked=readPreference('parsec-avatars',false,x=>x===true);
+hostList.showAvatars=$('showAvatars').checked;
+$('showAvatars').onchange=()=>{hostList.showAvatars=$('showAvatars').checked;writePreference('parsec-avatars',hostList.showAvatars);hostList.render();};
+const viewport=setupViewport({$,getClient:()=>client});
 const quality=setupQuality({
   getClient:()=>client,$
 }),statistics=new StreamStatistics($('streamStats'));
@@ -28,9 +40,20 @@ const gamepads=setupGamepads({
 }),wake=setupWake({
   getClient:()=>client,$,diagnostic
 });
+const browserCapabilities=setupBrowserCapabilities({$,getClient:()=>client});
+const keyboard=setupKeyboard({$,getClient:()=>client,closeMenu:()=>gamepads.close()});
 setupMediaTests({
   getClient:()=>client,getController:()=>controller,$,diagnostic,controls
 });
+const reconnect=new Reconnect({
+  connect:peer=>connect(peer,true),
+  allowed:()=>!!session&&!document.hidden&&readPreference('parsec-auto-reconnect',true,x=>x!==false),
+  status:attempt=>{note('reconnect-scheduled',t('connection.retrying')+' '+attempt+'/3');controls();}
+});
+$('autoReconnect').checked=readPreference('parsec-auto-reconnect',true,x=>x!==false);
+$('autoReconnect').onchange=()=>{writePreference('parsec-auto-reconnect',$('autoReconnect').checked);if(!$('autoReconnect').checked)reconnect.stop();};
+$('controllerSafe').checked=readPreference('parsec-controller-safe',true,x=>x!==false);
+$('controllerSafe').onchange=()=>writePreference('parsec-controller-safe',$('controllerSafe').checked);
 function controls(){
   const busy=!!controller;
   $('connectionBadge').textContent=client?streamState:session?t("connection.signedIn"):t("connection.notConnected");
@@ -41,21 +64,25 @@ function controls(){
   $('logout').hidden=!session;
   $('hostsPanel').hidden=!session;
   $('refresh').disabled=busy||!!client;
-  $('stop').disabled=!client;
-  $('menuDisconnect').disabled=!client;
+  $('stop').disabled=!client&&reconnect?.timer===null;
+  $('menuDisconnect').disabled=!client&&reconnect?.timer===null;
+  for(const id of ['showKeyboard','pointerLock','pip'])$(id).disabled=!client;
+  if(!client)$('displaySelection').disabled=true;
 }
 function apiError(status){
   return new Error('HTTP '+status)
 }
 function stop(){
+  const current=client;client=null;
+  reconnect.stop();
+  keyboard.close();
+  browserCapabilities.cleanup();
   statistics.stop();
   gamepads.close();
   wake.stop();
   fullscreenView?.exit();
   clearTimeout(frameTimer);
   frameTimer=null;
-  const current=client;
-  client=null;
   if(current)current.destroy(0);
   controls();
 }
@@ -82,6 +109,8 @@ $('logout').onclick=()=>{
   $('password').value='';
   $('tfa').value='';
   hostList.clear();
+  account.clear();
+  $('hostsUpdated').textContent='';
   controls();
   note('local-session-cleared',t("text.localSessionClearedTheSessionMayStillRemainValid"));
 };
@@ -155,11 +184,15 @@ async function hosts(){
       session=null;
       sessionStore.clear();
       hostList.clear();
+      account.clear();
+      $('hostsUpdated').textContent='';
       note('session-expired',t("text.yourSessionHasExpiredPleaseSignInAgain"));
       return;
     }
     if(r.status!==200||!Array.isArray(r.data))throw apiError(r.status);
     hostList.set(r.data);
+    $('hostsUpdated').textContent=t('hosts.updatedAt')+' '+new Date().toLocaleString(document.documentElement?.lang||'de')+(r.hasMore?' · '+t('account.moreAvailable'):'');
+    void account.load();
     note('hosts-loaded',t("text.hostsLoadedSelectYourExistingWindowsHost"));
   }catch(e){
     if(id!==generation)return;
@@ -170,8 +203,9 @@ async function hosts(){
   }
 }
 $('refresh').onclick=hosts;
-async function connect(peer){
+async function connect(peer,retrying=false){
   if(!session||client)return;
+  if(!retrying)reconnect.start(peer);
   if(!window.RTCPeerConnection){
     note('webrtc-unavailable',t("text.webrtcIsUnavailable"));
     return;
@@ -183,6 +217,13 @@ async function connect(peer){
   try{
     current=new Client($('video'),event=>{
       if(client!==current&&event.type!=='diagnostic')return;
+      if(event.type==='displays'){
+        $('displaySelection').textContent='';
+        for(const display of event.displays){const option=document.createElement('option');option.value=display.id;option.textContent=display.name;$('displaySelection').appendChild(option);}
+        $('displaySelection').disabled=!event.displays.length;
+        $('displayStatus').textContent=event.displays.length?t('display.available'):t('display.unavailable');
+        return;
+      }
       if(event.type==='gamepad'){
         gamepads.show(event.status);
         return;
@@ -196,27 +237,34 @@ async function connect(peer){
           stop();
           note('video-timeout',t("text.theControlChannelOpenedButNoVideoFrameWas"));
         },20000);
-      }else if(event.type==='frame'){streamState=t("connection.active");controls();
+      }else if(event.type==='frame'){reconnect.recovered();streamState=t("connection.active");controls();
         wake.setActive(true);
         statistics.start(current);
         clearTimeout(frameTimer);
         note('video-frame-decoded',t("text.firstVideoFrameDecodedAndDisplayedPleaseCheckMotion"));
       }else if(event.type==='exit'){
+        keyboard.close();browserCapabilities.cleanup();
+        $('displaySelection').disabled=true;
         statistics.stop();
         wake.stop();
         fullscreenView?.exit();
         clearTimeout(frameTimer);
         client=null;
         controls();
-        note('connection-ended-'+Number(event.code),t("text.connectionEndedCode")+Number(event.code)+t("text.protocolHostPermissionsOrNetworkIssuesMayBeResponsible"));
+        const scheduled=reconnect.failed(Number(event.code));
+        controls();
+        if(!scheduled)note('connection-ended-'+Number(event.code),t("text.connectionEndedCode")+Number(event.code)+t("text.protocolHostPermissionsOrNetworkIssuesMayBeResponsible"));
       }else if(event.type==='stage'){
         note(event.stage,event.text);
       }
     });
     client=current;
+    $('displaySelection').textContent='';$('displaySelection').disabled=true;$('displayStatus').textContent=t('display.waiting');
+    viewport.apply();
+    current.input.onZoom=viewport.setZoom;current.input.getZoom=viewport.getZoom;
     current.input.setBindings(gamepads.settings());
     current.input.setPaused(gamepads.isMenuOpen());
-    quality.applyVolume();
+    quality.beginStream();
     router.go('stream');
     controls();
     $('video').focus();
@@ -228,6 +276,7 @@ async function connect(peer){
     note('connection-setup-failed',t("text.connectionSetupFailedCompatibilityOfTheExperimentalAdapterHas"));
   }
 }
+$('displaySelection').onchange=()=>{const sent=client?.selectDisplay($('displaySelection').value);$('displayStatus').textContent=sent?t('display.requested'):t('display.unavailable');};
 $('stop').onclick=$('menuDisconnect').onclick=()=>{
   stop();
   note('disconnected-by-user',t("text.disconnected"));
@@ -241,7 +290,15 @@ function getFullscreenView(){
   });
   return fullscreenView;
 }
-$('fullscreen').onclick=async()=>{await getFullscreenView().toggle();client?.input.syncGamepad();};
+$('fullscreen').onclick=async()=>{
+  const view=getFullscreenView();
+  const appleTouch=isAppleTouch(navigator);
+  if(!view.expanded&&appleTouch&&$('controllerSafe').checked){
+    await view.enter({native:false});
+    note('controller-safe-view',t('stream.controllerSafeActive'));
+  }else await view.toggle();
+  client?.input.syncGamepad();
+};
 $('controllerFullscreen').onclick=async()=>{
   const view=getFullscreenView();
   gamepads.close();
@@ -251,7 +308,7 @@ $('controllerFullscreen').onclick=async()=>{
 $('download').onclick=()=>{
   client?.reportAudio();
   const blob=new Blob([JSON.stringify({
-    version:2,build:'1.0.0',experimental:true,events:diagnostics.events()
+    version:2,build:'1.1.0',experimental:true,events:diagnostics.events()
   },null,2)],{
     type:'application/json'
   }),url=URL.createObjectURL(blob),a=document.createElement('a');
@@ -289,3 +346,5 @@ window.addEventListener('hashchange',()=>client?.input.setPaused(window.location
 // Validate a remembered session with Parsec before showing any hosts.
 session=sessionStore.load();
 if(session){$('remember').checked=true;controls();void hosts();}
+
+document.addEventListener('visibilitychange',()=>{if(document.hidden)reconnect.stop();});
