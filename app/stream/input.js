@@ -23,6 +23,7 @@ export class Input {
     this.buttons=new Set();
     this.gamepad=null;
     this.pointer={mode:'direct',sensitivity:1,showCursor:true};
+    this.pointerIdle=true;this.pointerIdleTimer=null;
     this.cursor={x:.5,y:.5};this.touchPointer=false;this.onPointer=()=>{};this.onHapticStatus=()=>{};
     this.onZoom=()=>{};this.getZoom=()=>1;
   }
@@ -52,8 +53,14 @@ export class Input {
     const scale=Math.min(r.width/w,r.height/h);
     return {w,h,scale,left:r.left+(r.width-w*scale)/2,top:r.top+(r.height-h*scale)/2};
   }
+  pointerActivity(){
+    clearTimeout(this.pointerIdleTimer);this.pointerIdle=false;
+    this.pointerIdleTimer=setTimeout(()=>{this.pointerIdle=true;this.renderPointer();},2500);
+    this.pointerIdleTimer?.unref?.();
+    this.renderPointer();
+  }
   renderPointer(){
-    this.onPointer({x:this.cursor.x,y:this.cursor.y,visible:this.pointer.showCursor!==false&&(this.touchPointer||this.hostCursorHidden)&&!this.paused&&!this.blocked&&!document.hidden&&document.pointerLockElement!==this.video});
+    this.onPointer({x:this.cursor.x,y:this.cursor.y,visible:!this.pointerIdle&&this.pointer.showCursor!==false&&(this.touchPointer||this.hostCursorHidden)&&!this.paused&&!this.blocked&&!document.hidden&&document.pointerLockElement!==this.video});
   }
   position(e){
     const g=this.geometry();if(!g)return;
@@ -118,6 +125,7 @@ export class Input {
     v.setAttribute?.('inputmode','none');
     v.setAttribute?.('virtualkeyboardpolicy','manual');
     this.on(v,'pointerdown',e=>{
+      this.pointerActivity();
       if(e.pointerType==='touch'){this.touchPointer=true;v.setPointerCapture?.(e.pointerId);v.focus({preventScroll:true});this.touch.down(e);return;}
       if(!e.isPrimary)return;
       this.touchPointer=false;this.renderPointer();
@@ -130,12 +138,14 @@ export class Input {
       this.send(Msg.mouse(b,1));
     });
     this.on(v,'pointermove',e=>{
+      this.pointerActivity();
       if(e.pointerType==='touch'){this.touch.moveEvent(e);return;}
       this.touchPointer=false;this.renderPointer();
       if(document.pointerLockElement===v){this.send(Msg.motion(1,Math.round(e.movementX*this.pointer.sensitivity),Math.round(e.movementY*this.pointer.sensitivity)));return;}
       if(e.isPrimary)this.position(e);
     });
     this.on(v,'pointerup',e=>{
+      this.pointerActivity();
       if(e.pointerType==='touch'){this.touch.up(e);return;}
       if(!e.isPrimary)return;
       e.preventDefault();
@@ -146,6 +156,7 @@ export class Input {
     this.on(v,'lostpointercapture',e=>{if(e.pointerType!=='touch'||this.touch.points.has(e.pointerId)){this.touch.reset();this.release();}});
     this.on(v,'contextmenu',e=>e.preventDefault());
     this.on(v,'wheel',e=>{
+      this.pointerActivity();
       e.preventDefault();
       this.send(Msg.mouseWheel(-e.deltaX/2,-e.deltaY/2));
     },{
@@ -234,6 +245,7 @@ export class Input {
   setCursor(){
   }
   detach(){
+    clearTimeout(this.pointerIdleTimer);this.pointerIdleTimer=null;this.pointerIdle=true;
     this.release();
     this.stopRumble();
     for(const off of this.listeners)off();

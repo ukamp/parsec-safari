@@ -1,5 +1,5 @@
 export const defaults=()=>({
-  bitrate:8,frameRate:60,resolution:'1280x720',volume:100,constantFps:false,videoCodec:'auto'
+  bitrate:8,frameRate:60,resolution:'1280x720',volume:100,constantFps:false,videoCodec:'h264'
 });
 export function normalizeQuality(value={
 }) {
@@ -9,7 +9,7 @@ export function normalizeQuality(value={
   if([30,60].includes(value.frameRate))d.frameRate=value.frameRate;
   if(['1024x768','1280x720','1280x800','1366x768','1600x900','1680x1050','1920x1080','1920x1200','2560x1440','2560x1600','3440x1440','3840x2160'].includes(value.resolution))d.resolution=value.resolution;
   if(Number.isFinite(value.volume)&&value.volume>=0&&value.volume<=100)d.volume=Math.round(value.volume);
-  d.videoCodec=value.videoCodec==='h264'?'h264':'auto';
+  d.videoCodec=value.videoCodec==='hevc'?'hevc':'h264';
   d.constantFps=value.constantFps===true;
   return d;
 }

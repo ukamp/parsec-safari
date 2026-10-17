@@ -28,3 +28,13 @@ let resolveGrant,exited=0;document.exitPointerLock=()=>{exited++;document.pointe
 $('video').requestPointerLock=()=>new Promise(resolve=>resolveGrant=resolve);
 const pending=$('pointerLock').onclick();viewport.cleanup();document.pointerLockElement=$('video');resolveGrant();await pending;assert.equal(exited,1);assert.equal(document.pointerLockElement,null);
 console.log('Late Pointer Lock grant after teardown is exited instead of attaching to a stale stream.');
+
+const idle=fixture('touchpad');idle.video.events.pointerdown(event(3,200,100));idle.video.events.pointerup(event(3,200,100));assert.equal(idle.points.at(-1).visible,true);
+await new Promise(resolve=>setTimeout(resolve,2600));assert.equal(idle.points.at(-1).visible,false);
+idle.input.configurePointer({mode:'touchpad'});idle.input.renderPointer();assert.equal(idle.points.at(-1).visible,false);
+idle.video.events.pointerdown(event(4,220,110));assert.equal(idle.points.at(-1).visible,true);idle.input.detach();assert.equal(idle.points.at(-1).visible,false);
+const {showControllerFullscreenWarning}=await import(asset('browser/controller-fullscreen-warning.js'));
+const warning={hidden:true};document.fullscreenElement=null;showControllerFullscreenWarning(warning,true);assert.equal(warning.hidden,true);
+document.fullscreenElement={};showControllerFullscreenWarning(warning,false);assert.equal(warning.hidden,true);showControllerFullscreenWarning(warning,true);assert.equal(warning.hidden,false);
+document.fullscreenElement=null;showControllerFullscreenWarning(warning,true);assert.equal(warning.hidden,true);
+console.log('Pointer idles, refresh cannot wake it, real input wakes it; controller warning requires actual native fullscreen.');

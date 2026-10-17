@@ -9,7 +9,7 @@ export function setupGamepads({
   const menuNavigation=setupMenuNavigation($);
   let padSettings=readPreference('parsec-pad-bindings-v1',defaultBindings(),normalizeBindings),menuOpen=false,bindingsReady=false,controllerMonitor=null,lastPadCounts='';
   function showGamepad(status){
-    onStatus();
+    onStatus(status);
     $('gamepadStatus').textContent=!status.gamepads?t("text.noControllerDetectedPairItWithYourIPadAnd"):!status.standardGamepads?t("text.controllerDetectedWithoutStandardMappingACompatibleMappingIs"):status.paused?t("text.controllerInputPaused"):status.standardGamepads+t("text.standardGamepadSDetected")+status.activeInputs+t("text.activeInputs")+((status.pressedButtons||[]).length?t("text.buttons")+status.pressedButtons.map(i=>padLabels[i]+' → '+(padLabels[padSettings.buttons[i]]||t("text.off"))).join(', '):'');
     const key=status.gamepads+':'+status.standardGamepads;
     if(key!==lastPadCounts){

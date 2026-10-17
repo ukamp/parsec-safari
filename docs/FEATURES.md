@@ -13,7 +13,7 @@ Reference: [official web-app guide](https://support.parsec.app/hc/en-us/articles
 | German / English | Implemented | English system locale defaults to English; saved user choice wins; language changes reload/disconnect; symbolic-key completeness tests |
 | Account password autofill | HTML support | `username` / `current-password`; saving suggestions depend on Safari and device settings |
 | Own computer list and search | Implemented | Safe text rendering, sorted cards and local search; no simulated online guarantees |
-| Video | Automatic HEVC / H.264, WebCodecs | Owner confirmed real iPad streaming on prior release; refactor retains wire format and decoder, regression fixtures |
+| Video | H.264 default / optional HEVC, WebCodecs | Owner confirmed real iPad streaming on prior release; refactor retains wire format and decoder, regression fixtures |
 | Audio | Opus / native or WASM | Owner confirmed sound on prior release; real synthetic WASM decoding test |
 | Xbox controller | Standard mapping + remap | Wire indices, trigger ranges, release and remapping tested; owner reports intermittent RT focus loss, mainly in native fullscreen; unresolved on physical iPad |
 | Touch / keyboard / zoom | Implemented with limits | Direct/touchpad, gestures, zoom, ASCII text and special keys; hardware/iPad validation pending |
@@ -29,7 +29,7 @@ Reference: [official web-app guide](https://support.parsec.app/hc/en-us/articles
 | Friend requests | Open | No verified mutation contract |
 | Teams / SAML SSO | Open | Official matrix lists it; requires verified authentication integration and account entitlement |
 | Monitor switching | Conditional / experimental | Enabled only after valid host display data; sends observed output ID; physical confirmation pending |
-| H.265 | Preferred by automatic mode | Annex-B decoder, SPS parsing, support guard and bounded H.264 fallback; owner reports real iPad success; other combinations unconfirmed |
+| H.265 | Optional; H.264 is default (1.3.2) | Annex-B decoder, SPS parsing, support guard and bounded H.264 fallback; owner reports real iPad success; other combinations unconfirmed |
 | Rumble | Conditional / experimental | User reports no vibration on tested iPad; actual actuator methods checked, missing APIs disabled, local test separates browser/hardware from host events |
 | Clipboard / shared links | Open | Remote protocol not verified |
 | Microphone / camera / extra screens / enhanced pen | Not in baseline | Not listed as supported by official web matrix; would require additional browser/host integration |

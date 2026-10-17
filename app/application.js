@@ -1,3 +1,4 @@
+import {showControllerFullscreenWarning} from './browser/controller-fullscreen-warning.js';
 import {setupDiagnosticTabs} from './features/navigation.js';
 import { setupBrowserCapabilities } from './features/browser-capabilities.js';
 import { setupKeyboard } from './features/keyboard.js';
@@ -38,7 +39,7 @@ const quality=setupQuality({
   getClient:()=>client,$
 }),statistics=new StreamStatistics($('streamStats'));
 const gamepads=setupGamepads({
-  getClient:()=>client,$,diagnostic,onStatus:()=>viewport.refreshCapabilities()
+  getClient:()=>client,$,diagnostic,onStatus:status=>{viewport.refreshCapabilities();showControllerFullscreenWarning($('controllerFullscreenWarning'),status.gamepads>0);}
 }),wake=setupWake({
   getClient:()=>client,$,diagnostic
 });
@@ -295,6 +296,7 @@ function getFullscreenView(){
   if(!fullscreenView)fullscreenView=new FullscreenView({
     screen:$('screen'),canvas:$('video'),exitButton:$('exitFullscreen'),notice:$('fullscreenNotice'),report:stage=>{
       diagnostic(stage);
+      showControllerFullscreenWarning($('controllerFullscreenWarning')); 
       $('fullscreenStatus').textContent=stage==='fullscreen-exit-blocked'?t("text.safariHasNotLeftFullscreenYetCloseItUsing"):stage==='fullscreen-native'?t("text.nativeBrowserFullscreenActiveSystemControlsAreManagedBy"):stage==='fullscreen-controller'?t("text.controllerViewWithoutNativeSafariFullscreenBrowserBarsMay"):stage==='fullscreen-viewport'?t("text.safariDidNotGrantNativeFullscreenExpandedViewActive"):t("text.fullscreenEnded");
     }
   });
@@ -355,3 +357,5 @@ session=sessionStore.load();
 if(session){$('remember').checked=true;controls();void hosts();}
 
 document.addEventListener('visibilitychange',()=>{if(document.hidden)reconnect.stop();});
+
+for(const event of ['fullscreenchange','webkitfullscreenchange','gamepadconnected','gamepaddisconnected'])window.addEventListener(event,()=>showControllerFullscreenWarning($('controllerFullscreenWarning')));

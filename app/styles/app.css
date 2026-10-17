@@ -584,3 +584,6 @@ label > input[type=checkbox]{margin-top:2px;padding:0;align-self:flex-start}
 
 #menuPanel-input .control-grid{grid-template-columns:1fr}
 #menuPanel-input .control-grid > p,#menuPanel-input .control-grid > small{grid-column:1/-1;margin:0;font-size:13px;line-height:1.6;color:#b6cbc2}
+
+.controller-fullscreen-warning{position:absolute;z-index:4;top:calc(env(safe-area-inset-top,0px) + 58px);right:16px;max-width:min(400px,80%);padding:10px 14px;border-radius:10px;background:rgba(20,24,32,.82);color:#fff;font-size:.8rem;pointer-events:none}
+.controller-fullscreen-warning[hidden]{display:none}

@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import {asset} from './helpers.mjs';
 const {defaults,normalizeQuality,streamConfig}=await import(asset('core/preferences.js'));
-assert.equal(defaults().videoCodec,'auto');assert.equal(streamConfig({}).video_codec,'hevc');
-assert.equal(normalizeQuality({videoCodec:'hevc'}).videoCodec,'auto');
+assert.equal(defaults().videoCodec,'h264');assert.equal(streamConfig({}).video_codec,'h264');
+assert.equal(normalizeQuality({videoCodec:'hevc'}).videoCodec,'hevc');
 assert.equal(streamConfig({videoCodec:'h264'}).video_codec,'h264');
 const {setupQuality}=await import(asset('features/quality-settings.js'));
 const map=new Map(),saved=new Map();const $=id=>{if(!map.has(id))map.set(id,{value:'',checked:false,hidden:false,textContent:'',attrs:{},setAttribute(k,v){this.attrs[k]=v}});return map.get(id)};
@@ -10,9 +10,12 @@ globalThis.localStorage={getItem:()=>null,setItem:(k,v)=>saved.set(k,v)};
 let volume;const client={audioPlayer:{setVolume:v=>volume=v},updateQuality:()=>true};const quality=setupQuality({$,getClient:()=>client});quality.beginStream();
 $('resolution').value='1920x1080';$('qualityForm').onsubmit({preventDefault(){}});
 assert.match($('qualityStatus').textContent,/nächster Verbindung/);assert.match($('qualityStatus').textContent,/noch nicht bestätigt/);
-assert.equal($('overlayResolution').value,'1920x1080');assert.equal($('overlayVideoCodec').value,'auto');
+assert.equal($('overlayResolution').value,'1920x1080');assert.equal($('overlayVideoCodec').value,'h264');
 $('volume').value='0';$('volume').oninput();assert.equal(volume,0);assert.equal($('menuMute').attrs['aria-pressed'],'true');assert.match($('audioStatus').textContent,/Stumm/);
 $('menuMute').onclick();assert.equal(volume,1);assert.equal($('volume').value,'100');assert.equal($('overlayVolume').value,'100');assert.equal($('menuMute').attrs['aria-pressed'],'false');
 $('overlayVolume').value='25';$('overlayVolume').oninput();assert.equal(volume,.25);assert.equal($('volume').value,'25');assert.match($('audioStatus').textContent,/25%/);
 assert.equal(JSON.parse(saved.get('parsec-quality-v1')).volume,25);
-console.log('Automatic codec default/migration, deferred-change feedback and synchronized mute/volume passed.');
+console.log('H.264 codec default/migration, deferred-change feedback and synchronized mute/volume passed.');
+
+assert.equal(normalizeQuality({videoCodec:'auto'}).videoCodec,'h264');
+assert.equal(streamConfig({videoCodec:'hevc'}).video_codec,'hevc');

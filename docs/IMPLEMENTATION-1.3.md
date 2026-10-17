@@ -1,3 +1,5 @@
+> Update 1.3.2: H.264 is the default again after iPad performance feedback. HEVC remains optional with H.264 fallback. Historical 1.3.0 preference notes below are superseded.
+
 # 1.3.0 — stream usability and automatic codec selection
 
 This release implements the agreed stream/overlay UX update. Other capability limits remain in the [selected-feature matrix](IMPLEMENTATION-1.1.md) and [HEVC implementation notes](IMPLEMENTATION-1.2.md), with the changes below superseding their former default/UI descriptions.

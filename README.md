@@ -48,7 +48,7 @@ Historical vendor modules retain their MIT license at the published `LICENSE`. P
 - Explicit native fullscreen and Controller view; manual reconnect to the last successful host in this tab.
 - Diagnostics: Overview and Tests tabs. Wake-lock/controller tests are in Tests.
 - Checkbox controls stay left of their label on Windows and iPad.
-- Automatic codec default: prefer HEVC after a positive browser support check, otherwise H.264. Force H.264 remains available; existing H.264 preferences are retained.
+- H.264 is the default again: the owner reports better iPad performance. HEVC remains optional with capability checks and H.264 fallback. Legacy automatic HEVC preferences migrate to H.264.
 
 The owner reported working HEVC on their iPad. Other hardware/host combinations remain to be validated. See the [1.3.1 verification details](docs/IMPLEMENTATION-1.3.md).
 
@@ -61,3 +61,6 @@ A local helper cursor is enabled by default for touch and when the host hides th
 Pointer Lock closes the input-pausing overlay before the user-activated request and handles grant, denial, missing API and teardown. Missing APIs disable the option. This does not implement missing iPadOS functionality.
 
 Controller vibration remains unconfirmed/non-working on the owner's iPad. Available actuator methods are checked, and absent APIs disable the controls. A bounded local vibration test is under Diagnostics → Tests. A requested pulse is not labeled as physical success. See [input verification notes](docs/INPUT-1.3.1.md).
+
+### 1.3.2 input and codec preferences
+H.264 is preferred after iPad performance feedback. The local helper cursor hides after 2.5 seconds without pointer/touch input; controller polling and settings refresh do not wake it. A controller warning is shown during native browser fullscreen; Home Screen WebApp/controller view remains recommended.
