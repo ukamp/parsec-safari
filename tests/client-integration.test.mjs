@@ -26,6 +26,7 @@ const hostSettingsPacket=new Uint8Array(13+hostSettingsBody.length),hostSettings
 hostSettingsView.setUint8(12,17);hostSettingsView.setInt32(0,hostSettingsBody.length);hostSettingsView.setInt32(4,11);hostSettingsPacket.set(hostSettingsBody,13);
 const settingsPackets=()=>sent.filter(buffer=>{const v=new DataView(buffer);return v.getUint8(12)===17&&v.getInt32(4)===11;});
 assert.ok(sent.some(buffer=>{const v=new DataView(buffer);return v.getUint8(12)===17&&v.getInt32(4)===9;}));
+assert.ok(sent.some(buffer=>{const v=new DataView(buffer);return v.getUint8(12)===17&&v.getInt32(4)===10;}));
 assert.equal(settingsPackets().length,0);client.rtc.channels[0].onmessage({data:hostSettingsPacket.buffer});assert.equal(settingsPackets().length,1);
 const requested=JSON.parse(new TextDecoder().decode(new Uint8Array(settingsPackets()[0],13)).replace(/\0$/,''));assert.equal(requested.video[0].resolutionX,1280);assert.equal(requested.video[0].resolutionY,720);assert.equal(requested.video[0].output,'existing-monitor');assert.equal(requested.video.length,2);assert.equal(requested.virtualMicrophone,1);
 client.rtc.channels[0].onmessage({data:hostSettingsPacket.buffer});assert.equal(settingsPackets().length,1);
@@ -52,6 +53,7 @@ assert.equal(new DataView(sent.at(-1)).getUint8(12),13);assert.equal(new DataVie
 assert.equal(h.config.video_codec,'h264');assert.equal(h.stream.config.video_codec,'h264');
 h.rtc.channels[1].onmessage({data:sample.buffer});assert.match(h.videoPlayer.snapshot().codec,/avc1/);
 assert.ok(hevcEvents.some(e=>e.type==='codec'&&e.state==='fallback'));
+assert.equal(h.configured,false);
 const beforeLate=settingsPackets().length;h.rtc.channels[0].onmessage({data:hostSettingsPacket.buffer});assert.equal(settingsPackets().length,beforeLate+1);h.rtc.channels[0].onmessage({data:hostSettingsPacket.buffer});assert.equal(settingsPackets().length,beforeLate+1);
 assert.ok(hevcEvents.some(e=>e.stage==='host-video-config-merged-sent'));h.destroy();
 VideoDecoder.isConfigSupported=async()=>({supported:false});
@@ -71,3 +73,10 @@ try{
  fallback.fn();assert.equal(timeoutClient.closed,true);
 }finally{globalThis.setTimeout=realSetTimeout;globalThis.clearTimeout=realClearTimeout;timeoutClient.destroy();}
 console.log('Missing HEVC video triggers H.264 after eight seconds; failed fallback disconnects after eight more seconds.');
+
+const targeted=new Client(video,()=>{});await targeted.connect('synthetic-token','peer',{server_resolution_x:2048,server_resolution_y:1536,output:'monitor-2'});targeted.rtc.channels[0].onopen();targeted.rtc.channels[1].onopen();
+const beforeTarget=settingsPackets().length;targeted.rtc.channels[0].onmessage({data:hostSettingsPacket.buffer});assert.equal(settingsPackets().length,beforeTarget);assert.equal(targeted.configured,false);
+const listBody=new TextEncoder().encode(JSON.stringify([{id:'monitor-1',name:'One'},{id:'monitor-2',name:'Two'}])+'\0'),listPacket=new Uint8Array(13+listBody.length),listView=new DataView(listPacket.buffer);listView.setUint8(12,17);listView.setInt32(0,listBody.length);listView.setInt32(4,12);listPacket.set(listBody,13);
+targeted.rtc.channels[0].onmessage({data:listPacket.buffer});assert.equal(settingsPackets().length,beforeTarget+1);let targetBody=JSON.parse(new TextDecoder().decode(new Uint8Array(settingsPackets().at(-1),13)).replace(/\0$/,''));assert.equal(targetBody.video[0].output,'monitor-2');assert.equal(targetBody.video[0].resolutionX,2048);assert.equal(targetBody.video[0].resolutionY,1536);assert.equal(targeted.configured,true);targeted.destroy();
+const unmapped=new Client(video,()=>{});await unmapped.connect('synthetic-token','peer',{server_resolution_x:2048,server_resolution_y:1536});unmapped.rtc.channels[0].onopen();unmapped.rtc.channels[1].onopen();unmapped.hostVideoConfig={video:[{output:'none',resolutionX:1024,resolutionY:768}]};unmapped.sendInitialSettings(true);targetBody=JSON.parse(new TextDecoder().decode(new Uint8Array(settingsPackets().at(-1),13)).replace(/\0$/,''));assert.equal('resolutionX' in targetBody.video[0],false);assert.equal('resolutionY' in targetBody.video[0],false);unmapped.destroy();
+console.log('Remembered monitor-2 waits for validation then targets only that output; unknown mapping withholds resolution fields.');

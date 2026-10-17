@@ -229,7 +229,9 @@ async function connect(peer,retrying=false){
       if(event.type==='codec'){$('codecStatus').textContent=t('codec.'+event.state);return;}
       if(event.type==='displays'){
         $('displaySelection').textContent='';
+        const currentOption=document.createElement('option');currentOption.value='';currentOption.textContent=event.displays.length?t('display.currentUnknown'):t('display.waiting');currentOption.disabled=true;$('displaySelection').appendChild(currentOption);
         for(const display of event.displays){const option=document.createElement('option');option.value=display.id;option.textContent=display.name;$('displaySelection').appendChild(option);}
+        $('displaySelection').value=event.displays.some(display=>display.id===event.selected)?event.selected:'';
         $('displaySelection').disabled=!event.displays.length;
         $('displayStatus').textContent=event.displays.length?t('display.available'):t('display.unavailable');
         return;
@@ -270,7 +272,7 @@ async function connect(peer,retrying=false){
     });
     client=current;
     $('codecStatus').textContent=t('codec.default');
-    $('displaySelection').textContent='';$('displaySelection').disabled=true;$('displayStatus').textContent=t('display.waiting');
+    $('displaySelection').textContent='';const waitingDisplay=document.createElement('option');waitingDisplay.value='';waitingDisplay.textContent=t('display.waiting');$('displaySelection').appendChild(waitingDisplay);$('displaySelection').disabled=true;$('displayStatus').textContent=t('display.waiting');
     viewport.apply();
     current.input.onZoom=viewport.setZoom;current.input.getZoom=viewport.getZoom;
     current.input.setBindings(gamepads.settings());
@@ -281,13 +283,14 @@ async function connect(peer,retrying=false){
     $('video').focus();
     await current.unlockAudio();
     if(client!==current||current.closed)return;
-    await current.connect(session,peer,quality.config());
+    const output=readPreference('parsec-display-'+peer,'',x=>typeof x==='string'&&x.length<=128&&!/[\x00-\x1f]/.test(x)?x:'');
+    await current.connect(session,peer,{...quality.config(),...(output?{output}:{})});
   }catch(e){
     stop();
     note('connection-setup-failed',t("text.connectionSetupFailedCompatibilityOfTheExperimentalAdapterHas"));
   }
 }
-$('displaySelection').onchange=()=>{const sent=client?.selectDisplay($('displaySelection').value);$('displayStatus').textContent=sent?t('display.requested'):t('display.unavailable');};
+$('displaySelection').onchange=()=>{const selected=$('displaySelection').value,sent=client?.selectDisplay(selected);if(sent&&client.peer)writePreference('parsec-display-'+client.peer,selected);$('displayStatus').textContent=sent?t('display.requested'):t('display.unavailable');};
 $('stop').onclick=$('menuDisconnect').onclick=()=>{
   stop();
   note('disconnected-by-user',t("text.disconnected"));
@@ -317,7 +320,7 @@ $('resumeStream').onclick=()=>{if(session&&lastPeer&&!client&&reconnect.timer===
 $('download').onclick=()=>{
   client?.reportAudio();
   const blob=new Blob([JSON.stringify({
-    version:2,build:'1.3.5',experimental:true,events:diagnostics.events()
+    version:2,build:'1.3.6',experimental:true,events:diagnostics.events()
   },null,2)],{
     type:'application/json'
   }),url=URL.createObjectURL(blob),a=document.createElement('a');

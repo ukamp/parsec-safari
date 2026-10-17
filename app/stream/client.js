@@ -52,7 +52,7 @@ export class Client {
   }
   async connect(token,peer,cfg={
   }) {
-    cfg={...cfg};
+    cfg={...cfg};this.peer=peer;
     if(cfg.video_codec==='hevc'&&!await supportsHevc()){
       cfg.video_codec='h264';this.diagnostic('hevc-browser-unavailable');this.onEvent({type:'codec',state:'unavailable'});
     }
@@ -75,6 +75,7 @@ export class Client {
       });
       this.stream.open('control');
       if(this.rtc.send(Msg.getVideoConfig(),0))this.diagnostic('host-video-config-requested');
+      if(this.rtc.send(Msg.getDisplays(),0))this.diagnostic('host-displays-requested');
       if(this.hevcAttempt)this.codecTimer=setTimeout(()=>this.fallbackH264(),8000);
     },e=>{
       if(this.closed)return;
@@ -103,9 +104,10 @@ export class Client {
             this.hostVideoConfig=data.videoConfig;
             const reported=data.videoConfig.video[0];
             this.diagnostic('host-video-config-received',{reportedWidth:reported.resolutionX,reportedHeight:reported.resolutionY});
-            if(!this.hostConfigured){this.hostConfigured=true;this.sendInitialSettings(true);}
+            this.emitDisplays();
+            if(!this.hostConfigured){this.sendInitialSettings(true);}
           }
-          if(data?.displays){this.displays=data.displays;this.onEvent({type:'displays',displays:this.displays});}
+          if(data?.displays){this.displays=data.displays;this.diagnostic('host-displays-received',{displayCount:this.displays.length});this.emitDisplays();if(this.hostVideoConfig&&!this.hostConfigured)this.sendInitialSettings(true);}
         }
         else if(type===20)this.input.rumble(message.data0,message.data1,message.data2);
         else if(type===21){
@@ -152,13 +154,32 @@ export class Client {
     this.codecTimer=setTimeout(()=>{if(!this.closed&&this.videoPlayer.decoded===decoded)this.destroy(-6106);},8000);
     return true;
   }
+  emitDisplays(){
+    const selected=this.config?.output||this.hostVideoConfig?.video?.[0]?.output||'';
+    this.onEvent({type:'displays',displays:this.displays,selected});
+  }
+  settingsConfig(){
+    const cfg={...this.config},reported=this.hostVideoConfig?.video?.[0]?.output;
+    const valid=id=>typeof id==='string'&&id.length>0&&id.length<=128&&id!=='none'&&!/[\x00-\x1f]/.test(id);
+    if(cfg.output&&!this.displays.some(display=>display.id===cfg.output))return null;
+    const target=cfg.output||reported;
+    if(valid(target))cfg.output=target;
+    else {
+      cfg.skip_resolution=true;
+      if(cfg.server_resolution_x>0||cfg.server_resolution_y>0)this.once('resolution-target-unresolved');
+      delete cfg.server_resolution_x;delete cfg.server_resolution_y;
+    }
+    return cfg;
+  }
   sendInitialSettings(mergeHost=false){
     if(this.configured&&!mergeHost)return true;
     if(!this.connected||this.closed)return false;
+    if(!this.hostVideoConfig){this.once('host-settings-awaiting-config');return true;}
+    const settings=this.settingsConfig();if(!settings){this.once('host-settings-awaiting-display');return true;}
     try{
-      if(this.rtc.send(Msg.config(this.config,this.hostVideoConfig),0)!==true)throw Error('control closed');
-      this.configured=true;
-      this.diagnostic(mergeHost?'host-video-config-merged-sent':'stream-settings-sent',{requestedWidth:this.config.server_resolution_x??0,requestedHeight:this.config.server_resolution_y??0});
+      if(this.rtc.send(Msg.config(settings,this.hostVideoConfig),0)!==true)throw Error('control closed');
+      this.configured=true;this.hostConfigured=true;
+      this.diagnostic(mergeHost?'host-video-config-merged-sent':'stream-settings-sent',{requestedWidth:settings.server_resolution_x??0,requestedHeight:settings.server_resolution_y??0});
       return true;
     }catch{this.destroy(-6108);return false;}
   }
@@ -167,11 +188,13 @@ export class Client {
     // Resolution and codec changes remain deferred until reconnect.
     const {video_codec,server_resolution_x,server_resolution_y,...live}=config;
     this.config={...this.config,...live};
-    return this.rtc.send(Msg.config(this.config,this.hostVideoConfig),0);
+    if(!this.hostVideoConfig)return false;
+    const settings=this.settingsConfig();if(!settings)return false;
+    return this.rtc.send(Msg.config(settings,this.hostVideoConfig),0);
   }
   selectDisplay(id){
     if(!this.displays.some(display=>display.id===id))return false;
-    return this.updateQuality({output:id});
+    const sent=this.updateQuality({output:id});if(sent)this.emitDisplays();return sent;
   }
   async transportStats(){
     try{

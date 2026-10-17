@@ -1,5 +1,6 @@
 // Stable English keys; all German and English UI copy lives here.
 export const translations={
+"display.currentUnknown":{"de":"Aktueller Host-Monitor (Zuordnung nicht gemeldet)","en":"Current host display (mapping not reported)"},
 "resolution.host":{"de":"Host-Auflösung beibehalten","en":"Keep host resolution"},
 "resolution.client":{"de":"Client-Auflösung verwenden","en":"Use client resolution"},
 "resolution.help":{"de":"Host: keine neue Auflösung anfordern. Client: Bildschirmgröße dieses Geräts in Pixeln anfordern (max. 4K). Alternativ feste Größe wählen. Ab nächster Verbindung; der Host kann die Anfrage ignorieren. Die tatsächliche Größe steht unter Statistik.","en":"Host: request no resolution change. Client: request this device’s screen size in pixels (up to 4K). Or choose a fixed size. Applies to the next connection; the host may ignore the request. Statistics shows the actual size."},

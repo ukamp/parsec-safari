@@ -53,3 +53,6 @@ Host video-configuration messages now carry resolutionX/Y; initialization prefer
 
 ### 1.3.5 diagnostic host exchange
 Resolution change remains unconfirmed on the owner’s host (1.3.4 stayed 1920×1080). GET video settings and merge-preserving SET are now implemented. Compare requested/host-reported dimensions with actual decoded dimensions; do not treat sent settings as acceptance.
+
+### 1.3.6 monitor targeting
+Display list is actively requested with sub-ID 10. Output IDs are preserved/selected explicitly, selections remembered per host, and the decoder init no longer requests a resolution before output mapping. Missing output metadata blocks positive resolution changes. Multi-monitor behavior requires physical-host regression testing.

@@ -18,11 +18,13 @@ export function init(cfg={
 }) {
   return text(11,0,JSON.stringify({
     _version:1,_max_w:60000,_max_h:60000,_flags:cfg.video_codec==='hevc'?9:8,
-    resolutionX:cfg.server_resolution_x??1280,resolutionY:cfg.server_resolution_y??720,
+    // Resolution changes belong to the selected host output, not decoder init.
+    resolutionX:0,resolutionY:0,
     mediaContainer:0,refreshRate:cfg.encoder_fps||60
   }));
 }
 export function getVideoConfig(){return text(17,9,'');}
+export function getDisplays(){return text(17,10,'');}
 export function config(cfg={},base=null) {
   const merged=base?JSON.parse(JSON.stringify(base)):{video:[{}]};
   Object.assign(merged.video[0],{
@@ -31,6 +33,7 @@ export function config(cfg={},base=null) {
       ...(Number.isInteger(cfg.server_resolution_x)&&Number.isInteger(cfg.server_resolution_y)?{resolutionX:cfg.server_resolution_x,resolutionY:cfg.server_resolution_y}:{}),
       ...(typeof cfg.output==='string'?{output:cfg.output}:{})
   });
+  if(cfg.skip_resolution){delete merged.video[0].resolutionX;delete merged.video[0].resolutionY;}
   return text(17,11,JSON.stringify(merged));
 }
 export function reinit(cfg={}){
