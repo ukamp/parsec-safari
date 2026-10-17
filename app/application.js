@@ -312,7 +312,7 @@ $('controllerFullscreen').onclick=async()=>{
 $('download').onclick=()=>{
   client?.reportAudio();
   const blob=new Blob([JSON.stringify({
-    version:2,build:'1.2.0',experimental:true,events:diagnostics.events()
+    version:2,build:'1.2.1',experimental:true,events:diagnostics.events()
   },null,2)],{
     type:'application/json'
   }),url=URL.createObjectURL(blob),a=document.createElement('a');

@@ -1,23 +1,29 @@
-// One overlay subpage at a time; stream actions remain outside the panels.
+// Compact horizontal tabs; stream actions stay available above every panel.
 export function setupMenuNavigation($){
   const panels=[...document.querySelectorAll('[data-menu-panel]')];
   const buttons=[...document.querySelectorAll('[data-menu-target]')];
-  let current='home';
-  function show(name,focus=true){
+  let current='picture';
+  function show(name,focus=false){
     current=name;
     for(const panel of panels)panel.hidden=panel.dataset.menuPanel!==name;
-    $('menuBack').hidden=name==='home';
-    if(focus)(name==='home'?buttons[0]:$('menuBack'))?.focus({preventScroll:true});
+    for(const button of buttons){
+      const selected=button.dataset.menuTarget===name;
+      button.setAttribute('aria-selected',String(selected));button.tabIndex=selected?0:-1;
+      if(selected&&focus)button.focus({preventScroll:true});
+    }
     $('streamMenu').scrollTop=0;
   }
-  for(const button of buttons)button.onclick=()=>show(button.dataset.menuTarget);
-  $('menuBack').onclick=()=>show('home');
-  $('streamMenu').addEventListener('keydown',event=>{
-    if(event.key==='Escape'&&current!=='home'){
-      event.preventDefault();event.stopImmediatePropagation();show('home');
-    }
+  buttons.forEach((button,index)=>{
+    button.onclick=()=>show(button.dataset.menuTarget);
+    button.addEventListener('keydown',event=>{
+      if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+      event.preventDefault();
+      const next=event.key==='Home'?0:event.key==='End'?buttons.length-1:(index+(event.key==='ArrowRight'?1:buttons.length-1))%buttons.length;
+      show(buttons[next].dataset.menuTarget,true);
+    });
   });
-  return {reset:()=>show('home',false)};
+  show(current);
+  return {reset:()=>show(current)};
 }
 export function setupDiagnosticTabs($){
   const tabs=[$('diagnosticsOverviewTab'),$('diagnosticsTestsTab')];

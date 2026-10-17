@@ -1,4 +1,4 @@
-# Parsec Safari 1.2.0
+# Parsec Safari 1.2.1
 
 An independent, experimental Parsec web client focused on iPad Safari. It uses an existing Parsec host; no additional software is installed on Windows.
 
@@ -44,7 +44,7 @@ Historical vendor modules retain their MIT license at the published `LICENSE`. P
 
 ## 1.2.0
 
-- Overlay: Picture & quality, Controls, Audio and Statistics subpages; direct return/leave/disconnect actions.
+- Overlay: compact horizontal Picture & quality, Controls, Audio and Statistics tabs; text-style return/leave/disconnect actions next to the menu title.
 - Diagnostics: Overview and Tests tabs. Wake-lock/controller tests are in Tests.
 - Checkbox controls stay left of their label on Windows and iPad.
 - Optional experimental HEVC, browser support guard, actual received-codec statistics, local synthetic HEVC decode test and one bounded H.264 fallback.

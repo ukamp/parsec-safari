@@ -1,10 +1,10 @@
-# 1.2.0 — navigation and experimental HEVC
+# 1.2.1 — navigation and experimental HEVC
 
 The other selected capabilities retain the limits in the [1.1 implementation matrix](IMPLEMENTATION-1.1.md). This release supersedes that file's blocked-HEVC status with an **experimental, opt-in implementation**, not a claim of verified Parsec/iPad interoperability.
 
 ## Navigation
 
-The overlay has one level of Picture & quality, Controls, Audio and Statistics subpages. Return to stream, leave view and disconnect stay available above those pages. Opening it resets navigation to the category list; Escape returns from a subpage first. All overlay pages pause host input.
+The overlay uses compact horizontal Picture & quality, Controls, Audio and Statistics tabs. Return to stream, leave view and disconnect appear as text-style buttons beside the menu title. The selected tab is retained when reopening; arrow keys and Home/End navigate the tabs. Escape closes the overlay. Tabs scroll horizontally on narrow screens, with a thin underline marking the selected tab. All overlay tabs pause host input.
 
 Diagnostics has keyboard-accessible Overview and Tests tabs. Wake-lock and local controller tests moved from Settings into Tests, alongside API, Opus, H.264 and the new HEVC decoding test. The overview retains capability checks and the redacted technical history.
 

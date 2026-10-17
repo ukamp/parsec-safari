@@ -20,7 +20,7 @@
 <aside class="sidebar">
 <a class="brand" href="#computers">
 <span class="brand-mark">P</span> Parsec Safari</a>
-<span class="edition">COMMUNITY CLIENT · 1.2.0</span>
+<span class="edition">COMMUNITY CLIENT · 1.2.1</span>
 <nav aria-label="Hauptnavigation">
 <a href="#computers" data-page="computers">{{navigation.computers}}</a>
 <a href="#stream" data-page="stream">Stream</a>
@@ -92,23 +92,20 @@
 </div>
 <button id="streamMenuButton" type="button" tabindex="-1" aria-label="{{stream.openMenu}}" aria-controls="streamMenu" aria-expanded="false">☰</button>
 <div id="streamMenu" inert role="region" aria-label="{{text.parsecWebClientMenu}}" hidden>
+<div class="menu-header">
 <h2>{{text.parsecMenu}}</h2>
-<div class="menu-actions">
 <button id="closeMenu" type="button">{{stream.closeMenu}}</button>
 <button id="exitFullscreen" type="button" hidden>{{stream.leaveView}}</button>
 <button id="menuDisconnect" type="button" disabled>{{stream.disconnect}}</button>
 </div>
-<button id="menuBack" type="button" hidden>{{menu.back}}</button>
-<div data-menu-panel="home">
-<div class="menu-categories">
-<button type="button" data-menu-target="picture">{{menu.picture}}</button>
-<button type="button" data-menu-target="input">{{menu.input}}</button>
-<button type="button" data-menu-target="audio">{{menu.audio}}</button>
-<button type="button" data-menu-target="statistics">{{menu.statistics}}</button>
+<div class="menu-tabs" role="tablist" aria-label="{{text.parsecMenu}}">
+<button type="button" data-menu-target="picture" id="menuTab-picture" role="tab" aria-controls="menuPanel-picture" aria-selected="true" tabindex="0">{{menu.picture}}</button>
+<button type="button" data-menu-target="input" id="menuTab-input" role="tab" aria-controls="menuPanel-input" aria-selected="false" tabindex="-1">{{menu.input}}</button>
+<button type="button" data-menu-target="audio" id="menuTab-audio" role="tab" aria-controls="menuPanel-audio" aria-selected="false" tabindex="-1">{{menu.audio}}</button>
+<button type="button" data-menu-target="statistics" id="menuTab-statistics" role="tab" aria-controls="menuPanel-statistics" aria-selected="false" tabindex="-1">{{menu.statistics}}</button>
 </div>
-<p>{{text.inputToYourPCIsPausedWhileThisMenu}}</p>
-</div>
-<div data-menu-panel="picture" hidden><h3>{{menu.picture}}</h3>
+<p class="menu-input-hint">{{text.inputToYourPCIsPausedWhileThisMenu}}</p>
+<div data-menu-panel="picture" id="menuPanel-picture" role="tabpanel" aria-labelledby="menuTab-picture">
 <p id="fullscreenStatus" role="status">{{text.fullscreenHasNotBeenRequestedYet}}</p>
 <button id="menuFullscreen" type="button">{{text.toggleFullscreen}}</button>
 <button id="controllerFullscreen" type="button">{{stream.controllerView}}</button>
@@ -154,7 +151,7 @@
 </details>
 <p>{{text.ifRTOpensTheKeyboardInSafariFullscreenChoose}}</p>
 </div>
-<div data-menu-panel="input" hidden><h3>{{menu.input}}</h3>
+<div data-menu-panel="input" id="menuPanel-input" role="tabpanel" aria-labelledby="menuTab-input" hidden>
 <button id="showKeyboard" type="button">{{keyboard.show}}</button>
 <label>{{pointer.mode}} <select id="pointerMode"><option value="direct">{{pointer.direct}}</option><option value="touchpad">{{pointer.touchpad}}</option></select></label>
 <label><input id="allowRumble" type="checkbox"> {{controller.allowRumble}}</label>
@@ -179,11 +176,11 @@
 <p id="bindingStatus" role="status">{{text.xboxDefaultsActive}}</p>
 </details>
 </div>
-<div data-menu-panel="audio" hidden><h3>{{menu.audio}}</h3>
+<div data-menu-panel="audio" id="menuPanel-audio" role="tabpanel" aria-labelledby="menuTab-audio" hidden>
 <button id="menuMute" type="button">{{audio.mute}}</button>
 <label>{{text.volume}}<input id="overlayVolume" type="range" min="0" max="100" value="100"></label>
 </div>
-<div data-menu-panel="statistics" hidden><h3>{{menu.statistics}}</h3>
+<div data-menu-panel="statistics" id="menuPanel-statistics" role="tabpanel" aria-labelledby="menuTab-statistics" hidden>
 <p id="streamStats" role="status">{{stream.noActiveStream}}</p>
 <p id="codecStatus" role="status">{{codec.default}}</p>
 </div>

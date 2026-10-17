@@ -510,11 +510,22 @@ label > input[type=checkbox]{flex:0 0 20px;width:20px;height:20px;min-height:20p
 .settings-grid label:has(> input[type=checkbox]),label:has(> input[type=checkbox]){display:flex;flex-direction:row;align-items:flex-start;justify-content:flex-start;gap:10px;text-align:left}
 label > input[type=checkbox]{margin-top:2px;padding:0;align-self:flex-start}
 .form-help{grid-column:1/-1}
-.menu-actions,.menu-categories,.diagnostic-tabs{display:flex;flex-wrap:wrap;gap:8px}
-.menu-actions{position:sticky;top:0;background:#102524;z-index:1;padding-bottom:8px}
-.menu-categories{flex-direction:column}
-.menu-categories button{text-align:left}
-#menuBack{margin:12px 0}
+.diagnostic-tabs{display:flex;flex-wrap:wrap;gap:8px}
 .diagnostic-tabs{margin-bottom:20px}
 .diagnostic-tabs [aria-selected=true]{background:#b5f3ce;color:#102524}
 #streamMenu [hidden],[data-view] [hidden]{display:none!important}
+
+/* Compact overlay navigation. Buttons retain keyboard semantics but look like links. */
+.menu-header{display:flex;align-items:baseline;flex-wrap:wrap;gap:0;position:sticky;top:-20px;z-index:2;background:#0b1e1c;padding:8px 0}
+#streamMenu .menu-header h2{font-size:16px;line-height:1.5;margin:0;font-weight:650}
+#streamMenu .menu-header button{background:none;border:0;border-radius:0;box-shadow:none;color:#c4ded6;font:inherit;font-size:14px;font-weight:400;min-height:32px;padding:4px 0;margin:0;cursor:pointer}
+#streamMenu .menu-header button::before{content:'|';display:inline-block;color:#77928a;padding:0 10px}
+#streamMenu .menu-header button:hover{color:white;text-decoration:underline}
+#streamMenu .menu-header #menuDisconnect{color:#f0aaaa}
+#streamMenu .menu-header button:disabled{opacity:.45;cursor:default;text-decoration:none}
+.menu-tabs{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:16px;border-bottom:1px solid #ffffff26;scrollbar-width:thin;margin:4px 0 10px}
+#streamMenu .menu-tabs button{flex:0 0 auto;white-space:nowrap;background:none;color:#a8c2b9;border:0;border-bottom:2px solid transparent;border-radius:0;box-shadow:none;min-height:38px;margin:0;padding:7px 0;font-size:13px;font-weight:500}
+#streamMenu .menu-tabs [aria-selected=true]{color:#b5f3ce;border-bottom-color:#b5f3ce}
+#streamMenu .menu-tabs button:hover{color:white}
+#streamMenu .menu-header button:focus-visible,#streamMenu .menu-tabs button:focus-visible{outline:2px solid #b5f3ce;outline-offset:2px}
+#streamMenu .menu-input-hint{font-size:12px;color:#9db5ad;margin:8px 0 14px}
