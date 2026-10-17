@@ -18,7 +18,7 @@ export function init(cfg={
 }) {
   return text(11,0,JSON.stringify({
     _version:1,_max_w:60000,_max_h:60000,_flags:cfg.video_codec==='hevc'?9:8,
-    resolutionX:cfg.server_resolution_x||1280,resolutionY:cfg.server_resolution_y||720,
+    resolutionX:cfg.server_resolution_x??1280,resolutionY:cfg.server_resolution_y??720,
     mediaContainer:0,refreshRate:cfg.encoder_fps||60
   }));
 }
@@ -71,6 +71,8 @@ export function unpack(buf) {
     const size=v.getInt32(16);
     if(size<0||size>buf.byteLength-34)throw Error('cursor payload');
     const flags=v.getUint16(32);
+    m.cursorX=v.getUint16(24);m.cursorY=v.getUint16(26);m.stream=m.data2;
+    m.suppressed=!!(flags&2048);
     m.relative=!!(flags&256);
     m.hidden=!!(flags&512);
   }

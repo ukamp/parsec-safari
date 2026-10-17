@@ -44,3 +44,6 @@ Reference: [official web-app guide](https://support.parsec.app/hc/en-us/articles
 No Windows driver or helper is installed by this project. Host-dependent features cannot silently introduce one.
 
 See [1.3.1 input notes](INPUT-1.3.1.md). The user reports gamecontroller stability only in the installed Home Screen WebApp on the tested iPad. Pointer Lock API presence and a local predicted cursor do not certify browser/host behavior.
+
+### 1.3.3 resolution / pointer update
+Resolution modes: Host (no preference), Client (screen pixels, max 4K) and fixed sizes, effective next connection and subject to host acceptance. Decoded statistics show actual dimensions. Stream-local host cursor updates reconcile the helper only outside local gestures; this does not implement full multi-monitor coordinate mapping. See README for protocol details and remaining hardware validation.

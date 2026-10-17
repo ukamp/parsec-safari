@@ -19,3 +19,13 @@ console.log('H.264 codec default/migration, deferred-change feedback and synchro
 
 assert.equal(normalizeQuality({videoCodec:'auto'}).videoCodec,'h264');
 assert.equal(streamConfig({videoCodec:'hevc'}).video_codec,'hevc');
+
+assert.equal(normalizeQuality({resolution:'host'}).resolution,'host');
+const hostConfig=streamConfig({resolution:'host'});assert.equal(hostConfig.server_resolution_x,0);assert.equal(hostConfig.server_resolution_y,0);
+const {init,unpack}=await import(asset('stream/msg.js'));
+const hostInit=JSON.parse(new TextDecoder().decode(new Uint8Array(init(hostConfig),13)).replace(/\0$/,''));assert.equal(hostInit.resolutionX,0);assert.equal(hostInit.resolutionY,0);
+globalThis.window={screen:{width:1024,height:768},devicePixelRatio:2};let clientConfig=streamConfig({resolution:'client'});assert.equal(clientConfig.server_resolution_x,2048);assert.equal(clientConfig.server_resolution_y,1536);
+window.screen={width:6000,height:4000};clientConfig=streamConfig({resolution:'client'});assert.equal(clientConfig.server_resolution_x,3840);assert.equal(clientConfig.server_resolution_y,2560);
+window.screen={};clientConfig=streamConfig({resolution:'client'});assert.equal(clientConfig.server_resolution_x,1280);
+const cursor=new ArrayBuffer(34),cv=new DataView(cursor);cv.setUint8(12,9);cv.setUint16(24,600);cv.setUint16(26,300);cv.setUint16(32,2048);const parsed=unpack(cursor);assert.equal(parsed.cursorX,600);assert.equal(parsed.cursorY,300);assert.equal(parsed.suppressed,true);assert.equal(parsed.stream,0);
+console.log('Host no-preference sentinel survives serialization; client screen dimensions/DPR/caps and cursor layout passed.');

@@ -23,7 +23,7 @@ export class Input {
     this.buttons=new Set();
     this.gamepad=null;
     this.pointer={mode:'direct',sensitivity:1,showCursor:true};
-    this.pointerIdle=true;this.pointerIdleTimer=null;
+    this.lastPointerInput=0;this.pointerIdle=true;this.pointerIdleTimer=null;
     this.cursor={x:.5,y:.5};this.touchPointer=false;this.onPointer=()=>{};this.onHapticStatus=()=>{};
     this.onZoom=()=>{};this.getZoom=()=>1;
   }
@@ -53,7 +53,15 @@ export class Input {
     const scale=Math.min(r.width/w,r.height/h);
     return {w,h,scale,left:r.left+(r.width-w*scale)/2,top:r.top+(r.height-h*scale)/2};
   }
+  syncHostCursor(message){
+    // Only stream-local positions; never treat desktop coordinates as stream pixels.
+    if(message.stream!==0||message.relative||message.hidden||message.suppressed||this.touch?.points.size||Date.now()-this.lastPointerInput<200)return false;
+    const {cursorX:x,cursorY:y}=message,w=this.video.width,h=this.video.height;
+    if(!w||!h||!Number.isInteger(x)||!Number.isInteger(y)||x<0||y<0||x>=w||y>=h)return false;
+    this.cursor={x:x/w,y:y/h};this.renderPointer();return true;
+  }
   pointerActivity(){
+    this.lastPointerInput=Date.now();
     clearTimeout(this.pointerIdleTimer);this.pointerIdle=false;
     this.pointerIdleTimer=setTimeout(()=>{this.pointerIdle=true;this.renderPointer();},2500);
     this.pointerIdleTimer?.unref?.();

@@ -89,6 +89,7 @@ export class Client {
         }
         else if(type===9){
           this.input.setMouseMode(message.relative,message.hidden);
+          this.input.syncHostCursor(message);
         }
         else if(type===16){
           this.shutter=!!code;

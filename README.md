@@ -1,4 +1,4 @@
-# Parsec Safari 1.3.2
+# Parsec Safari 1.3.3
 
 An independent, experimental Parsec web client focused on iPad Safari. It uses an existing Parsec host; no additional software is installed on Windows.
 
@@ -64,3 +64,8 @@ Controller vibration remains unconfirmed/non-working on the owner's iPad. Availa
 
 ### 1.3.2 input and codec preferences
 H.264 is preferred after iPad performance feedback. The local helper cursor hides after 2.5 seconds without pointer/touch input; controller polling and settings refresh do not wake it. A controller warning is shown during native browser fullscreen; Home Screen WebApp/controller view remains recommended.
+
+### 1.3.3 resolution and host pointer synchronization
+Resolution selection now includes Host (wire initialization no-preference sentinel 0×0), Client (screen CSS pixels × DPR, even dimensions, proportionally capped to 4K), and existing fixed sizes. Requests apply at next connection, are not guaranteed host changes, and decoded dimensions in Statistics remain authoritative. The native host configuration sentinel 65535 is not sent as a video dimension.
+Cursor opcode 9 stream-local positions are parsed without images and used to reconcile the local touchpad position only for stream 0, within decoded bounds, in absolute visible mode, with no active touch gesture and at least 200 ms after local pointer input. Updates never wake the idle helper or send input. This is not cross-monitor coordinate mapping: host positions outside the stream, missing host updates and other-monitor activity cannot be reliably mapped with the metadata currently supplied. No monitor offsets are guessed.
+Protocol source: [lowlat cursor layout](https://github.com/nomi-san/lowlat/blob/7b4dc4ae79990ea8c59a108c80b3c89b695c3cb4/crates/core/src/cursor.rs) and [initialization semantics](https://github.com/nomi-san/lowlat/blob/7b4dc4ae79990ea8c59a108c80b3c89b695c3cb4/docs/01-protocol.md). Physical iPad / multi-monitor host validation remains required.

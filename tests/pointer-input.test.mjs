@@ -38,3 +38,9 @@ const warning={hidden:true};document.fullscreenElement=null;showControllerFullsc
 document.fullscreenElement={};showControllerFullscreenWarning(warning,false);assert.equal(warning.hidden,true);showControllerFullscreenWarning(warning,true);assert.equal(warning.hidden,false);
 document.fullscreenElement=null;showControllerFullscreenWarning(warning,true);assert.equal(warning.hidden,true);
 console.log('Pointer idles, refresh cannot wake it, real input wakes it; controller warning requires actual native fullscreen.');
+
+const sync=fixture('touchpad');const before=sync.sent.length;const host={stream:0,cursorX:900,cursorY:400};
+assert.equal(sync.input.syncHostCursor(host),true);assert.equal(sync.input.cursor.x,900/1280);assert.equal(sync.sent.length,before);assert.equal(sync.points.at(-1).visible,false);
+for(const bad of [{...host,stream:1},{...host,cursorX:65535},{...host,relative:true},{...host,hidden:true},{...host,suppressed:true}])assert.equal(sync.input.syncHostCursor(bad),false);
+sync.video.events.pointerdown(event(12,200,100));assert.equal(sync.input.syncHostCursor(host),false);sync.video.events.pointerup(event(12,200,100));assert.equal(sync.input.syncHostCursor(host),false);sync.input.detach();
+console.log('Host cursor synchronization rejects foreign streams, out-of-bounds positions, hidden/relative/suppressed updates and active/recent local gestures without sending input or waking the helper.');
