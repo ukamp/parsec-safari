@@ -1,4 +1,4 @@
-# Parsec Safari 1.3.13
+# Parsec Safari 1.3.14
 
 An independent, experimental Parsec web client focused on iPad Safari. It uses an existing Parsec host; no additional software is installed on Windows.
 
@@ -106,3 +106,6 @@ The owner's 1.3.11 report shows three display entries but no host-video-config-r
 The owner confirms direct monitor selection and resolution changes now work: the first Generic PnP entry is Windows monitor 2 (primary), the second is Windows monitor 1. This ordering is user-specific and is never hardcoded. Startup now reuses a locally saved explicit output ID through the same working selectDisplay path, once both the host configuration and fresh display list are available, in either arrival order. It never infers the target from host defaults or array/list indices. Duplicate metadata cannot replay startup; a manual choice overrides pending restoration; stale saved IDs cause no resize and no fallback to a different screen. Without a saved ID, select a monitor once and reconnect. The physical startup result still requires owner verification.
 
 Remembered sessions are reloaded and validated after a Safari page-cache return; explicit logout still clears storage. Passwords and two-factor codes are never stored by the app. Lifecycle regression coverage includes return and logout.
+
+### 1.3.14 defer saved monitor restoration until first decoded frame
+The owner reports startup still needs an away/back switch, while manual selection works. The previous saved-output SET could run before decoder initialization/first video. Saved output restoration now waits for the first actually decoded frame as well as the validated display list and host configuration, in any arrival order. It sends the same direct selection once; it never cycles through another monitor. Manual choices cancel pending startup restoration and remain immediate. Tests cover all six readiness orders, repeated metadata/frames, stale IDs, manual override and teardown. Physical host behavior remains to be verified; timing is a candidate cause, not a proven host-protocol guarantee.

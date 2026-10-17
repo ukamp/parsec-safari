@@ -79,3 +79,6 @@ Display list without host video settings no longer silently rejects a choice: po
 User confirms manual monitor and resolution changes. Startup replays the saved output ID once after fresh list validation and host config arrival. No stored choice or missing ID means no automatic resize. Manual override wins. Windows monitor numbers are not inferred from list order.
 
 Remembered sessions are reloaded and validated after a Safari page-cache return; explicit logout still clears storage. Passwords and two-factor codes are never stored by the app. Lifecycle regression coverage includes return and logout.
+
+### 1.3.14 defer saved monitor restoration until first decoded frame
+The owner reports startup still needs an away/back switch, while manual selection works. The previous saved-output SET could run before decoder initialization/first video. Saved output restoration now waits for the first actually decoded frame as well as the validated display list and host configuration, in any arrival order. It sends the same direct selection once; it never cycles through another monitor. Manual choices cancel pending startup restoration and remain immediate. Tests cover all six readiness orders, repeated metadata/frames, stale IDs, manual override and teardown. Physical host behavior remains to be verified; timing is a candidate cause, not a proven host-protocol guarantee.

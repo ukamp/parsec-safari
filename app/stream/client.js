@@ -14,7 +14,7 @@ export class Client {
     this.connected=false;
     this.rtc=null;
     this.signal=null;
-    this.configured=false;this.hostVideoConfig=null;this.hostConfigured=false;this.explicitOutputForConnection=false;this.displayReadbackTimer=null;this.hostConfigRetryTimer=null;this.pendingDisplayChoice=null;this.startupDisplayChoice=null;this.displaysReceived=false;
+    this.configured=false;this.hostVideoConfig=null;this.hostConfigured=false;this.explicitOutputForConnection=false;this.displayReadbackTimer=null;this.hostConfigRetryTimer=null;this.pendingDisplayChoice=null;this.startupDisplayChoice=null;this.displaysReceived=false;this.firstFrameReady=false;
     this.controlPackets=0;
     this.audioPackets=0;
     this.audioBytes=0;
@@ -22,7 +22,7 @@ export class Client {
     this.seen=new Set();
     this.displays=[];this.hostEncodeMs=null;
     this.audioPlayer=new AudioPlayer((stage,metrics)=>this.diagnostic(stage,metrics));
-    this.videoPlayer=new VideoPlayer(video,()=>{if(!this.fallbackH264())this.destroy(-6106);},(stage,metrics)=>this.diagnostic(stage,metrics),()=>{this.input?.renderPointer();clearTimeout(this.codecTimer);if(!this.hostVideoConfig)this.loadHostConfig();this.onEvent({type:'frame'});},()=>{
+    this.videoPlayer=new VideoPlayer(video,()=>{if(!this.fallbackH264())this.destroy(-6106);},(stage,metrics)=>this.diagnostic(stage,metrics),()=>{this.input?.renderPointer();clearTimeout(this.codecTimer);this.firstFrameReady=true;this.restoreDisplayChoice();if(!this.hostVideoConfig)this.loadHostConfig();this.onEvent({type:'frame'});},()=>{
       if(this.connected)this.rtc?.send(Msg.reinit(this.config),0);
     });
     this.input=new Input(video,buf=>{
@@ -176,7 +176,9 @@ export class Client {
     if(!this.displays.some(display=>display.id===id)){
       this.startupDisplayChoice=null;this.diagnostic('saved-display-unavailable');return false;
     }
-    if(!this.hostVideoConfig)return false;
+    if(!this.hostVideoConfig||!this.firstFrameReady)return false;
+    // Decoder init must finish before restoring host settings; otherwise startup
+    // can supersede the resolution change. Manual selection remains immediate.
     // Consume before sending: delayed metadata must never replay the selection.
     this.startupDisplayChoice=null;
     const sent=this.selectDisplay(id);

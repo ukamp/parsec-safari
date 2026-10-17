@@ -323,7 +323,7 @@ $('resumeStream').onclick=()=>{if(session&&lastPeer&&!client&&reconnect.timer===
 $('download').onclick=()=>{
   client?.reportAudio();
   const blob=new Blob([JSON.stringify({
-    version:2,build:'1.3.13',experimental:true,diagnosticsEnabled:diagnostics.enabled(),events:diagnostics.events()
+    version:2,build:'1.3.14',experimental:true,diagnosticsEnabled:diagnostics.enabled(),events:diagnostics.events()
   },null,2)],{
     type:'application/json'
   }),url=URL.createObjectURL(blob),a=document.createElement('a');

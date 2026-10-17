@@ -73,19 +73,27 @@ try{
 }finally{globalThis.setTimeout=realSetTimeout;globalThis.clearTimeout=realClearTimeout;timeoutClient.destroy();}
 console.log('Missing HEVC video triggers H.264 after eight seconds; failed fallback disconnects after eight more seconds.');
 
-// The reported default output and real stream dimensions may disagree. Never SET on startup.
+// Restore only after a decoded frame and validated metadata, in every arrival order.
 const decodeSettings=buffer=>JSON.parse(new TextDecoder().decode(new Uint8Array(buffer,13)).replace(/\0$/,''));
-for(const order of ['list-first','config-first']){
+for(const order of ['list-config-frame','config-list-frame','frame-list-config','frame-config-list','list-frame-config','config-frame-list']){
  const restored=new Client(video,()=>{});await restored.connect('synthetic-token','peer',{output:'monitor-2',server_resolution_x:1024,server_resolution_y:768});restored.rtc.channels[0].onopen();restored.rtc.channels[1].onopen();const before=settingsPackets().length;
- const first=order==='list-first'?initialList:hostSettingsPacket,second=order==='list-first'?hostSettingsPacket:initialList;
- restored.rtc.channels[0].onmessage({data:first.buffer});assert.equal(settingsPackets().length,before);restored.rtc.channels[0].onmessage({data:second.buffer});assert.equal(settingsPackets().length,before+1);const restoredSettings=decodeSettings(settingsPackets().at(-1));assert.equal(restoredSettings.video[0].output,'monitor-2');assert.equal(restoredSettings.video[0].resolutionX,1024);assert.equal(restoredSettings.video[0].resolutionY,768);
- restored.rtc.channels[0].onmessage({data:hostSettingsPacket.buffer});restored.rtc.channels[0].onmessage({data:initialList.buffer});assert.equal(settingsPackets().length,before+1);assert.equal(restored.startupDisplayChoice,null);restored.destroy();
+ const sequence=order.split('-');
+ for(let i=0;i<sequence.length;i++){
+  const part=sequence[i];
+  if(part==='frame')restored.rtc.channels[1].onmessage({data:sample.buffer});
+  else restored.rtc.channels[0].onmessage({data:(part==='list'?initialList:hostSettingsPacket).buffer});
+  assert.equal(settingsPackets().length,before+(i===2?1:0),order+': no settings until frame and both metadata replies');
+ }
+ const restoredSettings=decodeSettings(settingsPackets().at(-1));assert.equal(restoredSettings.video[0].output,'monitor-2');assert.equal(restoredSettings.video[0].resolutionX,1024);assert.equal(restoredSettings.video[0].resolutionY,768);
+ restored.rtc.channels[0].onmessage({data:hostSettingsPacket.buffer});restored.rtc.channels[0].onmessage({data:initialList.buffer});restored.rtc.channels[1].onmessage({data:sample.buffer});assert.equal(settingsPackets().length,before+1);assert.equal(restored.startupDisplayChoice,null);restored.destroy();
 }
+// Teardown before the first frame cannot replay a saved selection.
+const stopped=new Client(video,()=>{});await stopped.connect('synthetic-token','peer',{output:'monitor-2',server_resolution_x:1024,server_resolution_y:768});stopped.rtc.channels[0].onopen();stopped.rtc.channels[1].onopen();stopped.rtc.channels[0].onmessage({data:initialList.buffer});stopped.rtc.channels[0].onmessage({data:hostSettingsPacket.buffer});const beforeStop=settingsPackets().length,lateVideo=stopped.rtc.channels[1].onmessage;stopped.destroy();lateVideo({data:sample.buffer});assert.equal(settingsPackets().length,beforeStop);
 for(const output of [undefined,'removed-monitor']){
  const noRestore=new Client(video,()=>{});await noRestore.connect('synthetic-token','peer',{...(output?{output}:{}),server_resolution_x:1024,server_resolution_y:768});noRestore.rtc.channels[0].onopen();noRestore.rtc.channels[1].onopen();const before=settingsPackets().length;noRestore.rtc.channels[0].onmessage({data:initialList.buffer});noRestore.rtc.channels[0].onmessage({data:hostSettingsPacket.buffer});noRestore.rtc.channels[1].onmessage({data:sample.buffer});assert.equal(settingsPackets().length,before);assert.equal(noRestore.explicitOutputForConnection,false);noRestore.destroy();
 }
 const overridden=new Client(video,()=>{});await overridden.connect('synthetic-token','peer',{output:'monitor-1',server_resolution_x:1280,server_resolution_y:720});overridden.rtc.channels[0].onopen();overridden.rtc.channels[1].onopen();overridden.rtc.channels[0].onmessage({data:initialList.buffer});const beforeOverride=settingsPackets().length;assert.equal(overridden.selectDisplay('monitor-2'),true);assert.equal(settingsPackets().length,beforeOverride);overridden.rtc.channels[0].onmessage({data:hostSettingsPacket.buffer});assert.equal(settingsPackets().length,beforeOverride+1);assert.equal(decodeSettings(settingsPackets().at(-1)).video[0].output,'monitor-2');overridden.destroy();
-console.log('Saved output restores once in either metadata order; stale/missing IDs never resize; pending manual choice overrides saved selection.');
+console.log('Saved output restores once after the first decoded frame in all six arrival orders; stale/missing IDs never resize; pending manual choice overrides saved selection.');
 
 const readback=new Client(video,()=>{});await readback.connect('synthetic-token','peer',{server_resolution_x:1024,server_resolution_y:768});readback.rtc.channels[0].onopen();readback.rtc.channels[1].onopen();readback.hostVideoConfig={video:[{output:'monitor-1',resolutionX:1024,resolutionY:768}]};readback.displays=[{id:'monitor-2'}];
 const readTimers=[];try{globalThis.setTimeout=(fn,ms)=>{const t={fn,ms,cancelled:false,unref(){}};readTimers.push(t);return t;};globalThis.clearTimeout=t=>{if(t&&typeof t==='object'&&'cancelled' in t)t.cancelled=true;else realClearTimeout(t);};
