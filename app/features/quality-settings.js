@@ -53,7 +53,7 @@ export function setupQuality({getClient,$}){
     const field=id=>$(overlay?'overlay'+id[0].toUpperCase()+id.slice(1):id),client=getClient();
     const next=normalizeQuality({bitrate:Number(field('bitrate').value),frameRate:Number(field('frameRate').value),resolution:field('resolution').value,volume:quality.volume,constantFps:field('constantFps').checked,videoCodec:field('videoCodec').value});
     const base=client?connectionQuality:appliedQuality;
-    const deferred=next.resolution!==base.resolution||next.videoCodec!==base.videoCodec;
+    const deferred=next.videoCodec!==base.videoCodec;
     quality=next;appliedQuality={...next};fill();
     const saved=playback.remember&&writePreference('parsec-quality-v1',quality);
     applyVolume();

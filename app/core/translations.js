@@ -12,7 +12,7 @@ export const translations={
 "display.currentUnknown":{"de":"Aktueller Host-Monitor (Zuordnung nicht gemeldet)","en":"Current host display (mapping not reported)"},
 "resolution.host":{"de":"Host-Auflösung beibehalten","en":"Keep host resolution"},
 "resolution.client":{"de":"Client-Auflösung verwenden","en":"Use client resolution"},
-"resolution.help":{"de":"Host: keine neue Auflösung anfordern. Client: Bildschirmgröße dieses Geräts in Pixeln anfordern (max. 4K). Alternativ feste Größe wählen. Ab nächster Verbindung; der Host kann die Anfrage ignorieren. Die tatsächliche Größe steht unter Statistik.","en":"Host: request no resolution change. Client: request this device’s screen size in pixels (up to 4K). Or choose a fixed size. Applies to the next connection; the host may ignore the request. Statistics shows the actual size."},
+"resolution.help":{"de":"Host: keine neue Auflösung anfordern. Client: Bildschirmgröße dieses Geräts in Pixeln anfordern (max. 4K). Alternativ feste Größe wählen. Mit „Übernehmen“ während der Verbindung anfordern; vorher einen Monitor auswählen. Der Host kann die Anfrage ignorieren. Die tatsächliche Größe steht unter Statistik.","en":"Host: request no resolution change. Client: request this device’s screen size in pixels (up to 4K). Or choose a fixed size. Request during the connection with Apply, after selecting a monitor. The host may ignore the request. Statistics shows the actual size."},
 "pointer.multiMonitorHelp":{"de":"Host-Zeigerpositionen werden für den gestreamten Monitor abgeglichen, sofern verfügbar. Auf einem anderen Host-Monitor ist der lokale Hilfszeiger nicht verlässlich. Den Zeiger am Host in den gestreamten Monitor zurückbewegen oder den passenden Monitor auswählen. Keine automatische Mehrmonitor-Kalibrierung.","en":"Host pointer positions are synchronized for the streamed monitor when available. The local helper is not reliable while the host pointer is on another monitor. Move it back into the streamed monitor on the host, or select the matching monitor. Automatic multi-monitor calibration is not available."},
 "codec.optionalHevc":{"de":"H.265 / HEVC (optional, mit H.264-Fallback)","en":"H.265 / HEVC (optional, with H.264 fallback)"},
 "controller.fullscreenWarning":{"de":"Controller im Browser-Vollbild: Auf dem getesteten iPad können Fokusprobleme auftreten, besonders mit RT. Verwende für Controller bevorzugt die Controlleransicht in der Home-Screen-WebApp.","en":"Controller in browser fullscreen: focus problems can occur on the tested iPad, especially with RT. Prefer controller view in the Home Screen WebApp for controllers."},
@@ -45,7 +45,7 @@ export const translations={
 "common.details":{"de": "Details", "en": "Details"},
 "quality.moreInfo":{"de": "Hinweis zur nächsten Verbindung anzeigen", "en": "Show when this change takes effect"},
 "quality.nextConnection":{"de": "Erst ab nächster Verbindung wirksam.", "en": "Takes effect on the next connection."},
-"quality.requested":{"de": "Bitrate und Bildrate beim Host angefordert; noch nicht bestätigt.", "en": "Bitrate and frame rate requested from the host; not yet confirmed."},
+"quality.requested":{"de": "Stream-Einstellungen beim Host angefordert; noch nicht bestätigt.", "en": "Stream settings requested from the host; not yet confirmed."},
 "quality.notReady":{"de": "Der Stream nimmt momentan keine Einstellungen an.", "en": "The stream is not ready to accept settings."},
 "codec.automatic":{"de": "Automatisch: HEVC bevorzugen, sonst H.264", "en": "Automatic: prefer HEVC, otherwise H.264"},
 "codec.forceH264":{"de": "H.264 (Standard)", "en": "H.264 (default)"},
@@ -334,8 +334,8 @@ export const translations={
     "en": "Changing language reloads the app and disconnects any active stream."
   },
   "text.bitrateAndFrameRateCanBeRequestedDuringA": {
-    "de": "Bitrate und Bildrate lassen sich während der Verbindung anfordern. Eine neue Auflösung wird beim nächsten Verbinden angefordert; der Host entscheidet über die tatsächliche Auflösung.",
-    "en": "Bitrate and frame rate can be requested during a connection. A new resolution is requested on the next connection; the host determines the actual resolution."
+    "de": "Bitrate, Bildrate und Auflösung lassen sich während der Verbindung mit „Übernehmen“ anfordern. Für die Auflösung muss ein Monitor ausgewählt sein; der Host entscheidet über die tatsächliche Größe.",
+    "en": "Bitrate, frame rate and resolution can be requested during a connection with Apply. Resolution requires a selected monitor; the host determines the actual size."
   },
   "text.quality": {
     "de": "Qualität",
@@ -785,8 +785,8 @@ export const translations={
     "en": "Active only in this tab. "
   },
   "text.bitrateAndFrameRateRequestedNewResolutionAppliesOn": {
-    "de": "Bitrate und Bildrate angefordert. Neue Auflösung gilt beim nächsten Verbinden.",
-    "en": "Bitrate and frame rate requested. New resolution applies on the next connection."
+    "de": "Stream-Einstellungen angefordert; die tatsächliche Auflösung steht unter Statistik.",
+    "en": "Stream settings requested; Statistics shows the actual resolution."
   },
   "text.streamNotReadyYetTheseSettingsApplyOnThe": {
     "de": "Stream noch nicht bereit; die Werte gelten beim nächsten Verbinden.",

@@ -1,4 +1,4 @@
-# Parsec Safari 1.3.15
+# Parsec Safari 1.3.16
 
 An independent, experimental Parsec web client focused on iPad Safari. It uses an existing Parsec host; no additional software is installed on Windows.
 
@@ -112,3 +112,6 @@ The owner reports startup still needs an away/back switch, while manual selectio
 
 ### 1.3.15 saved settings versus actual resolution
 Owner report from 1.3.14 confirms the startup SET is sent after the first decoded frame. The host already reports the desired 1024x768 for the selected output while decoded frames remain 1920x1080; identical settings have no observed effect. For this precise mismatch, startup now sends the actual decoded size to the same saved output, waits for host settings to report that size/output, then sends the desired size once. Other monitor outputs are never selected and other configuration slots are retained. This is a targeted workaround for a suspected host no-op, not proof of host implementation behavior. A three-second deadline, explicit manual selection and disconnect cancel the pending second stage; there is no retry loop. Zero/no-preference resolutions skip the workaround. Stream dimensions remain the authority for actual effect. Synthetic tests cover successful/stale replies, timeout, manual override and teardown. Hardware verification remains required.
+
+### 1.3.16 live resolution changes
+The owner confirms saved resolution works at startup. During a connection, Apply now sends the selected resolution immediately to the explicitly selected output, using the proven host-settings merge path and requesting readback. Desired resolution is kept if metadata is not ready; no unknown/default target is resized. Codec changes alone still require reconnect; resolution help and transient feedback are updated in German/English. During a pending startup resolution transition, the latest desired settings are used by its final stage. Actual decoded dimensions remain authoritative; no automatic reconnect occurs.

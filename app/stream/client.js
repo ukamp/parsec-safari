@@ -239,13 +239,15 @@ export class Client {
   }
   updateQuality(config){
     if(!this.connected||this.closed)return false;
-    // Resolution and codec changes remain deferred until reconnect.
-    const {video_codec,server_resolution_x,server_resolution_y,...live}=config;
+    // Codec changes need reconnect; resolution targets the explicitly selected output live.
+    const {video_codec,...live}=config;
     this.config={...this.config,...live};
     if(this.startupResolutionTransition)return false;
     if(!this.hostVideoConfig)return false;
     const settings=this.settingsConfig();if(!settings)return false;
-    return this.rtc.send(Msg.config(settings,this.hostVideoConfig),0);
+    const sent=this.rtc.send(Msg.config(settings,this.hostVideoConfig),0)===true;
+    if(sent){this.diagnostic('live-stream-settings-sent',{requestedWidth:settings.server_resolution_x??0,requestedHeight:settings.server_resolution_y??0});this.requestDisplayReadback();}
+    return sent;
   }
   loadHostConfig(attempt=0){
     if(this.closed||!this.connected||this.hostVideoConfig)return false;

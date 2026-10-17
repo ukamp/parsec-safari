@@ -19,7 +19,7 @@ Reference: [official web-app guide](https://support.parsec.app/hc/en-us/articles
 | Touch / keyboard / zoom | Implemented with limits | Direct/touchpad, gestures, zoom, ASCII text and special keys; hardware/iPad validation pending |
 | Fullscreen / Controller view | Native API + non-native expanded view | Delayed Safari exit and duplicate-event tests; switching keeps the stream surface. OS bars/window frames may remain; physical rendering still needs validation |
 | Screen wake lock | Implemented | API denial/release/visibility tests; browser/OS may revoke |
-| Quality presets / volume | Implemented | Local validation; bitrate/FPS request can be sent during stream; host decides actual quality; resolution requested on next connection |
+| Quality presets / volume | Implemented | Local validation; bitrate/FPS request can be sent during stream; host decides actual quality; resolution can be requested live for an explicitly selected output |
 | Live statistics | Implemented | Decoded FPS, incoming video data rate, dimensions and dropped packets; not end-to-end latency |
 | Home Screen launch | Manifest and icons | Manifest, icons, Apple metadata and menu instructions; Safari installation requires user action; no automatic iPad install dialog or offline streaming |
 | Diagnostics | Implemented | Bounded, rate-limited local history/export; API check and local codec tests under Diagnostics; RT/focus counters; exact timestamps mean not fully anonymous |
@@ -46,7 +46,7 @@ No Windows driver or helper is installed by this project. Host-dependent feature
 See [1.3.1 input notes](INPUT-1.3.1.md). The user reports gamecontroller stability only in the installed Home Screen WebApp on the tested iPad. Pointer Lock API presence and a local predicted cursor do not certify browser/host behavior.
 
 ### 1.3.3 resolution / pointer update
-Resolution modes: Host (no preference), Client (screen pixels, max 4K) and fixed sizes, effective next connection and subject to host acceptance. Decoded statistics show actual dimensions. Stream-local host cursor updates reconcile the helper only outside local gestures; this does not implement full multi-monitor coordinate mapping. See README for protocol details and remaining hardware validation.
+Resolution modes: Host (no preference), Client (screen pixels, max 4K) and fixed sizes, requested live with Apply for an explicitly selected monitor and subject to host acceptance. Decoded statistics show actual dimensions. Stream-local host cursor updates reconcile the helper only outside local gestures; this does not implement full multi-monitor coordinate mapping. See README for protocol details and remaining hardware validation.
 
 ### 1.3.4 resolution correction
 Host video-configuration messages now carry resolutionX/Y; initialization preferences alone did not implement the host setting. Initial settings are sent once on host configuration or first video. Physical-host acceptance is unconfirmed; the owner reported that 1.3.3 remained at 1920×1080.
@@ -85,3 +85,6 @@ The owner reports startup still needs an away/back switch, while manual selectio
 
 ### 1.3.15 saved settings versus actual resolution
 Owner report from 1.3.14 confirms the startup SET is sent after the first decoded frame. The host already reports the desired 1024x768 for the selected output while decoded frames remain 1920x1080; identical settings have no observed effect. For this precise mismatch, startup now sends the actual decoded size to the same saved output, waits for host settings to report that size/output, then sends the desired size once. Other monitor outputs are never selected and other configuration slots are retained. This is a targeted workaround for a suspected host no-op, not proof of host implementation behavior. A three-second deadline, explicit manual selection and disconnect cancel the pending second stage; there is no retry loop. Zero/no-preference resolutions skip the workaround. Stream dimensions remain the authority for actual effect. Synthetic tests cover successful/stale replies, timeout, manual override and teardown. Hardware verification remains required.
+
+### 1.3.16 live resolution changes
+The owner confirms saved resolution works at startup. During a connection, Apply now sends the selected resolution immediately to the explicitly selected output, using the proven host-settings merge path and requesting readback. Desired resolution is kept if metadata is not ready; no unknown/default target is resized. Codec changes alone still require reconnect; resolution help and transient feedback are updated in German/English. During a pending startup resolution transition, the latest desired settings are used by its final stage. Actual decoded dimensions remain authoritative; no automatic reconnect occurs.

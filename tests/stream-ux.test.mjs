@@ -9,8 +9,9 @@ const map=new Map(),saved=new Map();const $=id=>{if(!map.has(id))map.set(id,{val
 globalThis.localStorage={getItem:()=>null,setItem:(k,v)=>saved.set(k,v)};
 let volume;const client={audioPlayer:{setVolume:v=>volume=v},updateQuality:()=>true};const quality=setupQuality({$,getClient:()=>client});quality.beginStream();
 $('resolution').value='1920x1080';$('qualityForm').onsubmit({preventDefault(){}});
-assert.match($('qualityStatus').textContent,/nächster Verbindung/);assert.match($('qualityStatus').textContent,/noch nicht bestätigt/);
-assert.equal($('overlayResolution').value,'1920x1080');assert.equal($('overlayVideoCodec').value,'h264');
+assert.doesNotMatch($('qualityStatus').textContent,/nächster Verbindung/);assert.match($('qualityStatus').textContent,/noch nicht bestätigt/);
+$('videoCodec').value='hevc';$('qualityForm').onsubmit({preventDefault(){}});assert.match($('qualityStatus').textContent,/nächster Verbindung/);
+assert.equal($('overlayResolution').value,'1920x1080');assert.equal($('overlayVideoCodec').value,'hevc');
 $('volume').value='0';$('volume').oninput();assert.equal(volume,0);assert.equal($('menuMute').attrs['aria-pressed'],'true');assert.match($('audioStatus').textContent,/Stumm/);
 $('menuMute').onclick();assert.equal(volume,1);assert.equal($('volume').value,'100');assert.equal($('overlayVolume').value,'100');assert.equal($('menuMute').attrs['aria-pressed'],'false');
 $('overlayVolume').value='25';$('overlayVolume').oninput();assert.equal(volume,.25);assert.equal($('volume').value,'25');assert.match($('audioStatus').textContent,/25%/);
