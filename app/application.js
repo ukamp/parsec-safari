@@ -227,6 +227,7 @@ async function connect(peer,retrying=false){
     current=new Client($('video'),event=>{
       if(client!==current&&event.type!=='diagnostic')return;
       if(event.type==='codec'){$('codecStatus').textContent=t('codec.'+event.state);return;}
+      if(event.type==='host-config-pending'||event.type==='host-config-unavailable'){$('displayStatus').textContent=t(event.type==='host-config-pending'?'display.configPending':'display.configUnavailable');return;}
       if(event.type==='display-selection-required'){$('displayStatus').textContent=t('display.explicitRequired');return;}
       if(event.type==='display-mapping-unavailable'){$('displayStatus').textContent=t('display.mappingUnavailable');return;}
       if(event.type==='displays'){
@@ -292,7 +293,7 @@ async function connect(peer,retrying=false){
     note('connection-setup-failed',t("text.connectionSetupFailedCompatibilityOfTheExperimentalAdapterHas"));
   }
 }
-$('displaySelection').onchange=()=>{const selected=$('displaySelection').value,sent=client?.selectDisplay(selected);if(sent&&client.peer)writePreference('parsec-display-'+client.peer,selected);$('displayStatus').textContent=sent?t('display.requested'):t(client?.displayMappingMissing?'display.mappingUnavailable':'display.unavailable');};
+$('displaySelection').onchange=()=>{const selected=$('displaySelection').value,sent=client?.selectDisplay(selected);if(sent&&client.peer)writePreference('parsec-display-'+client.peer,selected);$('displayStatus').textContent=sent?t(client?.pendingDisplayChoice?'display.configPending':'display.requested'):t(client?.displayMappingMissing?'display.mappingUnavailable':'display.unavailable');};
 $('stop').onclick=$('menuDisconnect').onclick=()=>{
   stop();
   note('disconnected-by-user',t("text.disconnected"));
@@ -322,7 +323,7 @@ $('resumeStream').onclick=()=>{if(session&&lastPeer&&!client&&reconnect.timer===
 $('download').onclick=()=>{
   client?.reportAudio();
   const blob=new Blob([JSON.stringify({
-    version:2,build:'1.3.11',experimental:true,diagnosticsEnabled:diagnostics.enabled(),events:diagnostics.events()
+    version:2,build:'1.3.12',experimental:true,diagnosticsEnabled:diagnostics.enabled(),events:diagnostics.events()
   },null,2)],{
     type:'application/json'
   }),url=URL.createObjectURL(blob),a=document.createElement('a');

@@ -1,4 +1,4 @@
-# Parsec Safari 1.3.11
+# Parsec Safari 1.3.12
 
 An independent, experimental Parsec web client focused on iPad Safari. It uses an existing Parsec host; no additional software is installed on Windows.
 
@@ -98,3 +98,6 @@ Owner reports the two-phase selection in 1.3.8/1.3.9 broke monitor selection and
 
 ### 1.3.11 fresh display readback diagnostics
 Owner's 1.3.10 report confirms no startup SET, then repeated manual SETs while cached host metadata still refers to the initial output. The owner's Windows monitor 2 supports 1024×768. Automatic resolution remains paused and the control SET format is unchanged. After a successful manual choice, a debounced GET (300 ms) refreshes host settings; receipt never triggers another SET. Pending reads are cancelled on teardown. Reply mapping has separate rate-limit stage names so the preceding cached snapshot does not suppress it. Actual decoded size changes are now recorded on each size transition, without per-frame events. Numeric readback output-list index and selected-output match are added; names/IDs/raw host payloads are still excluded. This improves evidence and removes a stale merge base for later choices; it does not claim the wrong-monitor resolution issue is solved.
+
+### 1.3.12 missing host configuration recovery
+The owner's 1.3.11 report shows three display entries but no host-video-config-received event and no selection SET. The client required a merge base, so selection returned false. Host settings are now requested again after the first decoded frame, with up to two retries at one-second intervals and an explicit unavailable status. A user choice made before the merge base arrives is queued (latest choice wins), then sent once using the actual host response. This does not invent a host configuration. Retry timers and pending choice are cleared on disconnect. Startup without a user choice still sends no settings SET. The wrong-monitor resolution issue remains separate and unconfirmed.

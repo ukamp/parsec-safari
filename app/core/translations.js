@@ -1,5 +1,7 @@
 // Stable English keys; all German and English UI copy lives here.
 export const translations={
+"display.configPending":{"de":"Monitorwahl vorgemerkt. Host-Konfiguration wird erneut angefordert; noch kein Wechsel gesendet.","en":"Display choice queued. Requesting host configuration again; no switch has been sent yet."},
+"display.configUnavailable":{"de":"Der Host antwortet nicht mit seiner Videokonfiguration. Monitorwahl noch nicht ausgeführt; Diagnosebericht prüfen.","en":"The host has not returned its video configuration. Display choice has not been applied; check the diagnostic report."},
 "display.explicitRequired":{"de":"Automatische Auflösungsänderung pausiert. Wähle den gewünschten Monitor in dieser Verbindung ausdrücklich aus; erst dann werden Monitor und Auflösung angefordert.","en":"Automatic resolution changes are paused. Explicitly select the desired display in this connection before display and resolution settings are requested."},
 "diagnostics.enableDetail":{"de":"Detailprotokoll aktivieren","en":"Enable detailed logging"},
 "diagnostics.recordingOn":{"de":"Detailprotokoll aktiv. Neue Ereignisse werden aufgezeichnet.","en":"Detailed logging is on. New events are being recorded."},

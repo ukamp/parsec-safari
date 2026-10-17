@@ -71,3 +71,6 @@ Two-phase selection removed after owner regression report. No automatic host-set
 
 ### 1.3.11 readback diagnostics
 Manual display selection triggers one debounced settings GET. Actual video-size transitions and fresh host-output indices are logged when detail logging is enabled. Host SET is unchanged; wrong-monitor resolution remains unresolved.
+
+### 1.3.12 missing configuration recovery
+Display list without host video settings no longer silently rejects a choice: post-first-frame GET retries are bounded, choices queue until a real response, and missing metadata has a visible status. Wrong-monitor resizing remains unresolved.

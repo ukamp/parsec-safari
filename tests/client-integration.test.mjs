@@ -87,3 +87,17 @@ const readTimers=[];try{globalThis.setTimeout=(fn,ms)=>{const t={fn,ms,cancelled
  readback.requestDisplayReadback();const pendingRead=readTimers.at(-1);readback.destroy();assert.equal(pendingRead.cancelled,true);const afterStop=sent.length;pendingRead.fn();assert.equal(sent.length,afterStop);
 }finally{globalThis.setTimeout=realSetTimeout;globalThis.clearTimeout=realClearTimeout;readback.destroy();}
 console.log('Manual selection readback is debounced, refreshes metadata without SET loops and cannot send after teardown.');
+
+const waitingEvents=[],waiting=new Client(video,e=>waitingEvents.push(e));await waiting.connect('synthetic-token','peer',{server_resolution_x:1024,server_resolution_y:768});waiting.rtc.channels[0].onopen();waiting.rtc.channels[1].onopen();waiting.rtc.channels[0].onmessage({data:initialList.buffer});
+const retryJobs=[];try{
+ globalThis.setTimeout=(fn,ms)=>{const timer={fn,ms,cancelled:false,unref(){}};retryJobs.push(timer);return timer;};globalThis.clearTimeout=t=>{if(t&&typeof t==='object'&&'cancelled' in t)t.cancelled=true;else realClearTimeout(t);};
+ const before=settingsPackets().length;waiting.rtc.channels[1].onmessage({data:sample.buffer});assert.ok(waitingEvents.some(e=>e.stage==='host-video-config-retry-0'));assert.equal(settingsPackets().length,before);
+ assert.equal(waiting.selectDisplay('monitor-1'),true);const older=retryJobs.at(-1);assert.equal(waiting.selectDisplay('monitor-2'),true);assert.equal(older.cancelled,true);assert.equal(waiting.pendingDisplayChoice,'monitor-2');assert.equal(settingsPackets().length,before);
+ const retryTimer=retryJobs.at(-1);waiting.rtc.channels[0].onmessage({data:hostSettingsPacket.buffer});assert.equal(retryTimer.cancelled,true);assert.equal(waiting.pendingDisplayChoice,null);assert.equal(settingsPackets().length,before+1);const queuedSettings=JSON.parse(new TextDecoder().decode(new Uint8Array(settingsPackets().at(-1),13)).replace(/\0$/,''));assert.equal(queuedSettings.video[0].output,'monitor-2');waiting.rtc.channels[0].onmessage({data:hostSettingsPacket.buffer});assert.equal(settingsPackets().length,before+1);waiting.destroy();
+}finally{globalThis.setTimeout=realSetTimeout;globalThis.clearTimeout=realClearTimeout;waiting.destroy();}
+const unavailableEvents=[],unavailable=new Client(video,e=>unavailableEvents.push(e));await unavailable.connect('synthetic-token','peer',{});unavailable.rtc.channels[0].onopen();unavailable.rtc.channels[1].onopen();const boundedJobs=[];try{
+ globalThis.setTimeout=(fn,ms)=>{const timer={fn,ms,cancelled:false,unref(){}};boundedJobs.push(timer);return timer;};globalThis.clearTimeout=t=>{if(t&&typeof t==='object'&&'cancelled' in t)t.cancelled=true;else realClearTimeout(t);};
+ const before=sent.length;unavailable.loadHostConfig();boundedJobs[0].fn();boundedJobs[1].fn();boundedJobs[2].fn();assert.equal(sent.length,before+3);assert.ok(unavailableEvents.some(e=>e.type==='host-config-unavailable'));
+ unavailable.loadHostConfig();const late=boundedJobs.at(-1);unavailable.destroy();assert.equal(late.cancelled,true);const after=sent.length;late.fn();assert.equal(sent.length,after);
+}finally{globalThis.setTimeout=realSetTimeout;globalThis.clearTimeout=realClearTimeout;unavailable.destroy();}
+console.log('Missing config is requested after first frame; latest queued choice sends once on a real reply; retries are bounded and teardown-safe.');

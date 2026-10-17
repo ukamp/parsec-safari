@@ -14,7 +14,7 @@ export class Client {
     this.connected=false;
     this.rtc=null;
     this.signal=null;
-    this.configured=false;this.hostVideoConfig=null;this.hostConfigured=false;this.explicitOutputForConnection=false;this.displayReadbackTimer=null;
+    this.configured=false;this.hostVideoConfig=null;this.hostConfigured=false;this.explicitOutputForConnection=false;this.displayReadbackTimer=null;this.hostConfigRetryTimer=null;this.pendingDisplayChoice=null;
     this.controlPackets=0;
     this.audioPackets=0;
     this.audioBytes=0;
@@ -22,7 +22,7 @@ export class Client {
     this.seen=new Set();
     this.displays=[];this.hostEncodeMs=null;
     this.audioPlayer=new AudioPlayer((stage,metrics)=>this.diagnostic(stage,metrics));
-    this.videoPlayer=new VideoPlayer(video,()=>{if(!this.fallbackH264())this.destroy(-6106);},(stage,metrics)=>this.diagnostic(stage,metrics),()=>{this.input?.renderPointer();clearTimeout(this.codecTimer);this.onEvent({type:'frame'});},()=>{
+    this.videoPlayer=new VideoPlayer(video,()=>{if(!this.fallbackH264())this.destroy(-6106);},(stage,metrics)=>this.diagnostic(stage,metrics),()=>{this.input?.renderPointer();clearTimeout(this.codecTimer);if(!this.hostVideoConfig)this.loadHostConfig();this.onEvent({type:'frame'});},()=>{
       if(this.connected)this.rtc?.send(Msg.reinit(this.config),0);
     });
     this.input=new Input(video,buf=>{
@@ -101,12 +101,14 @@ export class Client {
         else if(type===17){
           const data=hostData(message,e.data);
           if(data?.videoConfig){
+            clearTimeout(this.hostConfigRetryTimer);this.hostConfigRetryTimer=null;
             this.hostVideoConfig=data.videoConfig;
             const reported=data.videoConfig.video[0];
             this.diagnostic('host-video-config-received',{reportedWidth:reported.resolutionX,reportedHeight:reported.resolutionY,reportedDisplayIndex:this.displays.findIndex(d=>d.id===reported.output)+1,selectedOutputMatches:!!this.config?.output&&reported.output===this.config.output});
             this.reportDisplayMapping('-reply');
             this.emitDisplays();
-            if(!this.hostConfigured){this.sendInitialSettings(true);}
+            if(this.pendingDisplayChoice){const choice=this.pendingDisplayChoice;this.pendingDisplayChoice=null;this.selectDisplay(choice);}
+            else if(!this.hostConfigured){this.sendInitialSettings(true);}
           }
           if(data?.displays){this.displays=data.displays;this.diagnostic('host-displays-received',{displayCount:this.displays.length});this.emitDisplays();if(this.hostVideoConfig&&!this.hostConfigured)this.sendInitialSettings(true);}
         }
@@ -195,6 +197,18 @@ export class Client {
     const settings=this.settingsConfig();if(!settings)return false;
     return this.rtc.send(Msg.config(settings,this.hostVideoConfig),0);
   }
+  loadHostConfig(attempt=0){
+    if(this.closed||!this.connected||this.hostVideoConfig)return false;
+    clearTimeout(this.hostConfigRetryTimer);this.hostConfigRetryTimer=null;
+    try{if(this.rtc.send(Msg.getVideoConfig(),0)!==true)return false;}catch{return false;}
+    this.diagnostic('host-video-config-retry-'+attempt);
+    this.hostConfigRetryTimer=setTimeout(()=>{
+      this.hostConfigRetryTimer=null;if(this.closed||this.hostVideoConfig)return;
+      if(attempt<2)this.loadHostConfig(attempt+1);
+      else{this.diagnostic('host-video-config-unavailable');this.onEvent({type:'host-config-unavailable'});}
+    },1000);
+    this.hostConfigRetryTimer?.unref?.();return true;
+  }
   requestDisplayReadback(){
     clearTimeout(this.displayReadbackTimer);
     this.displayReadbackTimer=setTimeout(()=>{
@@ -205,7 +219,8 @@ export class Client {
     this.displayReadbackTimer?.unref?.();
   }
   selectDisplay(id){
-    if(!this.connected||this.closed||!this.hostVideoConfig||!this.displays.some(display=>display.id===id))return false;
+    if(!this.connected||this.closed||!this.displays.some(display=>display.id===id))return false;
+    if(!this.hostVideoConfig){this.pendingDisplayChoice=id;this.diagnostic('display-selection-queued');this.onEvent({type:'host-config-pending'});return this.loadHostConfig();}
     const previous=this.config.output,previousExplicit=this.explicitOutputForConnection;
     this.config.output=id;this.explicitOutputForConnection=true;
     try{
@@ -232,6 +247,7 @@ export class Client {
   destroy(code=0) {
     if(this.closed)return;
     clearTimeout(this.displayReadbackTimer);this.displayReadbackTimer=null;
+    clearTimeout(this.hostConfigRetryTimer);this.hostConfigRetryTimer=null;this.pendingDisplayChoice=null;
     this.diagnostic('audio-summary',this.audioPlayer.snapshot());
     this.diagnostic('video-summary',this.videoPlayer.snapshot());
     this.diagnostic('transport-summary',{
