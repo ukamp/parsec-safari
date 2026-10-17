@@ -13,7 +13,8 @@ globalThis.RTCPeerConnection=class{
  close(){}
 };
 globalThis.WebSocket=class{static OPEN=1;constructor(){this.readyState=1;}send(){}close(){}};
-globalThis.VideoDecoder=class{constructor(callbacks){this.callbacks=callbacks;this.state='unconfigured';this.decodeQueueSize=0;}configure(){this.state='configured';}decode(){this.callbacks.output({displayWidth:64,displayHeight:64,close(){}});}close(){this.state='closed';}};
+let decodedSize={displayWidth:64,displayHeight:64};
+globalThis.VideoDecoder=class{constructor(callbacks){this.callbacks=callbacks;this.state='unconfigured';this.decodeQueueSize=0;}configure(){this.state='configured';}decode(){this.callbacks.output({...decodedSize,close(){}});}close(){this.state='closed';}};
 globalThis.EncodedVideoChunk=class{constructor(value){Object.assign(this,value);}};
 const video={...target(),width:1280,height:720,getContext:()=>({drawImage(){},clearRect(){}})};
 const events=[];const client=new Client(video,event=>events.push(event));
@@ -117,3 +118,37 @@ const unavailableEvents=[],unavailable=new Client(video,e=>unavailableEvents.pus
  unavailable.loadHostConfig();const late=boundedJobs.at(-1);unavailable.destroy();assert.equal(late.cancelled,true);const after=sent.length;late.fn();assert.equal(sent.length,after);
 }finally{globalThis.setTimeout=realSetTimeout;globalThis.clearTimeout=realClearTimeout;unavailable.destroy();}
 console.log('Missing config is requested after first frame; latest queued choice sends once on a real reply; retries are bounded and teardown-safe.');
+
+// Owner 1.3.14 report: saved settings already 1024x768 for the selected output,
+// but actual decoded frames remain 1920x1080. Do not switch to another output.
+const settingsReply=video=>{const body=new TextEncoder().encode(JSON.stringify({video,virtualMicrophone:1})+'\0'),packet=new Uint8Array(13+body.length),view=new DataView(packet.buffer);view.setUint8(12,17);view.setInt32(0,body.length);view.setInt32(4,11);packet.set(body,13);return packet.buffer;};
+const sameOutputSettings=settingsReply([{output:'monitor-1',resolutionX:1024,resolutionY:768},{output:'monitor-2',resolutionX:2560,resolutionY:1440}]);
+const resetReply=settingsReply([{output:'monitor-1',resolutionX:1920,resolutionY:1080},{output:'monitor-2',resolutionX:2560,resolutionY:1440}]);
+decodedSize={displayWidth:1920,displayHeight:1080};
+for(const outcome of ['ack','timeout','manual','destroy']){
+ const transition=new Client(video,()=>{});await transition.connect('synthetic-token','peer',{output:'monitor-1',server_resolution_x:1024,server_resolution_y:768});transition.rtc.channels[0].onopen();transition.rtc.channels[1].onopen();
+ transition.rtc.channels[0].onmessage({data:initialList.buffer});transition.rtc.channels[0].onmessage({data:sameOutputSettings});
+ const jobs=[];
+ try{
+  globalThis.setTimeout=(fn,ms)=>{const t={fn,ms,cancelled:false,unref(){}};jobs.push(t);return t;};globalThis.clearTimeout=t=>{if(t&&typeof t==='object'&&'cancelled' in t)t.cancelled=true;else realClearTimeout(t);};
+  const before=settingsPackets().length;
+  transition.rtc.channels[1].onmessage({data:sample.buffer});
+  assert.equal(settingsPackets().length,before+1);
+  const reset=decodeSettings(settingsPackets().at(-1));assert.equal(reset.video[0].output,'monitor-1');assert.equal(reset.video[0].resolutionX,1920);assert.equal(reset.video[0].resolutionY,1080);assert.equal(reset.video[1].resolutionX,2560);assert.equal(transition.config.server_resolution_x,1024);
+  assert.equal(transition.updateQuality({encoder_bitrate:14}),false);assert.equal(settingsPackets().length,before+1);
+  transition.rtc.channels[0].onmessage({data:sameOutputSettings});assert.equal(settingsPackets().length,before+1,'stale metadata cannot advance the transition');
+  const timeout=jobs.find(j=>j.ms===3000);assert.ok(timeout);
+  if(outcome==='ack'){
+   transition.rtc.channels[0].onmessage({data:resetReply});assert.equal(settingsPackets().length,before+2);const desired=decodeSettings(settingsPackets().at(-1));assert.equal(desired.video[0].output,'monitor-1');assert.equal(desired.video[0].resolutionX,1024);assert.equal(desired.video[0].resolutionY,768);assert.equal(desired.video[0].encoderMaxBitrate,14);assert.equal(timeout.cancelled,true);
+   transition.rtc.channels[0].onmessage({data:resetReply});assert.equal(settingsPackets().length,before+2);
+  }else if(outcome==='manual'){
+   assert.equal(transition.selectDisplay('monitor-2'),true);assert.equal(timeout.cancelled,true);const count=settingsPackets().length;transition.rtc.channels[0].onmessage({data:resetReply});assert.equal(settingsPackets().length,count);assert.equal(transition.config.output,'monitor-2');
+  }else if(outcome==='timeout'){
+   timeout.fn();const count=settingsPackets().length;transition.rtc.channels[0].onmessage({data:resetReply});assert.equal(settingsPackets().length,count);
+  }else{
+   const late=transition.rtc.channels[0].onmessage;transition.destroy();assert.equal(timeout.cancelled,true);const count=settingsPackets().length;late({data:resetReply});timeout.fn();assert.equal(settingsPackets().length,count);
+  }
+  assert.equal(transition.startupResolutionTransition,null);
+ }finally{globalThis.setTimeout=realSetTimeout;globalThis.clearTimeout=realClearTimeout;transition.destroy();}
+}
+console.log('Persisted resolution mismatch uses the same output, waits for matching reset readback, preserves target/preferences/other slots and cancels on timeout, manual override or teardown.');

@@ -14,7 +14,7 @@ export class Client {
     this.connected=false;
     this.rtc=null;
     this.signal=null;
-    this.configured=false;this.hostVideoConfig=null;this.hostConfigured=false;this.explicitOutputForConnection=false;this.displayReadbackTimer=null;this.hostConfigRetryTimer=null;this.pendingDisplayChoice=null;this.startupDisplayChoice=null;this.displaysReceived=false;this.firstFrameReady=false;
+    this.configured=false;this.hostVideoConfig=null;this.hostConfigured=false;this.explicitOutputForConnection=false;this.displayReadbackTimer=null;this.hostConfigRetryTimer=null;this.pendingDisplayChoice=null;this.startupDisplayChoice=null;this.displaysReceived=false;this.firstFrameReady=false;this.startupResolutionTransition=null;this.startupResolutionTimer=null;
     this.controlPackets=0;
     this.audioPackets=0;
     this.audioBytes=0;
@@ -107,7 +107,8 @@ export class Client {
             this.diagnostic('host-video-config-received',{reportedWidth:reported.resolutionX,reportedHeight:reported.resolutionY,reportedDisplayIndex:this.displays.findIndex(d=>d.id===reported.output)+1,selectedOutputMatches:!!this.config?.output&&reported.output===this.config.output});
             this.reportDisplayMapping('-reply');
             this.emitDisplays();
-            if(this.pendingDisplayChoice){const choice=this.pendingDisplayChoice;this.pendingDisplayChoice=null;this.selectDisplay(choice);}
+            if(this.startupResolutionTransition){this.completeStartupResolutionTransition();}
+            else if(this.pendingDisplayChoice){const choice=this.pendingDisplayChoice;this.pendingDisplayChoice=null;this.selectDisplay(choice);}
             else if(!this.restoreDisplayChoice()&&!this.hostConfigured){this.sendInitialSettings(true);}
           }
           if(data?.displays){this.displays=data.displays;this.displaysReceived=true;this.diagnostic('host-displays-received',{displayCount:this.displays.length});this.emitDisplays();if(!this.restoreDisplayChoice()&&this.hostVideoConfig&&!this.hostConfigured)this.sendInitialSettings(true);}
@@ -181,8 +182,42 @@ export class Client {
     // can supersede the resolution change. Manual selection remains immediate.
     // Consume before sending: delayed metadata must never replay the selection.
     this.startupDisplayChoice=null;
+    const slot=this.hostVideoConfig.video[0],width=this.config.server_resolution_x,height=this.config.server_resolution_y;
+    const actualWidth=this.videoPlayer.width,actualHeight=this.videoPlayer.height;
+    // A persisted host setting can match the request while the actual stream does
+    // not. Sending identical settings again was a no-op in the owner's report.
+    if(width>0&&height>0&&slot.output===id&&slot.resolutionX===width&&slot.resolutionY===height&&
+       Number.isInteger(actualWidth)&&actualWidth>0&&actualWidth<=16384&&Number.isInteger(actualHeight)&&actualHeight>0&&actualHeight<=16384&&
+       (actualWidth!==width||actualHeight!==height))return this.startStartupResolutionTransition(id,actualWidth,actualHeight);
     const sent=this.selectDisplay(id);
     this.diagnostic(sent?'saved-display-applied':'saved-display-send-failed');return sent;
+  }
+  cancelStartupResolutionTransition(){
+    clearTimeout(this.startupResolutionTimer);this.startupResolutionTimer=null;this.startupResolutionTransition=null;
+  }
+  startStartupResolutionTransition(id,width,height){
+    const previous=this.explicitOutputForConnection;
+    this.explicitOutputForConnection=true;
+    try{
+      const settings={...this.settingsConfig(),server_resolution_x:width,server_resolution_y:height};
+      if(this.rtc.send(Msg.config(settings,this.hostVideoConfig),0)!==true)throw Error('control closed');
+      this.configured=true;this.hostConfigured=true;
+      this.startupResolutionTransition={id,width,height};
+      this.diagnostic('saved-display-resolution-reset-sent',{requestedWidth:width,requestedHeight:height});
+      this.emitDisplays();this.requestDisplayReadback();
+      this.startupResolutionTimer=setTimeout(()=>{
+        if(!this.startupResolutionTransition)return;
+        this.cancelStartupResolutionTransition();this.diagnostic('saved-display-resolution-reset-unconfirmed');
+      },3000);
+      this.startupResolutionTimer?.unref?.();return true;
+    }catch{this.explicitOutputForConnection=previous;this.diagnostic('saved-display-resolution-reset-send-failed');return false;}
+  }
+  completeStartupResolutionTransition(){
+    const pending=this.startupResolutionTransition,slot=this.hostVideoConfig?.video[0];
+    if(!pending||!slot||slot.output!==pending.id||slot.resolutionX!==pending.width||slot.resolutionY!==pending.height)return false;
+    this.cancelStartupResolutionTransition();
+    const sent=this.selectDisplay(pending.id);
+    this.diagnostic(sent?'saved-display-resolution-request-sent':'saved-display-send-failed');return sent;
   }
   settingsConfig(){
     if(!this.explicitOutputForConnection)return null;
@@ -207,6 +242,7 @@ export class Client {
     // Resolution and codec changes remain deferred until reconnect.
     const {video_codec,server_resolution_x,server_resolution_y,...live}=config;
     this.config={...this.config,...live};
+    if(this.startupResolutionTransition)return false;
     if(!this.hostVideoConfig)return false;
     const settings=this.settingsConfig();if(!settings)return false;
     return this.rtc.send(Msg.config(settings,this.hostVideoConfig),0);
@@ -234,7 +270,7 @@ export class Client {
   }
   selectDisplay(id){
     if(!this.connected||this.closed||!this.displays.some(display=>display.id===id))return false;
-    this.startupDisplayChoice=null;
+    this.startupDisplayChoice=null;this.cancelStartupResolutionTransition();
     if(!this.hostVideoConfig){this.pendingDisplayChoice=id;this.diagnostic('display-selection-queued');this.onEvent({type:'host-config-pending'});return this.loadHostConfig();}
     const previous=this.config.output,previousExplicit=this.explicitOutputForConnection;
     this.config.output=id;this.explicitOutputForConnection=true;
@@ -261,6 +297,7 @@ export class Client {
   }
   destroy(code=0) {
     if(this.closed)return;
+    this.cancelStartupResolutionTransition();
     clearTimeout(this.displayReadbackTimer);this.displayReadbackTimer=null;
     clearTimeout(this.hostConfigRetryTimer);this.hostConfigRetryTimer=null;this.pendingDisplayChoice=null;this.startupDisplayChoice=null;
     this.diagnostic('audio-summary',this.audioPlayer.snapshot());

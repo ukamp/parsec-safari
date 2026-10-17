@@ -1,4 +1,4 @@
-# Parsec Safari 1.3.14
+# Parsec Safari 1.3.15
 
 An independent, experimental Parsec web client focused on iPad Safari. It uses an existing Parsec host; no additional software is installed on Windows.
 
@@ -109,3 +109,6 @@ Remembered sessions are reloaded and validated after a Safari page-cache return;
 
 ### 1.3.14 defer saved monitor restoration until first decoded frame
 The owner reports startup still needs an away/back switch, while manual selection works. The previous saved-output SET could run before decoder initialization/first video. Saved output restoration now waits for the first actually decoded frame as well as the validated display list and host configuration, in any arrival order. It sends the same direct selection once; it never cycles through another monitor. Manual choices cancel pending startup restoration and remain immediate. Tests cover all six readiness orders, repeated metadata/frames, stale IDs, manual override and teardown. Physical host behavior remains to be verified; timing is a candidate cause, not a proven host-protocol guarantee.
+
+### 1.3.15 saved settings versus actual resolution
+Owner report from 1.3.14 confirms the startup SET is sent after the first decoded frame. The host already reports the desired 1024x768 for the selected output while decoded frames remain 1920x1080; identical settings have no observed effect. For this precise mismatch, startup now sends the actual decoded size to the same saved output, waits for host settings to report that size/output, then sends the desired size once. Other monitor outputs are never selected and other configuration slots are retained. This is a targeted workaround for a suspected host no-op, not proof of host implementation behavior. A three-second deadline, explicit manual selection and disconnect cancel the pending second stage; there is no retry loop. Zero/no-preference resolutions skip the workaround. Stream dimensions remain the authority for actual effect. Synthetic tests cover successful/stale replies, timeout, manual override and teardown. Hardware verification remains required.
