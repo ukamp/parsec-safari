@@ -572,3 +572,5 @@ label > input[type=checkbox]{margin-top:2px;padding:0;align-self:flex-start}
 #streamEmpty p{max-width:400px;margin:0 0 8px}
 #chooseComputer{background:transparent;color:#b5f3ce;font-size:14px;text-decoration:underline}
 #streamEmpty[hidden]{display:none!important}
+
+#screen:has(#streamMenu:not([hidden])) #streamEmpty{visibility:hidden}

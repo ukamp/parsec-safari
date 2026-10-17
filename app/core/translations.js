@@ -590,18 +590,9 @@ export const translations={
     "de": "Safari hat das Vollbild noch nicht verlassen. Bitte über Safaris X schließen und erneut Controller-Bildschirmansicht wählen.",
     "en": "Safari has not left fullscreen yet. Close it using Safari's X, then choose Controller view again."
   },
-  "text.nativeBrowserFullscreenActiveSystemControlsAreManagedBy": {
-    "de": "Natives Browser-Vollbild aktiv. Systemelemente werden von iPadOS gesteuert.",
-    "en": "Native browser fullscreen active. System controls are managed by iPadOS."
-  },
-  "text.controllerViewWithoutNativeSafariFullscreenBrowserBarsMay": {
-    "de": "Controller-Bildschirmansicht ohne natives Safari-Vollbild. Browserleisten können sichtbar bleiben.",
-    "en": "Controller view without native Safari fullscreen. Browser bars may remain visible."
-  },
-  "text.safariDidNotGrantNativeFullscreenExpandedViewActive": {
-    "de": "Safari hat kein natives Vollbild gewährt. Vergrößerte Bildschirmansicht aktiv; iPadOS-Leisten können sichtbar bleiben.",
-    "en": "Safari did not grant native fullscreen. Expanded view active; iPadOS bars may remain visible."
-  },
+  "text.nativeBrowserFullscreenActiveSystemControlsAreManagedBy": {"de": "Browser-Vollbild aktiv.", "en": "Browser fullscreen is active."},
+  "text.controllerViewWithoutNativeSafariFullscreenBrowserBarsMay": {"de": "Controlleransicht aktiv (ohne natives Vollbild).", "en": "Controller view is active (without native fullscreen)."},
+  "text.safariDidNotGrantNativeFullscreenExpandedViewActive": {"de": "Der Browser hat kein natives Vollbild gewährt. Vergrößerte Ansicht aktiv.", "en": "The browser did not grant native fullscreen. Expanded view is active."},
   "text.fullscreenEnded": {
     "de": "Vollbild beendet.",
     "en": "Fullscreen ended."
