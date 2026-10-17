@@ -119,7 +119,7 @@
 <form id="overlayQualityForm" class="settings-grid">
 <label>{{text.bitrateMbps}}<input id="overlayBitrate" type="number" min="1" max="50" required></label>
 <label>{{text.frameRate}}<select id="overlayFrameRate"><option value="30">30 FPS</option><option value="60">60 FPS</option></select></label>
-<div class="setting-field"><div class="field-heading"><label for="overlayResolution">{{text.resolution}}</label><details class="field-info"><summary title="{{quality.nextConnection}}" aria-label="{{quality.moreInfo}}">ⓘ</summary><p>{{quality.nextConnection}}</p></details></div><select id="overlayResolution">
+<div class="setting-field"><div class="field-heading"><label for="overlayResolution">{{text.resolution}}</label><details class="field-info"><summary title="{{quality.nextConnection}}" aria-label="{{quality.moreInfo}}">ⓘ</summary><p>{{resolution.help}}</p></details></div><select id="overlayResolution">
 <option value="host">{{resolution.host}}</option><option value="client">{{resolution.client}}</option>
 <option value="1024x768">1024 × 768</option>
 <option value="1280x720">1280 × 720</option>
@@ -136,7 +136,6 @@
 </select></div>
 <div class="setting-field"><div class="field-heading"><label for="overlayVideoCodec">{{codec.title}}</label><details class="field-info"><summary title="{{quality.nextConnection}}" aria-label="{{quality.moreInfo}}">ⓘ</summary><p>{{quality.nextConnection}}</p></details></div><select id="overlayVideoCodec"><option value="h264">{{codec.forceH264}}</option><option value="hevc">{{codec.optionalHevc}}</option></select></div>
 <label><input id="overlayConstantFps" type="checkbox"> {{quality.constantFps}}</label>
-<p class="hint">{{resolution.help}}</p>
 <button type="submit">{{text.applySettings}}</button></form><p id="overlayQualityStatus" class="feedback" role="status" hidden></p>
 <details class="help-details"><summary>{{common.details}}</summary><p>{{codec.help}}</p></details>
 <h3 class="group-title">{{stream.displayAndZoom}}</h3>
@@ -254,7 +253,7 @@
 <option value="60">60 FPS</option>
 </select>
 </label>
-<div class="setting-field"><div class="field-heading"><label for="resolution">{{text.resolution}}</label><details class="field-info"><summary title="{{quality.nextConnection}}" aria-label="{{quality.moreInfo}}">ⓘ</summary><p>{{quality.nextConnection}}</p></details></div><select id="resolution">
+<div class="setting-field"><div class="field-heading"><label for="resolution">{{text.resolution}}</label><details class="field-info"><summary title="{{quality.nextConnection}}" aria-label="{{quality.moreInfo}}">ⓘ</summary><p>{{resolution.help}}</p></details></div><select id="resolution">
 <option value="host">{{resolution.host}}</option><option value="client">{{resolution.client}}</option>
 <option value="1024x768">1024 × 768</option>
 <option value="1280x720">1280 × 720</option>
@@ -276,7 +275,6 @@
 <label><input id="rememberStream" type="checkbox"> {{quality.rememberStream}}</label>
 <label>{{text.volume}}<input id="volume" type="range" min="0" max="100" value="100">
 </label>
-<p class="hint">{{resolution.help}}</p>
 <button type="submit">{{text.applySettings}}</button>
 </form>
 <p id="qualityStatus" class="feedback" role="status" hidden></p>
