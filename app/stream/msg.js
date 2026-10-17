@@ -17,7 +17,7 @@ function text(type,id,value) {
 export function init(cfg={
 }) {
   return text(11,0,JSON.stringify({
-    _version:1,_max_w:60000,_max_h:60000,_flags:0,
+    _version:1,_max_w:60000,_max_h:60000,_flags:cfg.video_codec==='hevc'?9:8,
     resolutionX:cfg.server_resolution_x||1280,resolutionY:cfg.server_resolution_y||720,
     mediaContainer:0,refreshRate:cfg.encoder_fps||60
   }));
@@ -31,8 +31,8 @@ export function config(cfg={
     }]
   }));
 }
-export function reinit(){
-  return control(13,0,0,1);
+export function reinit(cfg={}){
+  return control(13,0,cfg.video_codec==='hevc'?9:8,1);
 }
 export function abort(){
   return control(10);

@@ -1,3 +1,4 @@
+import { supportsHevc } from './hevc.js';
 import { hostData } from './host-data.js';
 import * as Msg from './msg.js';
 import { AudioPlayer } from './audio.js';
@@ -21,10 +22,8 @@ export class Client {
     this.seen=new Set();
     this.displays=[];this.hostEncodeMs=null;
     this.audioPlayer=new AudioPlayer((stage,metrics)=>this.diagnostic(stage,metrics));
-    this.videoPlayer=new VideoPlayer(video,()=>this.destroy(-6106),(stage,metrics)=>this.diagnostic(stage,metrics),()=>this.onEvent({
-      type:'frame'
-    }),()=>{
-      if(this.connected)this.rtc?.send(Msg.reinit(),0);
+    this.videoPlayer=new VideoPlayer(video,()=>{if(!this.fallbackH264())this.destroy(-6106);},(stage,metrics)=>this.diagnostic(stage,metrics),()=>{clearTimeout(this.codecTimer);this.onEvent({type:'frame'});},()=>{
+      if(this.connected)this.rtc?.send(Msg.reinit(this.config),0);
     });
     this.input=new Input(video,buf=>{
       if(this.connected)this.rtc?.send(buf,0);
@@ -32,7 +31,7 @@ export class Client {
       type:'gamepad',status
     }),(stage,metrics)=>this.diagnostic(stage,metrics));
     this.visible=()=>{
-      if(this.connected&&!document.hidden)this.rtc?.send(Msg.reinit(),0);
+      if(this.connected&&!document.hidden)this.rtc?.send(Msg.reinit(this.config),0);
     };
     document.addEventListener('visibilitychange',this.visible);
   }
@@ -53,7 +52,13 @@ export class Client {
   }
   async connect(token,peer,cfg={
   }) {
-    this.config={...cfg};
+    cfg={...cfg};
+    if(cfg.video_codec==='hevc'&&!await supportsHevc()){
+      cfg.video_codec='h264';this.diagnostic('hevc-browser-unavailable');this.onEvent({type:'codec',state:'unavailable'});
+    }
+    if(this.closed)return;
+    this.config=cfg;this.hevcAttempt=cfg.video_codec==='hevc';this.fellBack=false;
+    this.videoPlayer.setHevc(this.hevcAttempt);
     this.signal=new Signal(code=>this.destroy(code),stage=>this.once(stage));
     this.rtc=new RTC(peer,this.signal.getAttemptId(),candidate=>this.signal?.send(token,candidate),code=>this.destroy(code));
     this.stream=new StreamRequest({
@@ -69,6 +74,7 @@ export class Client {
         type:'connect'
       });
       this.stream.open('control');
+      if(this.hevcAttempt)this.codecTimer=setTimeout(()=>this.fallbackH264(),8000);
     },e=>{
       if(this.closed)return;
       try {
@@ -113,7 +119,7 @@ export class Client {
       if(!this.configured){
         this.configured=true;
         try{
-          if(this.rtc.send(Msg.config(cfg),0))this.diagnostic('stream-settings-sent');
+          if(this.rtc.send(Msg.config(this.config),0))this.diagnostic('stream-settings-sent');
         }catch{
           this.destroy(-6108);
           return;
@@ -133,9 +139,22 @@ export class Client {
     if(this.closed)return;
     this.signal.connect('kessel-ws.parsec.app',443,token,peer,creds,(c,k)=>this.rtc?.setCandidate(c,k));
   }
+  fallbackH264(){
+    if(this.closed||!this.connected||!this.hevcAttempt||this.fellBack)return false;
+    this.fellBack=true;this.hevcAttempt=false;clearTimeout(this.codecTimer);
+    this.config={...this.config,video_codec:'h264'};
+    if(this.stream)this.stream.config=this.config;
+    this.videoPlayer.fallbackH264();
+    this.diagnostic('hevc-fallback-requested');this.onEvent({type:'codec',state:'fallback'});
+    try{if(!this.rtc.send(Msg.reinit(this.config),0))throw Error('closed');}catch{this.destroy(-6108);return true;}
+    const decoded=this.videoPlayer.decoded;
+    this.codecTimer=setTimeout(()=>{if(!this.closed&&this.videoPlayer.decoded===decoded)this.destroy(-6106);},8000);
+    return true;
+  }
   updateQuality(config){
     if(!this.connected||this.closed)return false;
-    this.config={...this.config,...config};
+    const {video_codec,...live}=config;
+    this.config={...this.config,...live};
     return this.rtc.send(Msg.config(this.config),0);
   }
   selectDisplay(id){
@@ -166,6 +185,7 @@ export class Client {
       if(this.connected){this.rtc?.send(Msg.release(),0);this.rtc?.send(Msg.abort(),0);}
     }catch{
     }this.closed=true;
+    clearTimeout(this.codecTimer);
     this.stream?.close();
     this.input.detach();
     document.removeEventListener('visibilitychange',this.visible);

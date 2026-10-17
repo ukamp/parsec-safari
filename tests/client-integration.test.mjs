@@ -30,3 +30,31 @@ const encode=new ArrayBuffer(13);const e=new DataView(encode);e.setUint8(12,21);
 client.destroy(0);assert.equal(client.closed,true);assert.equal(client.input.gamepad,null);
 assert.equal(JSON.stringify(events.filter(e=>e.type==='diagnostic')).includes('synthetic-private-token'),false);
 console.log('Client integration: reset before held RT, first frame, validated monitor request, encode/RTT metrics and teardown passed.');
+
+VideoDecoder.isConfigSupported=async()=>({supported:true});
+const hevcEvents=[];const h=new Client(video,e=>hevcEvents.push(e));
+await h.connect('synthetic-private-token','synthetic-peer',{video_codec:'hevc'});
+h.rtc.channels[0].onopen();h.rtc.channels[1].onopen();
+assert.equal(h.config.video_codec,'hevc');
+h.videoPlayer.onFatal();assert.equal(h.fellBack,true);assert.equal(h.fallbackH264(),false);
+assert.equal(new DataView(sent.at(-1)).getUint8(12),13);assert.equal(new DataView(sent.at(-1)).getInt32(4),8);
+assert.equal(h.config.video_codec,'h264');assert.equal(h.stream.config.video_codec,'h264');
+h.rtc.channels[1].onmessage({data:sample.buffer});assert.match(h.videoPlayer.snapshot().codec,/avc1/);
+assert.ok(hevcEvents.some(e=>e.type==='codec'&&e.state==='fallback'));h.destroy();
+VideoDecoder.isConfigSupported=async()=>({supported:false});
+const unsupported=[];const u=new Client(video,e=>unsupported.push(e));await u.connect('synthetic-private-token','synthetic-peer',{video_codec:'hevc'});
+assert.equal(u.config.video_codec,'h264');assert.ok(unsupported.some(e=>e.type==='codec'&&e.state==='unavailable'));u.destroy();
+console.log('HEVC request, one-shot H.264 fallback, real H.264 frame confirmation, teardown and unsupported-browser guard passed.');
+
+VideoDecoder.isConfigSupported=async()=>({supported:true});
+const timeoutClient=new Client(video,()=>{});await timeoutClient.connect('synthetic-private-token','synthetic-peer',{video_codec:'hevc'});
+const realSetTimeout=globalThis.setTimeout,realClearTimeout=globalThis.clearTimeout,timers=[];
+try{
+ globalThis.setTimeout=(fn,ms)=>{const timer={fn,ms,cancelled:false};timers.push(timer);return timer;};
+ globalThis.clearTimeout=timer=>{if(timer&&typeof timer==='object'&&'cancelled' in timer)timer.cancelled=true;else realClearTimeout(timer);};
+ timeoutClient.rtc.channels[0].onopen();timeoutClient.rtc.channels[1].onopen();
+ const initial=timers.find(t=>t.ms===8000);assert.ok(initial);initial.fn();
+ assert.equal(timeoutClient.fellBack,true);const fallback=timers.filter(t=>t.ms===8000).at(-1);assert.notEqual(fallback,initial);
+ fallback.fn();assert.equal(timeoutClient.closed,true);
+}finally{globalThis.setTimeout=realSetTimeout;globalThis.clearTimeout=realClearTimeout;timeoutClient.destroy();}
+console.log('Missing HEVC video triggers H.264 after eight seconds; failed fallback disconnects after eight more seconds.');

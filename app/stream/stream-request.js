@@ -38,7 +38,7 @@ export class StreamRequest {
     this.timer=this.schedule(()=>{
       this.timer=null;
       if(this.closed||this.hasVideo()||this.blocked())return;
-      this.transmit(Msg.reinit(),'stream-reinit-sent');
+      this.transmit(Msg.reinit(this.config),'stream-reinit-sent');
     },5000);
   }
   close() {

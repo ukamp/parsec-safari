@@ -16,7 +16,7 @@ export class StreamStatistics {
       if(seconds<=0)return;
       const fps=Math.max(0,(v.decoded-this.previous.decoded)/seconds),mbps=Math.max(0,(v.receivedBytes-this.previous.bytes)*8/seconds/1e6);
       this.element.textContent=`${v.width||'—'} × ${v.height||'—'} · ${fps.toFixed(0)}${t("text.decodedFPS")}${mbps.toFixed(1)} Mbit/s Video · ${v.dropped}${t("text.droppedPackets")}`;
-      this.element.textContent+=' · H.264 · '+t('statistics.queue')+' '+v.decodeQueueSize;
+      this.element.textContent+=' · '+(v.codec?.startsWith('hvc1.')?'H.265 / HEVC':v.codec?.startsWith('avc1.')?'H.264':'—')+' · '+t('statistics.queue')+' '+v.decodeQueueSize;
       if(Number.isFinite(client.hostEncodeMs))this.element.textContent+=' · '+t('statistics.hostEncode')+' '+client.hostEncodeMs.toFixed(1)+' ms';
       const transport=await client.transportStats?.();
       if(client.closed||!this.timer)return;

@@ -1,5 +1,25 @@
 // Stable English keys; all German and English UI copy lives here.
 export const translations={
+"menu.back":{"de": "← Zurück zum Menü", "en": "← Back to menu"},
+"menu.picture":{"de": "Bild & Qualität", "en": "Picture & quality"},
+"menu.input":{"de": "Steuerung", "en": "Controls"},
+"menu.audio":{"de": "Audio", "en": "Audio"},
+"menu.statistics":{"de": "Statistik", "en": "Statistics"},
+"diagnostics.overview":{"de": "Übersicht", "en": "Overview"},
+"diagnostics.tests":{"de": "Tests", "en": "Tests"},
+"codec.title":{"de": "Videocodec", "en": "Video codec"},
+"codec.experimental":{"de": "H.265 / HEVC bevorzugen (experimentell)", "en": "Prefer H.265 / HEVC (experimental)"},
+"codec.help":{"de": "Codec und Auflösung gelten ab der nächsten Verbindung. HEVC wird nur nach positiver Browserprüfung angefordert. Bei Decoderfehlern oder ausbleibendem Bild wird einmal H.264 angefordert. Scheitert auch das, wird getrennt. Echte Host-Kompatibilität ist noch zu prüfen.", "en": "Codec and resolution apply on the next connection. HEVC is requested only after a positive browser check. Decoder failure or missing video triggers one H.264 request. If that also fails, the stream disconnects. Real host compatibility still needs testing."},
+"codec.default":{"de": "Der tatsächlich decodierte Codec wird in der Stream-Statistik angezeigt.", "en": "The stream statistics show the codec actually decoded."},
+"codec.unavailable":{"de": "Der Browser meldet kein HEVC. Diese Verbindung verwendet H.264.", "en": "The browser reports no HEVC support. This connection uses H.264."},
+"codec.fallback":{"de": "HEVC lieferte kein nutzbares Bild. H.264 wurde angefordert; Bestätigung folgt durch decodierte Bilder.", "en": "HEVC produced no usable video. H.264 was requested; decoded frames will confirm the result."},
+"codec.testTitle":{"de": "HEVC-Decoder lokal prüfen", "en": "Test HEVC decoder locally"},
+"codec.testHelp":{"de": "Ein synthetisches grünes 64×64-Bild wird decodiert. Dieser Test bestätigt nur den lokalen Decoder, nicht den Parsec-Host.", "en": "Decodes a synthetic green 64×64 image. This tests only the local decoder, not the Parsec host."},
+"codec.test":{"de": "HEVC-Decodiertest starten", "en": "Start HEVC decoding test"},
+"codec.testing":{"de": "HEVC-Testbild wird decodiert …", "en": "Decoding HEVC test image …"},
+"codec.testPassed":{"de": "HEVC-Testbild decodiert und dargestellt. Host-Unterstützung noch nicht bestätigt.", "en": "HEVC test image decoded and displayed. Host support is not yet confirmed."},
+"codec.testFailed":{"de": "HEVC-Test fehlgeschlagen. H.264 bleibt verfügbar.", "en": "HEVC test failed. H.264 remains available."},
+
   "diagnostics.apiTitle": {
     "de": "API-Zugriff prüfen",
     "en": "Test API access"
@@ -417,8 +437,8 @@ export const translations={
     "en": "Included: sign-in with 2FA, optional account/friend lists, host details, H.264/Opus, touchpad and gestures, zoom, special keys, controller mapping, conditional monitor selection, short vibration, reconnect, wake lock and diagnostics. API, host and browser support are required."
   },
   "text.notYetAvailableFriendsTeamsSSOMonitorSwitchingClipboard": {
-    "de": "Noch offen: Freundschaftsanfragen, serverseitiger Sitzungswiderruf, Teams/SSO, Remote-Zwischenablage und H.265. Der RT-Fokusverlust ist nicht nachweislich behoben; die Controlleransicht umgeht natives Safari-Vollbild.",
-    "en": "Still open: friend requests, server-side session revocation, Teams/SSO, remote clipboard and H.265. RT focus loss is not confirmed fixed; Controller view avoids native Safari fullscreen."
+    "de": "Noch offen: Freundschaftsanfragen, serverseitiger Sitzungswiderruf, Teams/SSO, Remote-Zwischenablage. HEVC ist experimentell. Der RT-Fokusverlust ist nicht nachweislich behoben; die Controlleransicht umgeht natives Safari-Vollbild.",
+    "en": "Still open: friend requests, server-side session revocation, Teams/SSO, remote clipboard. HEVC is experimental. RT focus loss is not confirmed fixed; Controller view avoids native Safari fullscreen."
   },
   "text.officialWebClient": {
     "de": "Offizieller Webclient",
@@ -1053,8 +1073,8 @@ export const translations={
     "en": "Check local browser capabilities"
   },
   "capabilities.protocolLimits": {
-    "de": "H.265-Streaming, Remote-Zwischenablage, Freundschaftsanfragen, serverseitiger Sitzungswiderruf und Teams/SSO sind noch nicht implementiert. Decoder- oder Browser-Unterstützung allein bestätigt diese Funktionen nicht.",
-    "en": "H.265 streaming, remote clipboard, friend requests, server-side session revocation and Teams/SSO are not implemented yet. Decoder or browser support alone does not confirm these features."
+    "de": "HEVC-Streaming ist experimentell. Remote-Zwischenablage, Freundschaftsanfragen, serverseitiger Sitzungswiderruf und Teams/SSO sind noch nicht implementiert. Decoder- oder Browser-Unterstützung allein bestätigt diese Funktionen nicht.",
+    "en": "HEVC streaming is experimental. Remote clipboard, friend requests, server-side session revocation and Teams/SSO are not implemented yet. Decoder or browser support alone does not confirm these features."
   },
   "capabilities.hevcDecoder": {
     "de": "Browser meldet H.265-Decoder",

@@ -1,6 +1,6 @@
-# Feature status — 1.1.0 (2026-10-17)
+# Feature status — 1.2.0 (2026-10-17)
 
-See [the 1.1.0 implementation matrix](IMPLEMENTATION-1.1.md) for current selected-feature details and explicit blocked capabilities.
+See [the 1.2.0 implementation matrix](IMPLEMENTATION-1.2.md) for current selected-feature details and explicit blocked capabilities.
 
 This project is not affiliated with Parsec. Full parity with the official web client is a goal, not the current release status.
 
@@ -29,7 +29,7 @@ Reference: [official web-app guide](https://support.parsec.app/hc/en-us/articles
 | Friend requests | Open | No verified mutation contract |
 | Teams / SAML SSO | Open | Official matrix lists it; requires verified authentication integration and account entitlement |
 | Monitor switching | Conditional / experimental | Enabled only after valid host display data; sends observed output ID; physical confirmation pending |
-| H.265 | Open | Do not advertise until packet framing and Safari configurations are tested |
+| H.265 | Experimental, opt-in | Annex-B decoder, SPS profile parsing, browser guard and bounded H.264 fallback; real host/iPad validation pending |
 | Rumble | Conditional / experimental | Opt-in bounded pulses for observed host events and available actuator |
 | Clipboard / shared links | Open | Remote protocol not verified |
 | Microphone / camera / extra screens / enhanced pen | Not in baseline | Not listed as supported by official web matrix; would require additional browser/host integration |

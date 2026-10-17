@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {asset} from './helpers.mjs';
+const {setupMenuNavigation,setupDiagnosticTabs}=await import(asset('features/navigation.js'));
+const element=()=>({hidden:false,attrs:{},listeners:{},setAttribute(k,v){this.attrs[k]=v},addEventListener(k,fn){this.listeners[k]=fn},focus(){this.focused=true}});
+const panels=['home','picture','input','audio','statistics'].map(name=>({...element(),dataset:{menuPanel:name}}));
+const buttons=panels.slice(1).map(p=>({...element(),dataset:{menuTarget:p.dataset.menuPanel}}));
+const elements=new Map();const $=id=>{if(!elements.has(id))elements.set(id,element());return elements.get(id);};
+globalThis.document={querySelectorAll:selector=>selector==='[data-menu-panel]'?panels:buttons};
+const menu=setupMenuNavigation($);menu.reset();assert.deepEqual(panels.filter(p=>!p.hidden).map(p=>p.dataset.menuPanel),['home']);
+buttons[0].onclick();assert.equal(panels[1].hidden,false);assert.equal($('menuBack').hidden,false);assert.equal($('menuBack').focused,true);
+let stopped=false;$('streamMenu').listeners.keydown({key:'Escape',preventDefault(){},stopImmediatePropagation(){stopped=true;}});assert.equal(stopped,true);assert.equal(panels[0].hidden,false);
+buttons[2].onclick();menu.reset();assert.equal(panels[0].hidden,false);assert.equal($('menuBack').hidden,true);
+setupDiagnosticTabs($);assert.equal($('diagnosticsTests').hidden,true);$('diagnosticsTestsTab').onclick();assert.equal($('diagnosticsTests').hidden,false);assert.equal($('diagnosticsOverview').hidden,true);assert.equal($('diagnosticsTestsTab').attrs['aria-selected'],'true');
+$('diagnosticsTestsTab').listeners.keydown({key:'ArrowLeft',preventDefault(){}});assert.equal($('diagnosticsOverview').hidden,false);assert.equal($('diagnosticsOverviewTab').focused,true);
+console.log('Overlay subpage reset/Escape/focus and keyboard-accessible diagnostic tabs passed.');

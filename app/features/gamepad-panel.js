@@ -1,3 +1,4 @@
+import {setupMenuNavigation} from './navigation.js';
 import { t } from '../core/i18n.js';
 import { defaultBindings,normalizeBindings,padLabels } from '../stream/pad-bindings.js';
 import { GamepadManager } from '../stream/gamepad.js';
@@ -5,6 +6,7 @@ import { readPreference } from '../core/preferences.js';
 export function setupGamepads({
   getClient,$,diagnostic
 }){
+  const menuNavigation=setupMenuNavigation($);
   let padSettings=readPreference('parsec-pad-bindings-v1',defaultBindings(),normalizeBindings),menuOpen=false,bindingsReady=false,controllerMonitor=null,lastPadCounts='';
   function showGamepad(status){
     $('gamepadStatus').textContent=!status.gamepads?t("text.noControllerDetectedPairItWithYourIPadAnd"):!status.standardGamepads?t("text.controllerDetectedWithoutStandardMappingACompatibleMappingIs"):status.paused?t("text.controllerInputPaused"):status.standardGamepads+t("text.standardGamepadSDetected")+status.activeInputs+t("text.activeInputs")+((status.pressedButtons||[]).length?t("text.buttons")+status.pressedButtons.map(i=>padLabels[i]+' → '+(padLabels[padSettings.buttons[i]]||t("text.off"))).join(', '):'');
@@ -37,6 +39,7 @@ export function setupGamepads({
     $('streamMenuButton').setAttribute?.('aria-expanded',String(open));
     getClient()?.input.setPaused(open||window.location.hash!=='#stream');
     if(open){
+      menuNavigation.reset();
       ensureBindings();
       $('closeMenu').focus();
     }else $('video').focus({

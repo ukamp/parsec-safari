@@ -1,3 +1,4 @@
+import {setupDiagnosticTabs} from './features/navigation.js';
 import { setupBrowserCapabilities } from './features/browser-capabilities.js';
 import { setupKeyboard } from './features/keyboard.js';
 import { setupViewport } from './features/viewport.js';
@@ -19,6 +20,7 @@ import { setupGamepads } from './features/gamepad-panel.js';
 import { setupWake } from './features/wake-controller.js';
 import { setupMediaTests } from './features/media-tests.js';
 const $=id=>document.getElementById(id);
+setupDiagnosticTabs($);
 const sessionStore=createSessionStore();
 let session=null,client=null,generation=0,controller=null,pollTimer=null,frameTimer=null,fullscreenView=null,streamState=t("connection.connecting");
 const diagnostics=createDiagnostics($),{
@@ -217,6 +219,7 @@ async function connect(peer,retrying=false){
   try{
     current=new Client($('video'),event=>{
       if(client!==current&&event.type!=='diagnostic')return;
+      if(event.type==='codec'){$('codecStatus').textContent=t('codec.'+event.state);return;}
       if(event.type==='displays'){
         $('displaySelection').textContent='';
         for(const display of event.displays){const option=document.createElement('option');option.value=display.id;option.textContent=display.name;$('displaySelection').appendChild(option);}
@@ -259,6 +262,7 @@ async function connect(peer,retrying=false){
       }
     });
     client=current;
+    $('codecStatus').textContent=t('codec.default');
     $('displaySelection').textContent='';$('displaySelection').disabled=true;$('displayStatus').textContent=t('display.waiting');
     viewport.apply();
     current.input.onZoom=viewport.setZoom;current.input.getZoom=viewport.getZoom;
@@ -308,7 +312,7 @@ $('controllerFullscreen').onclick=async()=>{
 $('download').onclick=()=>{
   client?.reportAudio();
   const blob=new Blob([JSON.stringify({
-    version:2,build:'1.1.0',experimental:true,events:diagnostics.events()
+    version:2,build:'1.2.0',experimental:true,events:diagnostics.events()
   },null,2)],{
     type:'application/json'
   }),url=URL.createObjectURL(blob),a=document.createElement('a');

@@ -1,3 +1,4 @@
+import {nalUnits,inspectHevc} from './hevc.js';
 // Annex-B H.264 over the negotiated browser video channel (mediaContainer 0).
 // Protocol reference: nomi-san/lowlat, MIT; see LICENSE-lowlat.
 export function inspectAnnexB(data) {
@@ -49,6 +50,12 @@ export class VideoPlayer {
     this.lastTimestamp=-1;
     this.recoveries=0;
     this.seen=new Set();
+    this.format=null;this.allowHevc=false;this.parameters=new Map();this.onlyH264=false;
+  }
+  setHevc(enabled){this.allowHevc=enabled;}
+  fallbackH264(){
+    this.onlyH264=true;this.allowHevc=false;this.format=null;this.codec=null;this.parameters.clear();this.waiting=true;this.recoveries=0;this.generation++;
+    if(this.decoder&&this.decoder.state!=='closed')this.decoder.close();this.decoder=null;
   }
   diag(stage,metrics={
   }){
@@ -77,6 +84,7 @@ export class VideoPlayer {
           if(this.canvas.height!==this.height)this.canvas.height=this.height;
           this.context.drawImage(frame,0,0,this.width,this.height);
           this.decoded++;
+          this.lastFrameCodec=codec;
           this.diag('video-frame-presented',{
             width:this.width,height:this.height
           });
@@ -92,7 +100,7 @@ export class VideoPlayer {
       }
     });
     this.decoder.configure({
-      codec,optimizeForLatency:true
+      codec,optimizeForLatency:true,hardwareAcceleration:'prefer-hardware'
     });
     this.diag('video-decoder-configured');
   }
@@ -123,7 +131,26 @@ export class VideoPlayer {
     this.diag('video-packet-received',{
       firstPacketBytes:bytes.byteLength
     });
-    const info=inspectAnnexB(bytes);
+    const units=nalUnits(bytes);
+    const h264=units.some(u=>(u.bytes[0]&31)===7);
+    const hevc=units.some(u=>((u.bytes[0]>>1)&63)===33&&u.bytes.length>=2&&(u.bytes[1]&7));
+    if(this.onlyH264&&!h264&&!this.format){this.dropped++;return;}
+    const next=hevc?'hevc':h264?'h264':this.format;
+    if(next==='hevc'&&!this.allowHevc){this.dropped++;return;}
+    if(next&&next!==this.format){this.format=next;this.parameters.clear();}
+    let info;
+    try{info=this.format==='hevc'?inspectHevc(bytes):inspectAnnexB(bytes);}catch{this.onFatal();return;}
+    let packet=data;
+    if(this.format==='hevc'){
+      for(const u of units){const type=(u.bytes[0]>>1)&63;if(type>=32&&type<=34)this.parameters.set(type,u.bytes.slice());}
+      if(!units.some(u=>((u.bytes[0]>>1)&63)<=31)){if(info.codec){try{this.configure(info.codec);}catch{this.onFatal();}}return;}
+      if(!info.codec&&!this.codec){this.dropped++;this.requestKeyframe();return;}
+      if(info.key){
+        const missing=[32,33,34].filter(type=>!units.some(u=>((u.bytes[0]>>1)&63)===type));
+        const prefix=missing.map(type=>this.parameters.get(type)).filter(Boolean);
+        if(prefix.length){const merged=new Uint8Array(prefix.reduce((n,u)=>n+4+u.length,bytes.length));let offset=0;for(const u of prefix){merged.set([0,0,0,1],offset);merged.set(u,offset+4);offset+=4+u.length;}merged.set(bytes,offset);packet=merged.buffer;}
+      }
+    }
     if(!info.nals){
       this.diag('video-unrecognized-format');
       this.requestKeyframe();
@@ -147,7 +174,7 @@ export class VideoPlayer {
       const timestamp=Math.max(this.lastTimestamp+1,Math.round(performance.now()*1000));
       this.lastTimestamp=timestamp;
       this.decoder.decode(new EncodedVideoChunk({
-        type:info.key?'key':'delta',timestamp,data
+        type:info.key?'key':'delta',timestamp,data:packet
       }));
       this.submitted++;
       this.diag('video-decode-submitted');
@@ -157,7 +184,7 @@ export class VideoPlayer {
   }
   snapshot(){
     return {
-      packets:this.packets,receivedBytes:this.receivedBytes,submitted:this.submitted,decoded:this.decoded,dropped:this.dropped,waitingForKeyframe:this.waiting,decodeQueueSize:this.decoder?.state==='configured'?this.decoder.decodeQueueSize:0,width:this.width,height:this.height
+      codec:this.lastFrameCodec||null,packets:this.packets,receivedBytes:this.receivedBytes,submitted:this.submitted,decoded:this.decoded,dropped:this.dropped,waitingForKeyframe:this.waiting,decodeQueueSize:this.decoder?.state==='configured'?this.decoder.decodeQueueSize:0,width:this.width,height:this.height
     };
   }
   destroy(clear=true){

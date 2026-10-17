@@ -1,4 +1,4 @@
-# Parsec Safari 1.1.0
+# Parsec Safari 1.2.0
 
 An independent, experimental Parsec web client focused on iPad Safari. It uses an existing Parsec host; no additional software is installed on Windows.
 
@@ -8,7 +8,7 @@ The owner confirmed picture and sound on iPad in the earlier streaming prototype
 
 The interface supports German and English. English system locales default to English; a saved choice under Settings → Language (German: Einstellungen → Sprache) overrides detection. Changing language reloads the app and ends an active stream.
 
-See [the selected-feature implementation matrix](docs/IMPLEMENTATION-1.1.md) for every implemented, conditional and blocked feature in 1.1.0.
+See [the selected-feature implementation matrix](docs/IMPLEMENTATION-1.2.md) for every implemented, conditional and blocked feature in 1.2.0.
 
 ## Using the iPad app
 
@@ -41,3 +41,12 @@ Reports contain technical events, numeric/boolean counters and exact timestamps.
 Account credentials are sent directly to `https://kessel-api.parsec.app`. Passwords and 2FA codes are never persisted or included in reports. The optional “Angemeldet bleiben” checkbox stores only the bearer session in localStorage for at most 30 days; Parsec can invalidate it sooner. Restored sessions are checked by loading the host list; HTTP 401/403 removes the saved session. Logout clears storage. Without opt-in, the session stays in memory. Use this option only on a trusted device: same-origin scripts can access localStorage. Quality, playback/mute, touch/pointer, controller, reconnect, avatar and language preferences are also stored locally. Use Safari/Apple Passwords for credential autofill. Clearing the local session does not revoke the server-side Parsec session.
 
 Historical vendor modules retain their MIT license at the published `LICENSE`. Protocol adaptations cite the independent MIT lowlat implementation at `7b4dc4ae79990ea8c59a108c80b3c89b695c3cb4`; see the source `app/LICENSE-lowlat` (published as `LICENSE-lowlat`). No proprietary Parsec bundle is redistributed. New project source is MIT licensed; see [LICENSE](LICENSE).
+
+## 1.2.0
+
+- Overlay: Picture & quality, Controls, Audio and Statistics subpages; direct return/leave/disconnect actions.
+- Diagnostics: Overview and Tests tabs. Wake-lock/controller tests are in Tests.
+- Checkbox controls stay left of their label on Windows and iPad.
+- Optional experimental HEVC, browser support guard, actual received-codec statistics, local synthetic HEVC decode test and one bounded H.264 fallback.
+
+HEVC host/iPad interoperability is **not yet confirmed**. H.264 remains the default. See the [1.2.0 verification details](docs/IMPLEMENTATION-1.2.md).

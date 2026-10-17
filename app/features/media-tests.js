@@ -1,3 +1,4 @@
+import {hevcSample} from './hevc-sample.js';
 import { t } from '../core/i18n.js';
 import { AudioPlayer } from '../stream/audio.js';
 import { VideoPlayer } from '../stream/video.js';
@@ -38,6 +39,20 @@ export function setupMediaTests({
       $('localVideo').disabled=false;
       controls();
     }
+  };
+  $('testHevc').onclick=async()=>{
+    if(getClient()||getController()||$('testHevc').disabled)return;
+    $('testHevc').disabled=true;$('hevcCanvas').hidden=false;$('hevcResult').textContent=t('codec.testing');
+    let tester,timer;
+    try{
+      await new Promise((resolve,reject)=>{
+        timer=setTimeout(()=>reject(Error('timeout')),4000);
+        tester=new VideoPlayer($('hevcCanvas'),()=>reject(Error('decoder')),()=>{},resolve);
+        tester.setHevc(true);tester.push(hevcSample.buffer);
+      });
+      $('hevcResult').textContent=t('codec.testPassed');diagnostic('local-hevc-decoded',tester.snapshot());
+    }catch{$('hevcResult').textContent=t('codec.testFailed');diagnostic('local-hevc-failed');}
+    finally{clearTimeout(timer);tester?.destroy(false);$('testHevc').disabled=false;controls();}
   };
   $('localAudio').onclick=async()=>{
     const client=getClient(),controller=getController();
