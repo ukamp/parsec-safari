@@ -7,6 +7,7 @@ export function hostData(message,buffer){
     const bytes=new Uint8Array(buffer,13,length);
     const end=bytes.at(-1)===0?bytes.length-1:bytes.length;
     const data=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes.subarray(0,end)));
+    if(message.data1===11&&Array.isArray(data?.video)&&data.video.length>0&&data.video[0]&&typeof data.video[0]==='object'&&!Array.isArray(data.video[0]))return {videoConfig:true};
     if(message.data1===12&&Array.isArray(data)){
       const displays=data.slice(0,32).filter(x=>x&&typeof x.id==='string'&&x.id.length>0&&x.id.length<=128&&!/[\x00-\x1f]/.test(x.id)).map(x=>({id:x.id,name:typeof x.name==='string'?x.name.slice(0,160):x.id}));
       return {displays};

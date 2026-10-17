@@ -17,11 +17,21 @@ globalThis.VideoDecoder=class{constructor(callbacks){this.callbacks=callbacks;th
 globalThis.EncodedVideoChunk=class{constructor(value){Object.assign(this,value);}};
 const video={...target(),width:1280,height:720,getContext:()=>({drawImage(){},clearRect(){}})};
 const events=[];const client=new Client(video,event=>events.push(event));
-await client.connect('synthetic-private-token','synthetic-peer',{encoder_bitrate:8});
+await client.connect('synthetic-private-token','synthetic-peer',{encoder_bitrate:8,server_resolution_x:1280,server_resolution_y:720});
 client.rtc.channels[0].onopen();client.rtc.channels[1].onopen();
 assert.equal(new DataView(sent[0]).getUint8(12),24);
 assert.ok(sent.slice(1).some(buffer=>{const v=new DataView(buffer);return v.getUint8(12)===5&&v.getInt32(0)===5&&v.getInt32(4)===32767;}));
-client.rtc.channels[1].onmessage({data:sample.buffer});assert.ok(events.some(e=>e.type==='frame'));
+const hostSettingsBody=new TextEncoder().encode(JSON.stringify({video:[{resolutionX:1920,resolutionY:1080}]})+'\0');
+const hostSettingsPacket=new Uint8Array(13+hostSettingsBody.length),hostSettingsView=new DataView(hostSettingsPacket.buffer);
+hostSettingsView.setUint8(12,17);hostSettingsView.setInt32(0,hostSettingsBody.length);hostSettingsView.setInt32(4,11);hostSettingsPacket.set(hostSettingsBody,13);
+const settingsPackets=()=>sent.filter(buffer=>{const v=new DataView(buffer);return v.getUint8(12)===17&&v.getInt32(4)===11;});
+assert.equal(settingsPackets().length,0);client.rtc.channels[0].onmessage({data:hostSettingsPacket.buffer});assert.equal(settingsPackets().length,1);
+const requested=JSON.parse(new TextDecoder().decode(new Uint8Array(settingsPackets()[0],13)).replace(/\0$/,''));assert.equal(requested.video[0].resolutionX,1280);assert.equal(requested.video[0].resolutionY,720);
+client.rtc.channels[0].onmessage({data:hostSettingsPacket.buffer});assert.equal(settingsPackets().length,1);
+client.rtc.channels[1].onmessage({data:sample.buffer});assert.ok(events.some(e=>e.type==='frame'));assert.equal(settingsPackets().length,1);
+client.updateQuality({server_resolution_x:1920,server_resolution_y:1080,encoder_bitrate:12,video_codec:'hevc'});assert.equal(client.config.server_resolution_x,1280);assert.equal(client.config.server_resolution_y,720);assert.equal(client.config.encoder_bitrate,12);
+const liveRequest=JSON.parse(new TextDecoder().decode(new Uint8Array(settingsPackets().at(-1),13)).replace(/\0$/,''));assert.equal(liveRequest.video[0].resolutionX,1280);assert.equal(liveRequest.video[0].encoderMaxBitrate,12);
+
 const body=new TextEncoder().encode(JSON.stringify([{id:'monitor-1',name:'Synthetic monitor'}])+'\0');const packet=new Uint8Array(13+body.length);const view=new DataView(packet.buffer);view.setUint8(12,17);view.setInt32(0,body.length);view.setInt32(4,12);packet.set(body,13);
 client.rtc.channels[0].onmessage({data:packet.buffer});assert.ok(events.some(e=>e.type==='displays'));
 assert.equal(client.selectDisplay('not-reported'),false);assert.equal(client.selectDisplay('monitor-1'),true);

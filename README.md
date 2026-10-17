@@ -1,4 +1,4 @@
-# Parsec Safari 1.3.3
+# Parsec Safari 1.3.4
 
 An independent, experimental Parsec web client focused on iPad Safari. It uses an existing Parsec host; no additional software is installed on Windows.
 
@@ -69,3 +69,7 @@ H.264 is preferred after iPad performance feedback. The local helper cursor hide
 Resolution selection now includes Host (wire initialization no-preference sentinel 0×0), Client (screen CSS pixels × DPR, even dimensions, proportionally capped to 4K), and existing fixed sizes. Requests apply at next connection, are not guaranteed host changes, and decoded dimensions in Statistics remain authoritative. The native host configuration sentinel 65535 is not sent as a video dimension.
 Cursor opcode 9 stream-local positions are parsed without images and used to reconcile the local touchpad position only for stream 0, within decoded bounds, in absolute visible mode, with no active touch gesture and at least 200 ms after local pointer input. Updates never wake the idle helper or send input. This is not cross-monitor coordinate mapping: host positions outside the stream, missing host updates and other-monitor activity cannot be reliably mapped with the metadata currently supplied. No monitor offsets are guessed.
 Protocol source: [lowlat cursor layout](https://github.com/nomi-san/lowlat/blob/7b4dc4ae79990ea8c59a108c80b3c89b695c3cb4/crates/core/src/cursor.rs) and [initialization semantics](https://github.com/nomi-san/lowlat/blob/7b4dc4ae79990ea8c59a108c80b3c89b695c3cb4/docs/01-protocol.md). Physical iPad / multi-monitor host validation remains required.
+
+### 1.3.4 resolution request correction
+The 1.3.3 selector sent dimensions only in the opcode 11 initialization. Host video configuration (opcode 17 / sub-ID 11) omitted `video[0].resolutionX` and `resolutionY`. This release includes both dimensions, including Host's 0×0 sentinel, in that host configuration. It sends initial settings once on a recognized host video-config envelope, or on first video as a fallback. Live bitrate/monitor updates retain the connection's resolution and codec so the next-connection notice remains accurate. Reported/decoded dimensions remain authoritative: sending a request is not proof that Windows accepted it.
+Evidence: hugeBlack/OpenParsec commit `e4ba9e21dd3ae0783ce12cc7a0f8a59dca724b07`, `OpenParsec/ParsecSDKBridge.swift` (`handleUserDataEvent`, `updateHostVideoConfig`), `ParsecUserData.swift` (setVideoConfig = 11), and `CParsec.swift` (Host = 0×0). Synthetic integration tests validate framing, startup trigger, one-shot behavior and deferred settings; real host acceptance still needs testing on the owner's iPad.

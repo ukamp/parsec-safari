@@ -47,3 +47,6 @@ See [1.3.1 input notes](INPUT-1.3.1.md). The user reports gamecontroller stabili
 
 ### 1.3.3 resolution / pointer update
 Resolution modes: Host (no preference), Client (screen pixels, max 4K) and fixed sizes, effective next connection and subject to host acceptance. Decoded statistics show actual dimensions. Stream-local host cursor updates reconcile the helper only outside local gestures; this does not implement full multi-monitor coordinate mapping. See README for protocol details and remaining hardware validation.
+
+### 1.3.4 resolution correction
+Host video-configuration messages now carry resolutionX/Y; initialization preferences alone did not implement the host setting. Initial settings are sent once on host configuration or first video. Physical-host acceptance is unconfirmed; the owner reported that 1.3.3 remained at 1920×1080.

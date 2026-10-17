@@ -98,6 +98,7 @@ export class Client {
         }
         else if(type===17){
           const data=hostData(message,e.data);
+          if(data?.videoConfig)this.sendInitialSettings();
           if(data?.displays){this.displays=data.displays;this.onEvent({type:'displays',displays:this.displays});}
         }
         else if(type===20)this.input.rumble(message.data0,message.data1,message.data2);
@@ -117,15 +118,8 @@ export class Client {
       this.stream.open('video');
     },e=>{
       if(this.closed)return;
-      if(!this.configured){
-        this.configured=true;
-        try{
-          if(this.rtc.send(Msg.config(this.config),0))this.diagnostic('stream-settings-sent');
-        }catch{
-          this.destroy(-6108);
-          return;
-        }
-      }this.videoPlayer.push(e.data);
+      if(!this.sendInitialSettings())return;
+      this.videoPlayer.push(e.data);
     });
     this.rtc.addChannel('audio',2,()=>{
       if(!this.closed)this.diagnostic('audio-channel-open');
@@ -152,9 +146,20 @@ export class Client {
     this.codecTimer=setTimeout(()=>{if(!this.closed&&this.videoPlayer.decoded===decoded)this.destroy(-6106);},8000);
     return true;
   }
+  sendInitialSettings(){
+    if(this.configured)return true;
+    if(!this.connected||this.closed)return false;
+    try{
+      if(this.rtc.send(Msg.config(this.config),0)!==true)throw Error('control closed');
+      this.configured=true;
+      this.diagnostic('stream-settings-sent',{requestedWidth:this.config.server_resolution_x??0,requestedHeight:this.config.server_resolution_y??0});
+      return true;
+    }catch{this.destroy(-6108);return false;}
+  }
   updateQuality(config){
     if(!this.connected||this.closed)return false;
-    const {video_codec,...live}=config;
+    // Resolution and codec changes remain deferred until reconnect.
+    const {video_codec,server_resolution_x,server_resolution_y,...live}=config;
     this.config={...this.config,...live};
     return this.rtc.send(Msg.config(this.config),0);
   }

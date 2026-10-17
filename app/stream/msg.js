@@ -27,6 +27,8 @@ export function config(cfg={
   return text(17,11,JSON.stringify({
     video:[{
       encoderMaxBitrate:cfg.encoder_bitrate||8,encoderFPS:cfg.encoder_fps||60,fullFPS:cfg.full_fps===true,
+      // Host settings are separate from the decoder init preference.
+      ...(Number.isInteger(cfg.server_resolution_x)&&Number.isInteger(cfg.server_resolution_y)?{resolutionX:cfg.server_resolution_x,resolutionY:cfg.server_resolution_y}:{}),
       ...(typeof cfg.output==='string'?{output:cfg.output}:{})
     }]
   }));

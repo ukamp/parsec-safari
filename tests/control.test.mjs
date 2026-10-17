@@ -13,3 +13,10 @@ const status=new Uint8Array([255,255,255,248,0,0,0,0,0,0,0,0,10]);assert.equal(M
 const cursor=new ArrayBuffer(34);new DataView(cursor).setUint8(12,9);new DataView(cursor).setUint16(32,768);assert.equal(Msg.unpack(cursor).hidden,true);assert.equal(Msg.unpack(cursor).relative,true);
 assert.throws(()=>Msg.unpack(new ArrayBuffer(12)));new DataView(cursor).setInt32(16,1);assert.throws(()=>Msg.unpack(cursor));
 console.log('Modern wire fixtures: opcode offset, argument order, NUL-terminated init JSON, settings, refresh, cursor bounds and host status passed.');
+
+for(const [x,y] of [[0,0],[1280,720],[2048,1536]]){
+ const packet=Msg.config({server_resolution_x:x,server_resolution_y:y,encoder_bitrate:8}),view=new DataView(packet);
+ assert.equal(view.getUint8(12),17);assert.equal(view.getInt32(4),11);assert.equal(view.getInt32(0),packet.byteLength-13);assert.equal(new Uint8Array(packet).at(-1),0);
+ const value=JSON.parse(new TextDecoder().decode(new Uint8Array(packet,13,packet.byteLength-14)));assert.equal(value.video[0].resolutionX,x);assert.equal(value.video[0].resolutionY,y);
+}
+console.log('Host video settings include resolutionX/Y for Host, fixed and client sizes, with correct sub-ID and NUL framing.');
