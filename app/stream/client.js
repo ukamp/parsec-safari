@@ -14,7 +14,7 @@ export class Client {
     this.connected=false;
     this.rtc=null;
     this.signal=null;
-    this.configured=false;this.hostVideoConfig=null;this.hostConfigured=false;this.explicitOutputForConnection=false;
+    this.configured=false;this.hostVideoConfig=null;this.hostConfigured=false;this.explicitOutputForConnection=false;this.displayReadbackTimer=null;
     this.controlPackets=0;
     this.audioPackets=0;
     this.audioBytes=0;
@@ -103,7 +103,8 @@ export class Client {
           if(data?.videoConfig){
             this.hostVideoConfig=data.videoConfig;
             const reported=data.videoConfig.video[0];
-            this.diagnostic('host-video-config-received',{reportedWidth:reported.resolutionX,reportedHeight:reported.resolutionY});
+            this.diagnostic('host-video-config-received',{reportedWidth:reported.resolutionX,reportedHeight:reported.resolutionY,reportedDisplayIndex:this.displays.findIndex(d=>d.id===reported.output)+1,selectedOutputMatches:!!this.config?.output&&reported.output===this.config.output});
+            this.reportDisplayMapping('-reply');
             this.emitDisplays();
             if(!this.hostConfigured){this.sendInitialSettings(true);}
           }
@@ -159,12 +160,12 @@ export class Client {
     this.reportDisplayMapping();
     this.onEvent({type:'displays',displays:this.displays,selected,requiresSelection:!this.explicitOutputForConnection});
   }
-  reportDisplayMapping(){
+  reportDisplayMapping(suffix=''){
     const slots=this.hostVideoConfig?.video;if(!slots)return;
-    this.diagnostic('host-display-mapping',{slotCount:slots.length,displayCount:this.displays.length,selectedDisplayIndex:this.displays.findIndex(d=>d.id===this.config?.output)+1});
+    this.diagnostic('host-display-mapping'+suffix,{slotCount:slots.length,displayCount:this.displays.length,selectedDisplayIndex:this.displays.findIndex(d=>d.id===this.config?.output)+1});
     for(let i=0;i<Math.min(32,slots.length);i++){
       const slot=slots[i];if(!slot||typeof slot!=='object')continue;
-      this.diagnostic('host-video-slot-'+i,{videoIndex:i,displayIndex:this.displays.findIndex(d=>d.id===slot.output)+1,selectedMatch:!!this.config?.output&&slot.output===this.config.output,width:slot.resolutionX,height:slot.resolutionY});
+      this.diagnostic('host-video-slot-'+i+suffix,{videoIndex:i,displayIndex:this.displays.findIndex(d=>d.id===slot.output)+1,selectedMatch:!!this.config?.output&&slot.output===this.config.output,width:slot.resolutionX,height:slot.resolutionY});
     }
   }
   settingsConfig(){
@@ -194,6 +195,15 @@ export class Client {
     const settings=this.settingsConfig();if(!settings)return false;
     return this.rtc.send(Msg.config(settings,this.hostVideoConfig),0);
   }
+  requestDisplayReadback(){
+    clearTimeout(this.displayReadbackTimer);
+    this.displayReadbackTimer=setTimeout(()=>{
+      this.displayReadbackTimer=null;if(this.closed||!this.connected)return;
+      try{if(this.rtc.send(Msg.getVideoConfig(),0))this.diagnostic('display-settings-readback-requested');}
+      catch{this.diagnostic('display-settings-readback-failed');}
+    },300);
+    this.displayReadbackTimer?.unref?.();
+  }
   selectDisplay(id){
     if(!this.connected||this.closed||!this.hostVideoConfig||!this.displays.some(display=>display.id===id))return false;
     const previous=this.config.output,previousExplicit=this.explicitOutputForConnection;
@@ -203,7 +213,7 @@ export class Client {
       if(!sent){this.config.output=previous;this.explicitOutputForConnection=previousExplicit;return false;}
       this.configured=true;this.hostConfigured=true;
       this.diagnostic('explicit-display-settings-sent',{requestedWidth:this.config.server_resolution_x??0,requestedHeight:this.config.server_resolution_y??0});
-      this.reportDisplayMapping();this.emitDisplays();return true;
+      this.reportDisplayMapping();this.emitDisplays();this.requestDisplayReadback();return true;
     }catch{this.config.output=previous;this.explicitOutputForConnection=previousExplicit;return false;}
   }
   async transportStats(){
@@ -221,6 +231,7 @@ export class Client {
   }
   destroy(code=0) {
     if(this.closed)return;
+    clearTimeout(this.displayReadbackTimer);this.displayReadbackTimer=null;
     this.diagnostic('audio-summary',this.audioPlayer.snapshot());
     this.diagnostic('video-summary',this.videoPlayer.snapshot());
     this.diagnostic('transport-summary',{

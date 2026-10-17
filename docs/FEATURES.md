@@ -68,3 +68,6 @@ Persistent diagnostics checkbox, off by default. Disabled mode pauses collection
 
 ### 1.3.10 temporary monitor recovery
 Two-phase selection removed after owner regression report. No automatic host-settings SET before a manual display choice in each connection. Direct explicit selection restored; remembered automatic display/resolution startup remains blocked. Detailed logging toggle retained.
+
+### 1.3.11 readback diagnostics
+Manual display selection triggers one debounced settings GET. Actual video-size transitions and fresh host-output indices are logged when detail logging is enabled. Host SET is unchanged; wrong-monitor resolution remains unresolved.

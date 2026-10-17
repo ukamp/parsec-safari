@@ -16,6 +16,7 @@ const decoder=VideoDecoder.last;
 decoder.callbacks.output({displayWidth:64,displayHeight:64,close(){closedFrames++;}});
 assert.equal(first,1);assert.equal(draws.length,1);assert.equal(closedFrames,1);assert.equal(p.snapshot().decoded,1);assert.equal(canvas.width,64);
 p.push(new Uint8Array([0,0,1,0x41,1]).buffer);assert.equal(chunks.at(-1).type,'delta');assert.ok(chunks.at(-1).timestamp>chunks[0].timestamp);
+const sizeEvents=()=>events.filter(e=>e.stage==='video-size-changed');assert.equal(sizeEvents().length,1);decoder.callbacks.output({displayWidth:64,displayHeight:64,close(){}});assert.equal(sizeEvents().length,1);decoder.callbacks.output({displayWidth:1024,displayHeight:768,close(){}});assert.equal(sizeEvents().length,2);assert.deepEqual(sizeEvents().at(-1).metrics,{width:1024,height:768});
 p.destroy();decoder.callbacks.output({close(){closedFrames++;}});assert.equal(first,1);assert.equal(closedFrames,2);assert.equal(decoder.state,'closed');
 assert.equal(fatal,0);assert.ok(events.some(x=>x.stage==='video-annexb-received'));
 console.log('Annex-B parsing, SPS codec selection, keyframe gating, decoder submission, rendering and stale-frame disposal passed (decoder mocked).');

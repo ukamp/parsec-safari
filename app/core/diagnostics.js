@@ -26,11 +26,11 @@ export function createDiagnostics($){
   }){
     if(!enabled)return;
     const now=Date.now();
-    if(now-(lastStage.get(stage)||0)<1000)return;
+    if(stage!=='video-size-changed'&&now-(lastStage.get(stage)||0)<1000)return;
     lastStage.set(stage,now);
     const safe={
     };
-    for(const key of ['packets','receivedBytes','appended','completed','queuedBytes','waitingForInit','sourceOpen','bufferedRanges','readyState','mediaError','paused','firstPacketBytes','controlPackets','audioPackets','audioBytes','streamRequested','shutter','hostCode','submitted','decoded','dropped','waitingForKeyframe','decodeQueueSize','width','height','requestedWidth','requestedHeight','reportedWidth','reportedHeight','displayCount','slotCount','videoIndex','displayIndex','selectedDisplayIndex','selectedMatch','audioReceivedPackets','audioDecodedPackets','audioScheduledFrames','audioDroppedPackets','audioDecodeErrors','audioUnsupportedPackets','audioNonSilentBuffers','audioDecoderReady','audioNativeDecoder','audioContextRunning','gamepads','standardGamepads','activeInputs','rtPresses','rtReleases','rtValue','focusLosses','pageFocused','focusTarget']){
+    for(const key of ['packets','receivedBytes','appended','completed','queuedBytes','waitingForInit','sourceOpen','bufferedRanges','readyState','mediaError','paused','firstPacketBytes','controlPackets','audioPackets','audioBytes','streamRequested','shutter','hostCode','submitted','decoded','dropped','waitingForKeyframe','decodeQueueSize','width','height','requestedWidth','requestedHeight','reportedWidth','reportedHeight','reportedDisplayIndex','selectedOutputMatches','displayCount','slotCount','videoIndex','displayIndex','selectedDisplayIndex','selectedMatch','audioReceivedPackets','audioDecodedPackets','audioScheduledFrames','audioDroppedPackets','audioDecodeErrors','audioUnsupportedPackets','audioNonSilentBuffers','audioDecoderReady','audioNativeDecoder','audioContextRunning','gamepads','standardGamepads','activeInputs','rtPresses','rtReleases','rtValue','focusLosses','pageFocused','focusTarget']){
       const value=metrics[key];
       if(typeof value==='boolean'||(typeof value==='number'&&Number.isFinite(value)&&(key==='hostCode'||value>=0)))safe[key]=value;
     }history.push({

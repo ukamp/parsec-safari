@@ -78,12 +78,14 @@ export class VideoPlayer {
       output:frame=>{
         try{
           if(this.closed||generation!==this.generation)return;
+          const sizeChanged=this.width!==frame.displayWidth||this.height!==frame.displayHeight;
           this.width=frame.displayWidth;
           this.height=frame.displayHeight;
           if(this.canvas.width!==this.width)this.canvas.width=this.width;
           if(this.canvas.height!==this.height)this.canvas.height=this.height;
           this.context.drawImage(frame,0,0,this.width,this.height);
           this.decoded++;
+          if(sizeChanged)this.onDiagnostic('video-size-changed',{width:this.width,height:this.height});
           this.lastFrameCodec=codec;
           this.diag('video-frame-presented',{
             width:this.width,height:this.height

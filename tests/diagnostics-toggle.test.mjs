@@ -11,3 +11,4 @@ assert.equal(createDiagnostics($).enabled(),true);const beforePause=logWrites,ol
 d.setEnabled(true);d.diagnostic('sample',{decoded:2});assert.equal(d.events().length,3);assert.equal(d.events().at(-1).metrics.decoded,2);
 globalThis.localStorage={getItem(){throw Error('blocked')},setItem(){throw Error('blocked')}};const blocked=createDiagnostics($);assert.equal(blocked.enabled(),false);blocked.setEnabled(true);blocked.diagnostic('works',{decoded:3});assert.equal(blocked.events().length,1);
 console.log('Detail logging defaults off; disabled paths skip collection/filtering/log writes, status updates survive, pause retains history, resume clears throttling and preference storage is optional.');
+const sizesBefore=d.events().length;d.diagnostic('video-size-changed',{width:1920,height:1080});d.diagnostic('video-size-changed',{width:1024,height:768});assert.equal(d.events().length,sizesBefore+2);

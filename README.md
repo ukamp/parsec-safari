@@ -1,4 +1,4 @@
-# Parsec Safari 1.3.10
+# Parsec Safari 1.3.11
 
 An independent, experimental Parsec web client focused on iPad Safari. It uses an existing Parsec host; no additional software is installed on Windows.
 
@@ -95,3 +95,6 @@ Diagnostics → Overview has a persistent Enable detailed logging checkbox, off 
 
 ### 1.3.10 monitor regression recovery
 Owner reports the two-phase selection in 1.3.8/1.3.9 broke monitor selection and still changed monitor 1. That path is removed. Startup sends no host-settings SET at all before an explicit monitor choice in the current connection, even if a display preference is stored. Decoder initialization remains 0×0. Manual selection restores the direct slot-0 output/resolution SET used before the regression, validated against the reported display list. Stored choices no longer authorize an automatic resize: the user must select the display each connection. Until then bitrate/FPS requests are also held; audio and decoder controls are unaffected. This is a conservative regression recovery, not a completed automatic startup feature. The owner must validate the restored manual path. Detailed logging toggle remains included.
+
+### 1.3.11 fresh display readback diagnostics
+Owner's 1.3.10 report confirms no startup SET, then repeated manual SETs while cached host metadata still refers to the initial output. The owner's Windows monitor 2 supports 1024×768. Automatic resolution remains paused and the control SET format is unchanged. After a successful manual choice, a debounced GET (300 ms) refreshes host settings; receipt never triggers another SET. Pending reads are cancelled on teardown. Reply mapping has separate rate-limit stage names so the preceding cached snapshot does not suppress it. Actual decoded size changes are now recorded on each size transition, without per-frame events. Numeric readback output-list index and selected-output match are added; names/IDs/raw host payloads are still excluded. This improves evidence and removes a stale merge base for later choices; it does not claim the wrong-monitor resolution issue is solved.
