@@ -14,7 +14,7 @@ export class Client {
     this.connected=false;
     this.rtc=null;
     this.signal=null;
-    this.configured=false;
+    this.configured=false;this.hostVideoConfig=null;this.hostConfigured=false;
     this.controlPackets=0;
     this.audioPackets=0;
     this.audioBytes=0;
@@ -74,6 +74,7 @@ export class Client {
         type:'connect'
       });
       this.stream.open('control');
+      if(this.rtc.send(Msg.getVideoConfig(),0))this.diagnostic('host-video-config-requested');
       if(this.hevcAttempt)this.codecTimer=setTimeout(()=>this.fallbackH264(),8000);
     },e=>{
       if(this.closed)return;
@@ -98,7 +99,12 @@ export class Client {
         }
         else if(type===17){
           const data=hostData(message,e.data);
-          if(data?.videoConfig)this.sendInitialSettings();
+          if(data?.videoConfig){
+            this.hostVideoConfig=data.videoConfig;
+            const reported=data.videoConfig.video[0];
+            this.diagnostic('host-video-config-received',{reportedWidth:reported.resolutionX,reportedHeight:reported.resolutionY});
+            if(!this.hostConfigured){this.hostConfigured=true;this.sendInitialSettings(true);}
+          }
           if(data?.displays){this.displays=data.displays;this.onEvent({type:'displays',displays:this.displays});}
         }
         else if(type===20)this.input.rumble(message.data0,message.data1,message.data2);
@@ -146,13 +152,13 @@ export class Client {
     this.codecTimer=setTimeout(()=>{if(!this.closed&&this.videoPlayer.decoded===decoded)this.destroy(-6106);},8000);
     return true;
   }
-  sendInitialSettings(){
-    if(this.configured)return true;
+  sendInitialSettings(mergeHost=false){
+    if(this.configured&&!mergeHost)return true;
     if(!this.connected||this.closed)return false;
     try{
-      if(this.rtc.send(Msg.config(this.config),0)!==true)throw Error('control closed');
+      if(this.rtc.send(Msg.config(this.config,this.hostVideoConfig),0)!==true)throw Error('control closed');
       this.configured=true;
-      this.diagnostic('stream-settings-sent',{requestedWidth:this.config.server_resolution_x??0,requestedHeight:this.config.server_resolution_y??0});
+      this.diagnostic(mergeHost?'host-video-config-merged-sent':'stream-settings-sent',{requestedWidth:this.config.server_resolution_x??0,requestedHeight:this.config.server_resolution_y??0});
       return true;
     }catch{this.destroy(-6108);return false;}
   }
@@ -161,7 +167,7 @@ export class Client {
     // Resolution and codec changes remain deferred until reconnect.
     const {video_codec,server_resolution_x,server_resolution_y,...live}=config;
     this.config={...this.config,...live};
-    return this.rtc.send(Msg.config(this.config),0);
+    return this.rtc.send(Msg.config(this.config,this.hostVideoConfig),0);
   }
   selectDisplay(id){
     if(!this.displays.some(display=>display.id===id))return false;

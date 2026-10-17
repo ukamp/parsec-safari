@@ -21,12 +21,13 @@ await client.connect('synthetic-private-token','synthetic-peer',{encoder_bitrate
 client.rtc.channels[0].onopen();client.rtc.channels[1].onopen();
 assert.equal(new DataView(sent[0]).getUint8(12),24);
 assert.ok(sent.slice(1).some(buffer=>{const v=new DataView(buffer);return v.getUint8(12)===5&&v.getInt32(0)===5&&v.getInt32(4)===32767;}));
-const hostSettingsBody=new TextEncoder().encode(JSON.stringify({video:[{resolutionX:1920,resolutionY:1080}]})+'\0');
+const hostSettingsBody=new TextEncoder().encode(JSON.stringify({virtualMicrophone:1,video:[{resolutionX:1920,resolutionY:1080,output:'existing-monitor'},{output:'secondary'}]})+'\0');
 const hostSettingsPacket=new Uint8Array(13+hostSettingsBody.length),hostSettingsView=new DataView(hostSettingsPacket.buffer);
 hostSettingsView.setUint8(12,17);hostSettingsView.setInt32(0,hostSettingsBody.length);hostSettingsView.setInt32(4,11);hostSettingsPacket.set(hostSettingsBody,13);
 const settingsPackets=()=>sent.filter(buffer=>{const v=new DataView(buffer);return v.getUint8(12)===17&&v.getInt32(4)===11;});
+assert.ok(sent.some(buffer=>{const v=new DataView(buffer);return v.getUint8(12)===17&&v.getInt32(4)===9;}));
 assert.equal(settingsPackets().length,0);client.rtc.channels[0].onmessage({data:hostSettingsPacket.buffer});assert.equal(settingsPackets().length,1);
-const requested=JSON.parse(new TextDecoder().decode(new Uint8Array(settingsPackets()[0],13)).replace(/\0$/,''));assert.equal(requested.video[0].resolutionX,1280);assert.equal(requested.video[0].resolutionY,720);
+const requested=JSON.parse(new TextDecoder().decode(new Uint8Array(settingsPackets()[0],13)).replace(/\0$/,''));assert.equal(requested.video[0].resolutionX,1280);assert.equal(requested.video[0].resolutionY,720);assert.equal(requested.video[0].output,'existing-monitor');assert.equal(requested.video.length,2);assert.equal(requested.virtualMicrophone,1);
 client.rtc.channels[0].onmessage({data:hostSettingsPacket.buffer});assert.equal(settingsPackets().length,1);
 client.rtc.channels[1].onmessage({data:sample.buffer});assert.ok(events.some(e=>e.type==='frame'));assert.equal(settingsPackets().length,1);
 client.updateQuality({server_resolution_x:1920,server_resolution_y:1080,encoder_bitrate:12,video_codec:'hevc'});assert.equal(client.config.server_resolution_x,1280);assert.equal(client.config.server_resolution_y,720);assert.equal(client.config.encoder_bitrate,12);
@@ -50,7 +51,9 @@ h.videoPlayer.onFatal();assert.equal(h.fellBack,true);assert.equal(h.fallbackH26
 assert.equal(new DataView(sent.at(-1)).getUint8(12),13);assert.equal(new DataView(sent.at(-1)).getInt32(4),8);
 assert.equal(h.config.video_codec,'h264');assert.equal(h.stream.config.video_codec,'h264');
 h.rtc.channels[1].onmessage({data:sample.buffer});assert.match(h.videoPlayer.snapshot().codec,/avc1/);
-assert.ok(hevcEvents.some(e=>e.type==='codec'&&e.state==='fallback'));h.destroy();
+assert.ok(hevcEvents.some(e=>e.type==='codec'&&e.state==='fallback'));
+const beforeLate=settingsPackets().length;h.rtc.channels[0].onmessage({data:hostSettingsPacket.buffer});assert.equal(settingsPackets().length,beforeLate+1);h.rtc.channels[0].onmessage({data:hostSettingsPacket.buffer});assert.equal(settingsPackets().length,beforeLate+1);
+assert.ok(hevcEvents.some(e=>e.stage==='host-video-config-merged-sent'));h.destroy();
 VideoDecoder.isConfigSupported=async()=>({supported:false});
 const unsupported=[];const u=new Client(video,e=>unsupported.push(e));await u.connect('synthetic-private-token','synthetic-peer',{video_codec:'hevc'});
 assert.equal(u.config.video_codec,'h264');assert.ok(unsupported.some(e=>e.type==='codec'&&e.state==='unavailable'));u.destroy();

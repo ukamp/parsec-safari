@@ -36,3 +36,6 @@ assert.equal(isAppleTouch({userAgent:'Mozilla iPad',maxTouchPoints:5}),true);
 assert.equal(isAppleTouch({userAgent:'Mozilla Macintosh',maxTouchPoints:5}),true);
 assert.equal(isAppleTouch({userAgent:'Mozilla Macintosh',maxTouchPoints:0}),false);
 assert.equal(isAppleTouch({userAgent:'Mozilla Android',maxTouchPoints:5}),false);
+
+let response=fixture({video:[{output:'kept',resolutionX:1920,resolutionY:1080}],virtualTablet:1});response.message.data1=11;assert.equal(hostData(response.message,response.buffer).videoConfig.video[0].output,'kept');
+for(const malformed of [{video:[]},{video:[null]},{video:['bad']},{video:[[]]},[]]){response=fixture(malformed);response.message.data1=11;assert.equal(hostData(response.message,response.buffer),null);}

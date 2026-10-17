@@ -20,3 +20,8 @@ for(const [x,y] of [[0,0],[1280,720],[2048,1536]]){
  const value=JSON.parse(new TextDecoder().decode(new Uint8Array(packet,13,packet.byteLength-14)));assert.equal(value.video[0].resolutionX,x);assert.equal(value.video[0].resolutionY,y);
 }
 console.log('Host video settings include resolutionX/Y for Host, fixed and client sizes, with correct sub-ID and NUL framing.');
+const get=Msg.getVideoConfig(),gv=new DataView(get);assert.equal(gv.getUint8(12),17);assert.equal(gv.getInt32(4),9);assert.equal(gv.getInt32(0),1);assert.equal(get.byteLength,14);assert.equal(new Uint8Array(get)[13],0);
+const base={virtualMicrophone:1,unknownHostSetting:{keep:true},video:[{output:'existing-monitor',hostOS:1,resolutionX:1920,resolutionY:1080,unknownVideoFlag:7},{output:'second-monitor',resolutionX:2560,resolutionY:1440}]};
+const original=JSON.stringify(base);const mergedPacket=Msg.config({server_resolution_x:1280,server_resolution_y:720,encoder_bitrate:10},base);const merged=JSON.parse(new TextDecoder().decode(new Uint8Array(mergedPacket,13,mergedPacket.byteLength-14)));
+assert.equal(merged.video[0].resolutionX,1280);assert.equal(merged.video[0].resolutionY,720);assert.equal(merged.video[0].output,'existing-monitor');assert.equal(merged.video[0].unknownVideoFlag,7);assert.deepEqual(merged.video[1],base.video[1]);assert.deepEqual(merged.unknownHostSetting,{keep:true});assert.equal(merged.virtualMicrophone,1);assert.equal(JSON.stringify(base),original);
+console.log('GET settings framing and immutable host-config merge preserve output, other monitors and unknown fields.');

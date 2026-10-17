@@ -50,3 +50,6 @@ Resolution modes: Host (no preference), Client (screen pixels, max 4K) and fixed
 
 ### 1.3.4 resolution correction
 Host video-configuration messages now carry resolutionX/Y; initialization preferences alone did not implement the host setting. Initial settings are sent once on host configuration or first video. Physical-host acceptance is unconfirmed; the owner reported that 1.3.3 remained at 1920×1080.
+
+### 1.3.5 diagnostic host exchange
+Resolution change remains unconfirmed on the owner’s host (1.3.4 stayed 1920×1080). GET video settings and merge-preserving SET are now implemented. Compare requested/host-reported dimensions with actual decoded dimensions; do not treat sent settings as acceptance.

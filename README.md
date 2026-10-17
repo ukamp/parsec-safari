@@ -1,4 +1,4 @@
-# Parsec Safari 1.3.4
+# Parsec Safari 1.3.5
 
 An independent, experimental Parsec web client focused on iPad Safari. It uses an existing Parsec host; no additional software is installed on Windows.
 
@@ -73,3 +73,7 @@ Protocol source: [lowlat cursor layout](https://github.com/nomi-san/lowlat/blob/
 ### 1.3.4 resolution request correction
 The 1.3.3 selector sent dimensions only in the opcode 11 initialization. Host video configuration (opcode 17 / sub-ID 11) omitted `video[0].resolutionX` and `resolutionY`. This release includes both dimensions, including Host's 0×0 sentinel, in that host configuration. It sends initial settings once on a recognized host video-config envelope, or on first video as a fallback. Live bitrate/monitor updates retain the connection's resolution and codec so the next-connection notice remains accurate. Reported/decoded dimensions remain authoritative: sending a request is not proof that Windows accepted it.
 Evidence: hugeBlack/OpenParsec commit `e4ba9e21dd3ae0783ce12cc7a0f8a59dca724b07`, `OpenParsec/ParsecSDKBridge.swift` (`handleUserDataEvent`, `updateHostVideoConfig`), `ParsecUserData.swift` (setVideoConfig = 11), and `CParsec.swift` (Host = 0×0). Synthetic integration tests validate framing, startup trigger, one-shot behavior and deferred settings; real host acceptance still needs testing on the owner's iPad.
+
+### 1.3.5 host configuration exchange (acceptance still unconfirmed)
+The owner reports 1.3.4 still streams at 1920×1080. The client now actively requests host video settings with opcode 17 / sub-ID 9 / empty NUL-terminated body. A validated sub-ID 11 response is retained in memory and used as the merge base: existing output, other monitors and unknown host fields are preserved while only requested video fields are overwritten. The merged initial request is sent once even if the first-video fallback had already sent a minimal settings request; repeated replies do not loop. Later bitrate/monitor requests use the same merge base and keep deferred resolution semantics. No host response payload, output IDs or text are logged.
+Diagnostics distinguishes `host-video-config-requested`, `host-video-config-received` (numeric reportedWidth/Height), `host-video-config-merged-sent` and `stream-settings-sent` (numeric requestedWidth/Height). Neither a host-config reply nor a send is proof of a display-mode change; decoded frame dimensions remain authoritative. The report build identifier is now correct. Evidence: Talhasarac/OpenParsec-Quest `ParsecActivity.java` requestHostVideoConfig/applySettingsToHostVideoConfig and `parsec/bindings/Parsec.java` message IDs; no software installation on Windows.
