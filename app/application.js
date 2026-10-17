@@ -227,6 +227,7 @@ async function connect(peer,retrying=false){
     current=new Client($('video'),event=>{
       if(client!==current&&event.type!=='diagnostic')return;
       if(event.type==='codec'){$('codecStatus').textContent=t('codec.'+event.state);return;}
+      if(event.type==='display-selecting'){$('displayStatus').textContent=t('display.selecting');return;}
       if(event.type==='display-mapping-unavailable'){$('displayStatus').textContent=t('display.mappingUnavailable');return;}
       if(event.type==='displays'){
         $('displaySelection').textContent='';
@@ -321,7 +322,7 @@ $('resumeStream').onclick=()=>{if(session&&lastPeer&&!client&&reconnect.timer===
 $('download').onclick=()=>{
   client?.reportAudio();
   const blob=new Blob([JSON.stringify({
-    version:2,build:'1.3.7',experimental:true,events:diagnostics.events()
+    version:2,build:'1.3.8',experimental:true,events:diagnostics.events()
   },null,2)],{
     type:'application/json'
   }),url=URL.createObjectURL(blob),a=document.createElement('a');

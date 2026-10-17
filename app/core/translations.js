@@ -1,5 +1,6 @@
 // Stable English keys; all German and English UI copy lives here.
 export const translations={
+"display.selecting":{"de":"Monitorwahl angefordert. Die Auflösung folgt erst nach Bestätigung durch den Host.","en":"Display selection requested. Resolution follows only after the host confirms the selection."},
 "display.mappingUnavailable":{"de":"Für diesen Monitor ist kein eindeutiger Host-Konfigurationseintrag bekannt. Änderung blockiert; bitte Diagnosebericht bereitstellen.","en":"No unique host configuration slot is known for this display. Change blocked; please provide a diagnostic report."},
 "display.currentUnknown":{"de":"Aktueller Host-Monitor (Zuordnung nicht gemeldet)","en":"Current host display (mapping not reported)"},
 "resolution.host":{"de":"Host-Auflösung beibehalten","en":"Keep host resolution"},

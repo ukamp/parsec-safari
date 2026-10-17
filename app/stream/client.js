@@ -14,7 +14,7 @@ export class Client {
     this.connected=false;
     this.rtc=null;
     this.signal=null;
-    this.configured=false;this.hostVideoConfig=null;this.hostConfigured=false;
+    this.configured=false;this.hostVideoConfig=null;this.hostConfigured=false;this.pendingOutput=null;this.confirmedOutput=null;this.outputTimer=null;
     this.controlPackets=0;
     this.audioPackets=0;
     this.audioBytes=0;
@@ -102,6 +102,12 @@ export class Client {
           const data=hostData(message,e.data);
           if(data?.videoConfig){
             this.hostVideoConfig=data.videoConfig;
+            if(this.pendingOutput){
+              if(data.videoConfig.video[0].output===this.pendingOutput){
+                this.confirmedOutput=this.pendingOutput;this.pendingOutput=null;clearTimeout(this.outputTimer);this.outputTimer=null;
+                this.diagnostic('display-selection-confirmed');
+              }else this.diagnostic('display-selection-not-confirmed');
+            }
             const reported=data.videoConfig.video[0];
             this.diagnostic('host-video-config-received',{reportedWidth:reported.resolutionX,reportedHeight:reported.resolutionY});
             this.emitDisplays();
@@ -155,7 +161,7 @@ export class Client {
     return true;
   }
   emitDisplays(){
-    const selected=this.config?.output||this.hostVideoConfig?.video?.[0]?.output||'';
+    const selected=this.config?.output||'';
     this.reportDisplayMapping();
     this.onEvent({type:'displays',displays:this.displays,selected});
   }
@@ -167,19 +173,30 @@ export class Client {
       this.diagnostic('host-video-slot-'+i,{videoIndex:i,displayIndex:this.displays.findIndex(d=>d.id===slot.output)+1,selectedMatch:!!this.config?.output&&slot.output===this.config.output,width:slot.resolutionX,height:slot.resolutionY});
     }
   }
+  beginOutputSelection(){
+    const id=this.config?.output;
+    if(!this.connected||this.closed||!this.hostVideoConfig||!this.displays.some(display=>display.id===id))return false;
+    if(this.pendingOutput===id)return true;
+    this.pendingOutput=id;this.confirmedOutput=null;
+    try{
+      if(this.rtc.send(Msg.selectOutput(id,this.hostVideoConfig),0)!==true)throw Error('closed');
+      this.diagnostic('display-selection-sent');this.onEvent({type:'display-selecting'});
+      if(this.rtc.send(Msg.getVideoConfig(),0)!==true)throw Error('closed');
+      clearTimeout(this.outputTimer);
+      this.outputTimer=setTimeout(()=>{this.outputTimer=null;if(!this.closed&&this.pendingOutput===id){this.diagnostic('display-selection-unconfirmed');this.onEvent({type:'display-mapping-unavailable'});}},2500);
+      this.outputTimer?.unref?.();return true;
+    }catch{this.pendingOutput=null;this.destroy(-6108);return false;}
+  }
   settingsConfig(){
-    const cfg={...this.config},slots=this.hostVideoConfig?.video||[];
-    this.displayMappingMissing=false;
+    const cfg={...this.config};this.displayMappingMissing=false;
     if(cfg.output){
-      const matches=slots.map((slot,index)=>slot?.output===cfg.output?index:-1).filter(index=>index>=0);
-      if(!this.displays.some(display=>display.id===cfg.output)||matches.length!==1){
-        this.displayMappingMissing=true;this.once('resolution-target-unresolved');this.onEvent({type:'display-mapping-unavailable'});return null;
-      }
-      cfg.video_index=matches[0];
+      if(this.confirmedOutput!==cfg.output||this.hostVideoConfig?.video?.[0]?.output!==cfg.output){this.displayMappingMissing=true;return null;}
+      // Slot 0 is this client's stream, not physical Windows monitor 1.
+      cfg.video_index=0;
     }else{
-      // Without an explicit display choice, no slot is proven to be the target.
-      cfg.skip_resolution=true;delete cfg.server_resolution_x;delete cfg.server_resolution_y;
-      this.once('resolution-target-unresolved');this.onEvent({type:'display-mapping-unavailable'});
+      cfg.skip_all_resolutions=true;cfg.skip_resolution=true;
+      delete cfg.server_resolution_x;delete cfg.server_resolution_y;
+      this.once('resolution-auto-kept');
     }
     return cfg;
   }
@@ -187,7 +204,7 @@ export class Client {
     if(this.configured&&!mergeHost)return true;
     if(!this.connected||this.closed)return false;
     if(!this.hostVideoConfig){this.once('host-settings-awaiting-config');return true;}
-    const settings=this.settingsConfig();if(!settings){this.once('host-settings-awaiting-display');return true;}
+    const settings=this.settingsConfig();if(!settings){this.beginOutputSelection();this.once('host-settings-awaiting-display');return !this.closed;}
     try{
       if(this.rtc.send(Msg.config(settings,this.hostVideoConfig),0)!==true)throw Error('control closed');
       this.configured=true;this.hostConfigured=true;
@@ -206,7 +223,8 @@ export class Client {
   }
   selectDisplay(id){
     if(!this.displays.some(display=>display.id===id))return false;
-    const sent=this.updateQuality({output:id});this.reportDisplayMapping();if(sent)this.emitDisplays();return sent;
+    this.config.output=id;this.configured=false;this.hostConfigured=false;this.confirmedOutput=null;this.pendingOutput=null;clearTimeout(this.outputTimer);this.outputTimer=null;
+    const sent=this.beginOutputSelection();this.reportDisplayMapping();if(sent)this.emitDisplays();return sent;
   }
   async transportStats(){
     try{
@@ -223,6 +241,7 @@ export class Client {
   }
   destroy(code=0) {
     if(this.closed)return;
+    clearTimeout(this.outputTimer);this.outputTimer=null;this.pendingOutput=null;
     this.diagnostic('audio-summary',this.audioPlayer.snapshot());
     this.diagnostic('video-summary',this.videoPlayer.snapshot());
     this.diagnostic('transport-summary',{

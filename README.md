@@ -1,4 +1,4 @@
-# Parsec Safari 1.3.7
+# Parsec Safari 1.3.8
 
 An independent, experimental Parsec web client focused on iPad Safari. It uses an existing Parsec host; no additional software is installed on Windows.
 
@@ -85,3 +85,7 @@ The client now requests adapter/display info (opcode 17 / sub-ID 10, empty termi
 ### 1.3.7 video-slot targeting guard
 The owner reports that 1.3.6 still modifies monitor 1 while monitor 2 streams. Previous merging always modified video[0]. The SET serializer can now modify a verified video slot; the client requires an explicit display ID that matches exactly one output in the host's current video array and a currently reported display. Missing or duplicate matches block the SET. Without an explicit display choice, resolution fields are withheld. No ordinal monitor-to-slot mapping is guessed. Tests prove that when the selected ID is in video[1], video[0] is unchanged. This is not yet confirmation that the physical host accepts the intended change.
 Diagnostics includes anonymous slot indices, display-list indices (0 means unknown), selected-match booleans and numeric sizes. IDs, names, adapters and raw payloads remain excluded. A report is needed if the current host's mapping is absent or inconsistent. Stream display switching without a matching host video slot remains unsupported rather than routing blindly through slot zero.
+
+### 1.3.8 explicit output before resolution
+Owner clarified that explicit display selection works, while the automatic host stream can differ from the stored host configuration output. The five video slots are not physical Windows monitor numbers. This supersedes the slot-matching approach in 1.3.7.
+Startup with a remembered display now sends an output-selection SET on stream slot 0 with resolution fields removed from every video record, then requests fresh host configuration. Only a subsequent slot-0 output echo matching that explicit choice permits the resolution SET. Manual monitor selection uses the same sequence. A missing/mismatching reply leaves resolution unchanged and reports unconfirmed selection after 2.5 seconds; teardown cancels the timer. Automatic mode removes all resolution fields and never infers the target from the host's default output. No physical display numbering is inferred, and host acknowledgement is not claimed as proof of actual Windows mode change.

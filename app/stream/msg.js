@@ -25,6 +25,12 @@ export function init(cfg={
 }
 export function getVideoConfig(){return text(17,9,'');}
 export function getDisplays(){return text(17,10,'');}
+export function selectOutput(id,base){
+  const merged=JSON.parse(JSON.stringify(base));
+  for(const video of merged.video){if(video&&typeof video==='object'){delete video.resolutionX;delete video.resolutionY;}}
+  merged.video[0].output=id;
+  return text(17,11,JSON.stringify(merged));
+}
 export function config(cfg={},base=null) {
   const merged=base?JSON.parse(JSON.stringify(base)):{video:[{}]};
   const index=cfg.video_index??0;
@@ -36,6 +42,7 @@ export function config(cfg={},base=null) {
       ...(typeof cfg.output==='string'?{output:cfg.output}:{})
   });
   if(cfg.skip_resolution){delete merged.video[index].resolutionX;delete merged.video[index].resolutionY;}
+  if(cfg.skip_all_resolutions)for(const video of merged.video){if(video&&typeof video==='object'){delete video.resolutionX;delete video.resolutionY;}}
   return text(17,11,JSON.stringify(merged));
 }
 export function reinit(cfg={}){

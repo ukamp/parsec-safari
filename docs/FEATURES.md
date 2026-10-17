@@ -59,3 +59,6 @@ Display list is actively requested with sub-ID 10. Output IDs are preserved/sele
 
 ### 1.3.7 safety correction
 Monitor 1 modification still reported on 1.3.6. Resolution SET now requires an explicitly selected output ID matching one unique host video slot; updates use that slot rather than always video[0]. Unknown/duplicate mappings are blocked. Anonymous mapping diagnostics added. Physical-host result still requires verification.
+
+### 1.3.8 startup sequencing
+Explicit output selection SET (no resolution fields), followed by GET and matching output acknowledgement, precedes resolution SET. Automatic selection retains host resolutions. Slot IDs are stream configurations, not Windows monitor numbers. Physical acceptance still needs owner validation.
