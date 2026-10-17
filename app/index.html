@@ -20,7 +20,7 @@
 <aside class="sidebar">
 <a class="brand" href="#computers">
 <span class="brand-mark">P</span> Parsec Safari</a>
-<span class="edition">COMMUNITY CLIENT · 1.3.8</span>
+<span class="edition">COMMUNITY CLIENT · 1.3.9</span>
 <nav aria-label="Hauptnavigation">
 <a href="#computers" data-page="computers">{{navigation.computers}}</a>
 <a href="#stream" data-page="stream">Stream</a>
@@ -291,6 +291,9 @@
 <section>
 <h2>{{text.historyWithoutCredentials}}</h2>
 <p>{{text.historyStaysInThisTabSMemoryItContains}}</p>
+<label class="option"><input id="detailDiagnostics" type="checkbox"> <span>{{diagnostics.enableDetail}}</span></label>
+<p id="detailDiagnosticsStatus" role="status"></p>
+<p class="hint">{{diagnostics.detailHelp}}</p>
 <pre id="log" aria-live="polite">{{text.noAttemptsYet}}</pre>
 <button id="download" type="button">{{diagnostics.downloadReport}}</button>
 </section>

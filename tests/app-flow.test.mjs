@@ -15,6 +15,7 @@ globalThis.fetch = async (url, options) => {
   return { status: 200, json: async () => ({ data: [] }) };
 };
 await import(asset('application.js'));
+assert.equal(element('detailDiagnostics').checked,false);element('detailDiagnostics').checked=true;element('detailDiagnostics').onchange();
 const submit = () => element('auth').onsubmit({ preventDefault() {} });
 const fill = () => { element('email').value = 'person@example.invalid'; element('password').value = 'synthetic-private-password'; element('tfa').value = '654321'; };
 

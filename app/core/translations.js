@@ -1,5 +1,9 @@
 // Stable English keys; all German and English UI copy lives here.
 export const translations={
+"diagnostics.enableDetail":{"de":"Detailprotokoll aktivieren","en":"Enable detailed logging"},
+"diagnostics.recordingOn":{"de":"Detailprotokoll aktiv. Neue Ereignisse werden aufgezeichnet.","en":"Detailed logging is on. New events are being recorded."},
+"diagnostics.recordingOff":{"de":"Detailprotokoll aus. Keine neuen Logeinträge; Statusanzeigen bleiben aktiv.","en":"Detailed logging is off. No new log entries; status indicators remain active."},
+"diagnostics.detailHelp":{"de":"Standardmäßig aus. Für einen Diagnosebericht vor dem Verbindungsversuch einschalten. Ausschalten pausiert die Aufzeichnung und den Logtext-Aufbau; bereits erfasste Einträge bleiben bis zum Neuladen erhalten. Die Auswahl wird auf diesem Gerät gespeichert.","en":"Off by default. Enable before a connection attempt to capture a diagnostic report. Turning it off pauses recording and log text updates; existing entries remain until reload. The preference is saved on this device."},
 "display.selecting":{"de":"Monitorwahl angefordert. Die Auflösung folgt erst nach Bestätigung durch den Host.","en":"Display selection requested. Resolution follows only after the host confirms the selection."},
 "display.mappingUnavailable":{"de":"Für diesen Monitor ist kein eindeutiger Host-Konfigurationseintrag bekannt. Änderung blockiert; bitte Diagnosebericht bereitstellen.","en":"No unique host configuration slot is known for this display. Change blocked; please provide a diagnostic report."},
 "display.currentUnknown":{"de":"Aktueller Host-Monitor (Zuordnung nicht gemeldet)","en":"Current host display (mapping not reported)"},

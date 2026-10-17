@@ -1,7 +1,21 @@
+import {readPreference,writePreference} from './preferences.js';
+import {t} from './i18n.js';
 export function createDiagnostics($){
+  let enabled=readPreference('parsec-detail-diagnostics',false,x=>x===true);
   const history=[],lastStage=new Map();
+  function setEnabled(value){
+    enabled=value===true;lastStage.clear();
+    writePreference('parsec-detail-diagnostics',enabled);
+    const toggle=$('detailDiagnostics'),state=$('detailDiagnosticsStatus');
+    if(toggle)toggle.checked=enabled;
+    if(state)state.textContent=t(enabled?'diagnostics.recordingOn':'diagnostics.recordingOff');
+  }
+  const toggle=$('detailDiagnostics');
+  if(toggle){toggle.checked=enabled;toggle.onchange=()=>setEnabled(toggle.checked);}
+  const state=$('detailDiagnosticsStatus');if(state)state.textContent=t(enabled?'diagnostics.recordingOn':'diagnostics.recordingOff');
   function note(stage,text){
     $('status').textContent=text;
+    if(!enabled)return;
     history.push({
       time:new Date().toISOString(),stage
     });
@@ -10,6 +24,7 @@ export function createDiagnostics($){
   }
   function diagnostic(stage,metrics={
   }){
+    if(!enabled)return;
     const now=Date.now();
     if(now-(lastStage.get(stage)||0)<1000)return;
     lastStage.set(stage,now);
@@ -25,7 +40,7 @@ export function createDiagnostics($){
     $('log').textContent=history.map(x=>x.time+' · '+x.stage+(x.metrics?' · '+JSON.stringify(x.metrics):'')).join('\n');
   }
   return {
-    note,diagnostic,events:()=>history.map(event=>({
+    note,diagnostic,setEnabled,enabled:()=>enabled,events:()=>history.map(event=>({
       ...event
     }))
   };

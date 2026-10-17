@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {asset} from './helpers.mjs';
+const {createDiagnostics}=await import(asset('core/diagnostics.js'));
+const saved=new Map();globalThis.localStorage={getItem:key=>saved.get(key)??null,setItem:(key,value)=>saved.set(key,value)};
+let logWrites=0,logText='';const elements={status:{textContent:''},detailDiagnostics:{checked:false},detailDiagnosticsStatus:{textContent:''},log:{get textContent(){return logText},set textContent(value){logText=value;logWrites++;}}};const $=id=>elements[id];
+const d=createDiagnostics($);assert.equal(d.enabled(),false);assert.equal(elements.detailDiagnostics.checked,false);
+const hostile={get decoded(){throw Error('disabled logging must not inspect metrics');}};d.diagnostic('off',hostile);d.note('status','Still connected');assert.equal(elements.status.textContent,'Still connected');assert.deepEqual(d.events(),[]);assert.equal(logWrites,0);
+elements.detailDiagnostics.checked=true;elements.detailDiagnostics.onchange();assert.equal(d.enabled(),true);assert.equal(saved.get('parsec-detail-diagnostics'),'true');
+d.diagnostic('sample',{decoded:1,password:'secret'});d.note('ready','Ready');assert.equal(d.events().length,2);assert.equal(JSON.stringify(d.events()).includes('secret'),false);assert.ok(logWrites>0);
+assert.equal(createDiagnostics($).enabled(),true);const beforePause=logWrites,oldHistory=JSON.stringify(d.events());d.setEnabled(false);d.diagnostic('sample',hostile);d.note('disconnected','Disconnected');assert.equal(elements.status.textContent,'Disconnected');assert.equal(logWrites,beforePause);assert.equal(JSON.stringify(d.events()),oldHistory);
+d.setEnabled(true);d.diagnostic('sample',{decoded:2});assert.equal(d.events().length,3);assert.equal(d.events().at(-1).metrics.decoded,2);
+globalThis.localStorage={getItem(){throw Error('blocked')},setItem(){throw Error('blocked')}};const blocked=createDiagnostics($);assert.equal(blocked.enabled(),false);blocked.setEnabled(true);blocked.diagnostic('works',{decoded:3});assert.equal(blocked.events().length,1);
+console.log('Detail logging defaults off; disabled paths skip collection/filtering/log writes, status updates survive, pause retains history, resume clears throttling and preference storage is optional.');

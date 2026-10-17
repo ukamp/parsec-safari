@@ -62,3 +62,6 @@ Monitor 1 modification still reported on 1.3.6. Resolution SET now requires an e
 
 ### 1.3.8 startup sequencing
 Explicit output selection SET (no resolution fields), followed by GET and matching output acknowledgement, precedes resolution SET. Automatic selection retains host resolutions. Slot IDs are stream configurations, not Windows monitor numbers. Physical acceptance still needs owner validation.
+
+### 1.3.9 detail logging
+Persistent diagnostics checkbox, off by default. Disabled mode pauses collection and log text construction while status displays stay active; captured history is retained until reload. Enable before reproducing a bug. Performance gain has not been measured on iPad.
