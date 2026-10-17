@@ -52,3 +52,9 @@ assert.equal(delayed.view.mode,'controller');
 await delayed.view.exit();
 assert.equal(delayed.doc.body.style.overflow,'auto');
 console.log('Delayed Safari exit and duplicate fullscreen events preserve controller view without rebuilding its surface.');
+
+const explicit=fixture();await explicit.view.controller();assert.equal(explicit.view.mode,'controller');
+await explicit.view.browser();assert.equal(explicit.doc.fullscreenElement,explicit.screen);assert.equal(explicit.view.mode,'native');
+await explicit.view.controller();assert.equal(explicit.doc.fullscreenElement,null);assert.equal(explicit.view.mode,'controller');await explicit.view.exit();
+const refused=fixture('denied');await refused.view.controller();await refused.view.browser();assert.equal(refused.view.mode,'viewport');assert.ok(refused.reports.includes('fullscreen-viewport'));await refused.view.exit();
+console.log('Explicit native fullscreen replaces controller view; denied requests report viewport fallback.');

@@ -535,3 +535,40 @@ label > input[type=checkbox]{margin-top:2px;padding:0;align-self:flex-start}
 #logout:hover{text-decoration:underline;color:white}
 #logout:focus-visible{outline:2px solid #b5f3ce;outline-offset:3px}
 #logout[hidden]{display:none!important}
+
+/* Stream controls: explicit modes, calm feedback and aligned form fields. */
+#streamMenu .menu-header{padding:4px 48px 8px 0;min-height:44px;align-items:center}
+#streamMenu .menu-header #closeMenu{position:absolute;right:0;top:0;width:44px;height:44px;min-height:44px;padding:0;font-size:30px;line-height:1;color:#d9e8e3}
+#streamMenu .menu-header #closeMenu::before{content:none}
+#streamMenu .menu-header #closeMenu:hover{text-decoration:none;background:#ffffff12;border-radius:8px}
+#streamMenu .menu-tabs button{min-height:44px;padding:10px 2px}
+.group-title{font-size:13px;font-weight:650;color:#b9d2c8;letter-spacing:.03em;margin:22px 0 10px;border-top:1px solid #ffffff18;padding-top:14px}
+[data-menu-panel] > .group-title:first-child{border:0;margin-top:6px;padding-top:0}
+.settings-grid,.control-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+.settings-grid > label,.setting-field,.control-grid > label{display:flex;flex-direction:column;gap:7px;min-width:0;margin:0}
+.setting-field select,.settings-grid select,.settings-grid input,.control-grid select,.control-grid input{width:100%;box-sizing:border-box}
+.field-heading{display:flex;align-items:center;gap:8px;position:relative;min-height:24px}
+.field-heading label{margin:0}
+.field-info{position:relative;margin:0!important}
+.field-info summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:center;min-width:32px;min-height:32px;color:#b5f3ce;font-size:16px}
+.field-info summary::-webkit-details-marker{display:none}
+.field-info p{position:absolute;z-index:5;top:28px;left:0;width:220px;max-width:65vw;padding:10px;background:#203e35;border:1px solid #78998c;border-radius:8px;box-shadow:0 4px 16px #0008;font-size:13px}
+.help-details{margin:14px 0;color:#b6cbc2}
+.help-details summary{cursor:pointer;font-size:13px;min-height:32px;padding:6px 0}
+.help-details p,.help-details li{font-size:13px;line-height:1.6}
+.feedback{padding:10px 12px;border-left:3px solid #b5f3ce;background:#b5f3ce0a;font-size:13px;line-height:1.5}
+.control-grid{margin:14px 0}
+.control-grid > label:has(input[type=checkbox]){grid-column:1/-1;flex-direction:row}
+.control-grid > label:has(input[type=range]){grid-column:1/-1}
+.audio-state{font-weight:600;color:#b5f3ce}
+#menuPanel-audio > label{display:flex;flex-direction:column;gap:12px;margin-top:16px}
+.stream-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.stream-empty{margin-top:16px;padding:16px;border:1px solid #ffffff26;border-radius:12px;background:#102524}
+.stream-empty p{margin-top:0}
+.stream-empty a{display:inline-block;padding:12px}
+@media(max-width:600px){.settings-grid,.control-grid{grid-template-columns:1fr}.field-info p{left:auto;right:-24px}}
+
+#streamEmpty{position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;margin:0;padding:24px;background:#0b1e1c;text-align:center;border:0}
+#streamEmpty p{max-width:400px;margin:0 0 8px}
+#chooseComputer{background:transparent;color:#b5f3ce;font-size:14px;text-decoration:underline}
+#streamEmpty[hidden]{display:none!important}

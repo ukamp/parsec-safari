@@ -72,6 +72,22 @@ export class FullscreenView {
     }catch{}
     return this.native()!==this.screen;
   }
+  async browser(){
+    if(!this.expanded)return this.enter();
+    if(this.native()===this.screen||this.pending&&this.mode==='native')return;
+    const operation=++this.operation;
+    this.pending=true;this.mode='native';this.notice.hidden=true;
+    try{
+      if(this.screen.requestFullscreen){
+        await this.screen.requestFullscreen({navigationUI:'hide'});
+        if(operation!==this.operation){if(this.native()===this.screen)await this.leaveNative();return;}
+        this.pending=false;if(this.native()!==this.screen)this.fallback();
+      }else if(this.screen.webkitRequestFullscreen){
+        this.screen.webkitRequestFullscreen();
+        this.timer=setTimeout(()=>{if(operation===this.operation&&this.native()!==this.screen)this.fallback();},1000);
+      }else this.fallback();
+    }catch{if(operation===this.operation)this.fallback();}
+  }
   async controller(){
     if(!this.expanded)return this.enter({native:false});
     const operation=++this.operation;

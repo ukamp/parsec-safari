@@ -8,7 +8,7 @@ import { readPreference,writePreference } from './core/preferences.js';
 import { t } from './core/i18n.js';
 import { createSessionStore } from './core/session-store.js';
 import { Client } from './stream/client.js';
-import { FullscreenView,isAppleTouch } from './browser/fullscreen.js';
+import { FullscreenView } from './browser/fullscreen.js';
 import { authenticatePersonal } from './core/personal-auth.js';
 import { createApi } from './core/api.js';
 import { createDiagnostics } from './core/diagnostics.js';
@@ -22,7 +22,7 @@ import { setupMediaTests } from './features/media-tests.js';
 const $=id=>document.getElementById(id);
 setupDiagnosticTabs($);
 const sessionStore=createSessionStore();
-let session=null,client=null,generation=0,controller=null,pollTimer=null,frameTimer=null,fullscreenView=null,streamState=t("connection.connecting");
+let session=null,lastPeer=null,client=null,generation=0,controller=null,pollTimer=null,frameTimer=null,fullscreenView=null,streamState=t("connection.connecting");
 const diagnostics=createDiagnostics($),{
   note,diagnostic
 }=diagnostics;
@@ -54,10 +54,13 @@ const reconnect=new Reconnect({
 });
 $('autoReconnect').checked=readPreference('parsec-auto-reconnect',true,x=>x!==false);
 $('autoReconnect').onchange=()=>{writePreference('parsec-auto-reconnect',$('autoReconnect').checked);if(!$('autoReconnect').checked)reconnect.stop();};
-$('controllerSafe').checked=readPreference('parsec-controller-safe',true,x=>x!==false);
-$('controllerSafe').onchange=()=>writePreference('parsec-controller-safe',$('controllerSafe').checked);
 function controls(){
   const busy=!!controller;
+  const retryPending=reconnect?.timer!==null;
+  $('streamEmpty').hidden=!!client;
+  $('streamEmptyText').textContent=lastPeer?t('stream.disconnectedReady'):t('stream.chooseHost');
+  $('resumeStream').hidden=!lastPeer;
+  $('resumeStream').disabled=!session||!!client||busy||retryPending;
   $('connectionBadge').textContent=client?streamState:session?t("connection.signedIn"):t("connection.notConnected");
   $('authPanel').hidden=!!session;
   $('auth').hidden=!!session;
@@ -105,7 +108,7 @@ $('cancel').onclick=()=>{
 $('logout').onclick=()=>{
   stop();
   cancel();
-  session=null;
+  session=null;lastPeer=null;
   sessionStore.clear();
   $('remember').checked=false;
   $('email').value='';
@@ -184,7 +187,7 @@ async function hosts(){
     });
     if(id!==generation||token!==session)return;
     if(r.status===401||r.status===403){
-      session=null;
+      session=null;lastPeer=null;
       sessionStore.clear();
       hostList.clear();
       account.clear();
@@ -241,7 +244,7 @@ async function connect(peer,retrying=false){
           stop();
           note('video-timeout',t("text.theControlChannelOpenedButNoVideoFrameWas"));
         },20000);
-      }else if(event.type==='frame'){reconnect.recovered();streamState=t("connection.active");controls();
+      }else if(event.type==='frame'){lastPeer=peer;reconnect.recovered();streamState=t("connection.active");controls();
         wake.setActive(true);
         statistics.start(current);
         clearTimeout(frameTimer);
@@ -296,24 +299,21 @@ function getFullscreenView(){
   return fullscreenView;
 }
 $('fullscreen').onclick=async()=>{
-  const view=getFullscreenView();
-  const appleTouch=isAppleTouch(navigator);
-  if(!view.expanded&&appleTouch&&$('controllerSafe').checked){
-    await view.enter({native:false});
-    note('controller-safe-view',t('stream.controllerSafeActive'));
-  }else await view.toggle();
-  client?.input.syncGamepad();
-};
-$('controllerFullscreen').onclick=async()=>{
-  const view=getFullscreenView();
   gamepads.close();
-  await view.controller();
+  await getFullscreenView().browser();
   client?.input.syncGamepad();
 };
+$('controllerView').onclick=$('controllerFullscreen').onclick=async()=>{
+  gamepads.close();
+  await getFullscreenView().controller();
+  client?.input.syncGamepad();
+};
+$('chooseComputer').onclick=async()=>{await fullscreenView?.exit();router.go('computers');};
+$('resumeStream').onclick=()=>{if(session&&lastPeer&&!client&&reconnect.timer===null)void connect(lastPeer);};
 $('download').onclick=()=>{
   client?.reportAudio();
   const blob=new Blob([JSON.stringify({
-    version:2,build:'1.2.2',experimental:true,events:diagnostics.events()
+    version:2,build:'1.3.0',experimental:true,events:diagnostics.events()
   },null,2)],{
     type:'application/json'
   }),url=URL.createObjectURL(blob),a=document.createElement('a');
@@ -325,7 +325,7 @@ $('download').onclick=()=>{
 window.addEventListener('pagehide',()=>{
   stop();
   cancel();
-  session=null;
+  session=null;lastPeer=null;controls();
 });
 controls();
 $('probe').onclick=async()=>{

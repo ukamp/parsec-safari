@@ -38,3 +38,7 @@ The site root is the product interface. `/app/`, `/personal-test/` and `/client/
 See [the implementation matrix](IMPLEMENTATION-1.2.md). Conditional display/Rumble/PiP support never implies current host or iPad support. HEVC is opt-in and uses an Annex-B pipeline with parsed SPS codec strings and one bounded H.264 fallback request. A local decoder test is separate from actual host compatibility. The local report still excludes host/account/friend values and network candidates.
 
 Overlay subpages and accessible diagnostic tabs live in `features/navigation.js`. Settings and the overlay share one quality controller. The codec preference applies on the next connection; live quality changes retain the active codec. `stream/hevc.js` parses HEVC NAL units and profile/tier/level. `VideoPlayer` retains parameter sets and reports only a codec that produced a rendered frame.
+
+## 1.3.0 stream UX
+
+See [stream UX notes](IMPLEMENTATION-1.3.md). `quality-settings.js` owns synchronized form/audio state and transient feedback. `FullscreenView.browser()` explicitly requests native fullscreen even from Controller view. The application retains the last successfully streamed peer only in tab memory for manual reconnect; logout/expiry clears it. `videoCodec: auto` maps to the existing guarded HEVC attempt, while stored H.264 remains forced.

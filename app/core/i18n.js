@@ -18,8 +18,8 @@ export function setupLanguage(doc=document,win=window){
     if(['SCRIPT','STYLE','CODE'].includes(node.parentElement?.tagName))continue;
     node.nodeValue=resolveText(node.nodeValue);
   }
-  for(const element of doc.querySelectorAll('[placeholder],[aria-label]')){
-    for(const attribute of ['placeholder','aria-label']){
+  for(const element of doc.querySelectorAll('[placeholder],[aria-label],[title]')){
+    for(const attribute of ['placeholder','aria-label','title']){
       const value=element.getAttribute(attribute);
       if(value)element.setAttribute(attribute,resolveText(value));
     }
