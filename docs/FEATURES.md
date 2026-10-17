@@ -56,3 +56,6 @@ Resolution change remains unconfirmed on the owner’s host (1.3.4 stayed 1920×
 
 ### 1.3.6 monitor targeting
 Display list is actively requested with sub-ID 10. Output IDs are preserved/selected explicitly, selections remembered per host, and the decoder init no longer requests a resolution before output mapping. Missing output metadata blocks positive resolution changes. Multi-monitor behavior requires physical-host regression testing.
+
+### 1.3.7 safety correction
+Monitor 1 modification still reported on 1.3.6. Resolution SET now requires an explicitly selected output ID matching one unique host video slot; updates use that slot rather than always video[0]. Unknown/duplicate mappings are blocked. Anonymous mapping diagnostics added. Physical-host result still requires verification.

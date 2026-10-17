@@ -1,5 +1,6 @@
 // Stable English keys; all German and English UI copy lives here.
 export const translations={
+"display.mappingUnavailable":{"de":"Für diesen Monitor ist kein eindeutiger Host-Konfigurationseintrag bekannt. Änderung blockiert; bitte Diagnosebericht bereitstellen.","en":"No unique host configuration slot is known for this display. Change blocked; please provide a diagnostic report."},
 "display.currentUnknown":{"de":"Aktueller Host-Monitor (Zuordnung nicht gemeldet)","en":"Current host display (mapping not reported)"},
 "resolution.host":{"de":"Host-Auflösung beibehalten","en":"Keep host resolution"},
 "resolution.client":{"de":"Client-Auflösung verwenden","en":"Use client resolution"},

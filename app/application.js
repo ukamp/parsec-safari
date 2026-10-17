@@ -227,6 +227,7 @@ async function connect(peer,retrying=false){
     current=new Client($('video'),event=>{
       if(client!==current&&event.type!=='diagnostic')return;
       if(event.type==='codec'){$('codecStatus').textContent=t('codec.'+event.state);return;}
+      if(event.type==='display-mapping-unavailable'){$('displayStatus').textContent=t('display.mappingUnavailable');return;}
       if(event.type==='displays'){
         $('displaySelection').textContent='';
         const currentOption=document.createElement('option');currentOption.value='';currentOption.textContent=event.displays.length?t('display.currentUnknown'):t('display.waiting');currentOption.disabled=true;$('displaySelection').appendChild(currentOption);
@@ -290,7 +291,7 @@ async function connect(peer,retrying=false){
     note('connection-setup-failed',t("text.connectionSetupFailedCompatibilityOfTheExperimentalAdapterHas"));
   }
 }
-$('displaySelection').onchange=()=>{const selected=$('displaySelection').value,sent=client?.selectDisplay(selected);if(sent&&client.peer)writePreference('parsec-display-'+client.peer,selected);$('displayStatus').textContent=sent?t('display.requested'):t('display.unavailable');};
+$('displaySelection').onchange=()=>{const selected=$('displaySelection').value,sent=client?.selectDisplay(selected);if(sent&&client.peer)writePreference('parsec-display-'+client.peer,selected);$('displayStatus').textContent=sent?t('display.requested'):t(client?.displayMappingMissing?'display.mappingUnavailable':'display.unavailable');};
 $('stop').onclick=$('menuDisconnect').onclick=()=>{
   stop();
   note('disconnected-by-user',t("text.disconnected"));
@@ -320,7 +321,7 @@ $('resumeStream').onclick=()=>{if(session&&lastPeer&&!client&&reconnect.timer===
 $('download').onclick=()=>{
   client?.reportAudio();
   const blob=new Blob([JSON.stringify({
-    version:2,build:'1.3.6',experimental:true,events:diagnostics.events()
+    version:2,build:'1.3.7',experimental:true,events:diagnostics.events()
   },null,2)],{
     type:'application/json'
   }),url=URL.createObjectURL(blob),a=document.createElement('a');

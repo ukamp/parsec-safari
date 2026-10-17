@@ -1,4 +1,4 @@
-# Parsec Safari 1.3.6
+# Parsec Safari 1.3.7
 
 An independent, experimental Parsec web client focused on iPad Safari. It uses an existing Parsec host; no additional software is installed on Windows.
 
@@ -81,3 +81,7 @@ Diagnostics distinguishes `host-video-config-requested`, `host-video-config-rece
 ### 1.3.6 monitor targeting
 Owner confirms 1.3.5 resolution changes work, but switching back to Client can affect monitor 1 while monitor 2 is streamed. Decoder initialization now always uses 0×0 (no preference); resolution is sent only through merged host configuration with an explicit or host-reported output ID. No settings SET is sent before the host configuration arrives. If the host reports no usable output, positive resolution fields are withheld and `resolution-target-unresolved` is logged, rather than guessing a physical monitor. Explicit selections are stored locally per peer and validated against a fresh display list before applying settings after reconnect.
 The client now requests adapter/display info (opcode 17 / sub-ID 10, empty terminated body), processes the documented sub-ID 12 list, and selects the host-reported output in the UI. Unknown mapping has an explicit placeholder; the first listed monitor is never shown as implicitly active. Blank names fall back to adapter name or ID. Display count, not IDs/names, is included in diagnostics. The actual correspondence between a host-reported output and physical monitor numbers still requires the owner's test; no physical monitor number is guessed.
+
+### 1.3.7 video-slot targeting guard
+The owner reports that 1.3.6 still modifies monitor 1 while monitor 2 streams. Previous merging always modified video[0]. The SET serializer can now modify a verified video slot; the client requires an explicit display ID that matches exactly one output in the host's current video array and a currently reported display. Missing or duplicate matches block the SET. Without an explicit display choice, resolution fields are withheld. No ordinal monitor-to-slot mapping is guessed. Tests prove that when the selected ID is in video[1], video[0] is unchanged. This is not yet confirmation that the physical host accepts the intended change.
+Diagnostics includes anonymous slot indices, display-list indices (0 means unknown), selected-match booleans and numeric sizes. IDs, names, adapters and raw payloads remain excluded. A report is needed if the current host's mapping is absent or inconsistent. Stream display switching without a matching host video slot remains unsupported rather than routing blindly through slot zero.

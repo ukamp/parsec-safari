@@ -156,18 +156,30 @@ export class Client {
   }
   emitDisplays(){
     const selected=this.config?.output||this.hostVideoConfig?.video?.[0]?.output||'';
+    this.reportDisplayMapping();
     this.onEvent({type:'displays',displays:this.displays,selected});
   }
+  reportDisplayMapping(){
+    const slots=this.hostVideoConfig?.video;if(!slots)return;
+    this.diagnostic('host-display-mapping',{slotCount:slots.length,displayCount:this.displays.length,selectedDisplayIndex:this.displays.findIndex(d=>d.id===this.config?.output)+1});
+    for(let i=0;i<Math.min(32,slots.length);i++){
+      const slot=slots[i];if(!slot||typeof slot!=='object')continue;
+      this.diagnostic('host-video-slot-'+i,{videoIndex:i,displayIndex:this.displays.findIndex(d=>d.id===slot.output)+1,selectedMatch:!!this.config?.output&&slot.output===this.config.output,width:slot.resolutionX,height:slot.resolutionY});
+    }
+  }
   settingsConfig(){
-    const cfg={...this.config},reported=this.hostVideoConfig?.video?.[0]?.output;
-    const valid=id=>typeof id==='string'&&id.length>0&&id.length<=128&&id!=='none'&&!/[\x00-\x1f]/.test(id);
-    if(cfg.output&&!this.displays.some(display=>display.id===cfg.output))return null;
-    const target=cfg.output||reported;
-    if(valid(target))cfg.output=target;
-    else {
-      cfg.skip_resolution=true;
-      if(cfg.server_resolution_x>0||cfg.server_resolution_y>0)this.once('resolution-target-unresolved');
-      delete cfg.server_resolution_x;delete cfg.server_resolution_y;
+    const cfg={...this.config},slots=this.hostVideoConfig?.video||[];
+    this.displayMappingMissing=false;
+    if(cfg.output){
+      const matches=slots.map((slot,index)=>slot?.output===cfg.output?index:-1).filter(index=>index>=0);
+      if(!this.displays.some(display=>display.id===cfg.output)||matches.length!==1){
+        this.displayMappingMissing=true;this.once('resolution-target-unresolved');this.onEvent({type:'display-mapping-unavailable'});return null;
+      }
+      cfg.video_index=matches[0];
+    }else{
+      // Without an explicit display choice, no slot is proven to be the target.
+      cfg.skip_resolution=true;delete cfg.server_resolution_x;delete cfg.server_resolution_y;
+      this.once('resolution-target-unresolved');this.onEvent({type:'display-mapping-unavailable'});
     }
     return cfg;
   }
@@ -194,7 +206,7 @@ export class Client {
   }
   selectDisplay(id){
     if(!this.displays.some(display=>display.id===id))return false;
-    const sent=this.updateQuality({output:id});if(sent)this.emitDisplays();return sent;
+    const sent=this.updateQuality({output:id});this.reportDisplayMapping();if(sent)this.emitDisplays();return sent;
   }
   async transportStats(){
     try{

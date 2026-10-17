@@ -27,13 +27,15 @@ export function getVideoConfig(){return text(17,9,'');}
 export function getDisplays(){return text(17,10,'');}
 export function config(cfg={},base=null) {
   const merged=base?JSON.parse(JSON.stringify(base)):{video:[{}]};
-  Object.assign(merged.video[0],{
+  const index=cfg.video_index??0;
+  if(!Number.isInteger(index)||index<0||!merged.video[index]||typeof merged.video[index]!=='object')throw Error('invalid video slot');
+  Object.assign(merged.video[index],{
       encoderMaxBitrate:cfg.encoder_bitrate||8,encoderFPS:cfg.encoder_fps||60,fullFPS:cfg.full_fps===true,
       // Host settings are separate from the decoder init preference.
       ...(Number.isInteger(cfg.server_resolution_x)&&Number.isInteger(cfg.server_resolution_y)?{resolutionX:cfg.server_resolution_x,resolutionY:cfg.server_resolution_y}:{}),
       ...(typeof cfg.output==='string'?{output:cfg.output}:{})
   });
-  if(cfg.skip_resolution){delete merged.video[0].resolutionX;delete merged.video[0].resolutionY;}
+  if(cfg.skip_resolution){delete merged.video[index].resolutionX;delete merged.video[index].resolutionY;}
   return text(17,11,JSON.stringify(merged));
 }
 export function reinit(cfg={}){

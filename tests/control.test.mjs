@@ -30,3 +30,8 @@ const initial=Msg.init({server_resolution_x:1024,server_resolution_y:768});const
 const getDisplays=Msg.getDisplays(),getDisplaysView=new DataView(getDisplays);assert.equal(getDisplaysView.getUint8(12),17);assert.equal(getDisplaysView.getInt32(4),10);assert.equal(getDisplaysView.getInt32(0),1);assert.equal(getDisplays.byteLength,14);
 const safePacket=Msg.config({skip_resolution:true},base),safeBody=JSON.parse(new TextDecoder().decode(new Uint8Array(safePacket,13,safePacket.byteLength-14)));assert.equal('resolutionX' in safeBody.video[0],false);assert.equal('resolutionY' in safeBody.video[0],false);assert.deepEqual(safeBody.video[1],base.video[1]);
 console.log('Decoder init never resizes a default output; display GET framing and withheld unknown-target resolution passed.');
+
+const slotBase={video:[{output:'one',resolutionX:1024,resolutionY:768,keep:1},{output:'two',resolutionX:1920,resolutionY:1080},{output:'three',resolutionX:2560,resolutionY:1440}]};const beforeSlot=JSON.stringify(slotBase);
+const slotPacket=Msg.config({video_index:1,output:'two',server_resolution_x:2048,server_resolution_y:1536},slotBase),slotBody=JSON.parse(new TextDecoder().decode(new Uint8Array(slotPacket,13,slotPacket.byteLength-14)));
+assert.deepEqual(slotBody.video[0],slotBase.video[0]);assert.deepEqual(slotBody.video[2],slotBase.video[2]);assert.equal(slotBody.video[1].resolutionX,2048);assert.equal(slotBody.video[1].resolutionY,1536);assert.equal(slotBody.video[1].output,'two');assert.equal(JSON.stringify(slotBase),beforeSlot);assert.throws(()=>Msg.config({video_index:9},slotBase));
+console.log('Selecting slot 1 leaves slots 0 and 2 unchanged; invalid slot indices rejected.');
