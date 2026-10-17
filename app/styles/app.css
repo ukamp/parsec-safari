@@ -574,3 +574,6 @@ label > input[type=checkbox]{margin-top:2px;padding:0;align-self:flex-start}
 #streamEmpty[hidden]{display:none!important}
 
 #screen:has(#streamMenu:not([hidden])) #streamEmpty{visibility:hidden}
+
+#menuPanel-picture > label{display:flex;flex-direction:column;gap:8px;margin:14px 0}
+#menuPanel-picture > label select,#menuPanel-picture > label input{width:100%;box-sizing:border-box}
