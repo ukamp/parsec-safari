@@ -20,7 +20,7 @@
 <aside class="sidebar">
 <a class="brand" href="#computers">
 <span class="brand-mark">P</span> Parsec Safari</a>
-<span class="edition">COMMUNITY CLIENT · 1.2.1</span>
+<span class="edition">COMMUNITY CLIENT · 1.2.2</span>
 <nav aria-label="Hauptnavigation">
 <a href="#computers" data-page="computers">{{navigation.computers}}</a>
 <a href="#stream" data-page="stream">Stream</a>
@@ -36,11 +36,14 @@
 
 <h1 id="pageTitle">{{navigation.computers}}</h1>
 </div>
+<div class="session-actions">
 <span id="connectionBadge" class="badge">{{connection.notConnected}}</span>
+<button id="logout" type="button" hidden>{{auth.signOut}}</button>
+</div>
 </header>
 <p id="status" role="status" aria-live="polite">{{text.readySignInToSeeYourComputers}}</p>
 <div data-view="computers">
-<section>
+<section id="authPanel">
 <h2>{{auth.signIn}}</h2>
 <p>{{text.useYourExistingParsecAccountYourBrowserSendsYour}} <code>kessel-api.parsec.app</code>{{text.theyAreNotSentToASeparateSignIn}} </p>
 <form id="auth" autocomplete="on">
@@ -58,7 +61,6 @@
 <button id="start" type="submit">{{auth.signIn}}</button>
 </form>
 <button id="cancel" type="button" hidden>{{auth.cancel}}</button>
-<button id="logout" type="button" hidden>{{auth.signOut}}</button>
 <p>
 <small>{{text.safariCanFillYourCredentialsUsingItsPasswordManager}}</small>
 </p>

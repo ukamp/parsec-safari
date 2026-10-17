@@ -59,6 +59,7 @@ $('controllerSafe').onchange=()=>writePreference('parsec-controller-safe',$('con
 function controls(){
   const busy=!!controller;
   $('connectionBadge').textContent=client?streamState:session?t("connection.signedIn"):t("connection.notConnected");
+  $('authPanel').hidden=!!session;
   $('auth').hidden=!!session;
   $('start').disabled=busy||!!session;
   for(const id of ['email','password','tfa'])$(id).disabled=busy||!!session;
@@ -312,7 +313,7 @@ $('controllerFullscreen').onclick=async()=>{
 $('download').onclick=()=>{
   client?.reportAudio();
   const blob=new Blob([JSON.stringify({
-    version:2,build:'1.2.1',experimental:true,events:diagnostics.events()
+    version:2,build:'1.2.2',experimental:true,events:diagnostics.events()
   },null,2)],{
     type:'application/json'
   }),url=URL.createObjectURL(blob),a=document.createElement('a');

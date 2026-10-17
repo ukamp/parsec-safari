@@ -529,3 +529,9 @@ label > input[type=checkbox]{margin-top:2px;padding:0;align-self:flex-start}
 #streamMenu .menu-tabs button:hover{color:white}
 #streamMenu .menu-header button:focus-visible,#streamMenu .menu-tabs button:focus-visible{outline:2px solid #b5f3ce;outline-offset:2px}
 #streamMenu .menu-input-hint{font-size:12px;color:#9db5ad;margin:8px 0 14px}
+
+.session-actions{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:12px}
+#logout{background:none;border:0;box-shadow:none;padding:6px 0;margin:0;min-height:36px;color:#b5f3ce;font:inherit;font-size:14px;cursor:pointer}
+#logout:hover{text-decoration:underline;color:white}
+#logout:focus-visible{outline:2px solid #b5f3ce;outline-offset:3px}
+#logout[hidden]{display:none!important}

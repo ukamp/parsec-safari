@@ -1,4 +1,4 @@
-# Parsec Safari 1.2.1
+# Parsec Safari 1.2.2
 
 An independent, experimental Parsec web client focused on iPad Safari. It uses an existing Parsec host; no additional software is installed on Windows.
 

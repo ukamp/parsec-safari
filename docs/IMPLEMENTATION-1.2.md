@@ -1,4 +1,4 @@
-# 1.2.1 — navigation and experimental HEVC
+# 1.2.2 — navigation and experimental HEVC
 
 The other selected capabilities retain the limits in the [1.1 implementation matrix](IMPLEMENTATION-1.1.md). This release supersedes that file's blocked-HEVC status with an **experimental, opt-in implementation**, not a claim of verified Parsec/iPad interoperability.
 
@@ -26,3 +26,7 @@ The independent MIT [protocol reference §11.5](https://github.com/nomi-san/lowl
 ## Verification boundaries
 
 Automated tests cover HEVC SPS/NAL parsing, truncated payloads, cached parameter sets, flags, unsupported-browser selection, decoder-triggered one-shot fallback, H.264 frame confirmation, fallback timeout and teardown with mocked browser/peer APIs. Existing input, gamepad, fullscreen, session, translations, transport, audio and application tests remain required. Browser UI and local decoder results are checked separately; physical Safari/Windows-host HEVC streaming requires the user's hardware test.
+
+## Signed-in computer view
+
+The entire sign-in section (heading, form and password-manager help) is hidden while a session is active. A localized Sign out text button is beside the connection badge in the global top-right header. Signing out uses the existing local cleanup and restores the sign-in section. Expired sessions restore the same signed-out state. Server-side revocation remains unimplemented.

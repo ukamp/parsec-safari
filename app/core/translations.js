@@ -121,8 +121,8 @@ export const translations={
     "en": "Cancel sign-in"
   },
   "auth.signOut": {
-    "de": "Sitzung hier verwerfen",
-    "en": "Sign out on this device"
+    "de": "Abmelden",
+    "en": "Sign out"
   },
   "text.safariCanFillYourCredentialsUsingItsPasswordManager": {
     "de": "Safari kann die Anmeldung über seine Passwortverwaltung ausfüllen. Falls kein Speichern angeboten wird, lege in der App „Passwörter“ einen Eintrag für ukamp.github.io mit deinen Parsec-Zugangsdaten an. Die Webseite selbst speichert Passwort und 2FA-Code nicht. Beide Felder werden nach jedem Versuch geleert. Mit „Angemeldet bleiben“ wird ausschließlich die Sitzungskennung auf diesem Gerät gespeichert. Ohne diese Option bleibt sie im Arbeitsspeicher dieses Tabs. Das Verwerfen der lokalen Sitzung widerruft eine serverseitige Sitzung bei Parsec nicht automatisch. Der Verbindungsbericht enthält ausschließlich technische Statusereignisse.",
