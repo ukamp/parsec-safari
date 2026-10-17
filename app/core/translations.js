@@ -1,5 +1,20 @@
 // Stable English keys; all German and English UI copy lives here.
 export const translations={
+"capabilities.pointerLockApi":{"de":"Pointer-Lock-API vorhanden","en":"Pointer Lock API present"},
+"pointer.available":{"de":"Pointer-Lock-API vorhanden. Im aktiven Stream mit externer Maus prüfen.","en":"Pointer Lock API is present. Test with an external mouse during a stream."},
+"pointer.directHelp":{"de": "Direkte Touch-Maus: Der Zeiger springt an die berührte Stelle.", "en": "Direct touch: the pointer jumps to the place you touch."},
+"pointer.touchpadHelp":{"de": "Touchpad: Finger bewegen verschiebt den Zeiger. Abheben und an anderer Stelle aufsetzen bewegt ihn nicht. Tippen klickt an der Zeigerposition.", "en": "Touchpad: moving your finger moves the pointer. Lifting and touching elsewhere does not move it. Tapping clicks at the pointer position."},
+"pointer.showCursor":{"de": "Lokalen Hilfszeiger bei Touch anzeigen", "en": "Show local touch pointer"},
+"pointer.cursorHelp":{"de": "Der Hilfszeiger zeigt die von dieser Seite gesendete Position. Er ist kein vom Host bestätigter Mauszeiger und verfolgt andere Mäuse nicht.", "en": "This helper shows the position sent by this page. It is not a host-confirmed cursor and does not track other mice."},
+"pointer.lockHelp":{"de": "Pointer Lock benötigt eine externe Maus und Browser-Unterstützung. Er ist nicht für die Touchpad-Geste nötig. Bei Erfolg schließt das Menü; Escape gibt die Maus frei.", "en": "Pointer Lock requires an external mouse and browser support. Touchpad gestures do not need it. The menu closes on success; Escape releases the mouse."},
+"controller.webAppStability":{"de": "Auf dem getesteten iPad ist der Gamecontroller laut Nutzer nur in der vom Home-Bildschirm gestarteten WebApp zuverlässig stabil. Für Controller diese Startart verwenden; im Safari-Tab sind weiter Fokusprobleme möglich.", "en": "On the tested iPad, the user reports reliable gamecontroller stability only in the WebApp launched from the Home Screen. Use that launch mode for controllers; Safari tabs may still have focus problems."},
+"controller.testRumble":{"de": "Controller-Vibration lokal testen", "en": "Test controller vibration locally"},
+"controller.rumble.unavailable":{"de": "Für keinen erkannten Controller ist eine nutzbare Vibrations-API verfügbar.", "en": "No detected controller exposes a usable vibration API."},
+"controller.rumble.available":{"de": "Vibrations-API verfügbar. Ob Host-Ereignisse und Hardware funktionieren, ist noch nicht bestätigt.", "en": "Vibration API is available. Host events and physical hardware operation are not yet confirmed."},
+"controller.rumble.requested":{"de": "Vibrationsimpuls angefordert. Bitte prüfen, ob er am Controller spürbar war.", "en": "Vibration pulse requested. Please check whether you felt it on the controller."},
+"controller.rumble.failed":{"de": "Der Browser hat den Vibrationsimpuls nicht ausgeführt oder abgebrochen.", "en": "The browser did not perform the vibration pulse or interrupted it."},
+"controller.rumble.testHelp":{"de": "Der Test sendet nur einen kurzen lokalen Impuls, ohne Parsec-Host.", "en": "The test sends only a short local pulse without a Parsec host."},
+
 "stream.closeOverlay":{"de": "Menü schließen", "en": "Close menu"},
 "stream.browserFullscreen":{"de": "Browser-Vollbild", "en": "Browser fullscreen"},
 "stream.viewMode":{"de": "Ansicht", "en": "View"},
@@ -977,10 +992,7 @@ export const translations={
     "de": "Relative Maus aktivieren",
     "en": "Enable relative mouse"
   },
-  "pointer.unavailable": {
-    "de": "Pointer Lock wird hier nicht unterstützt oder es besteht keine Verbindung.",
-    "en": "Pointer Lock is unavailable here or no stream is connected."
-  },
+  "pointer.unavailable": {"de": "Pointer Lock ist in diesem Browser nicht verfügbar. Touchpad kann weiterhin ohne Pointer Lock verwendet werden.", "en": "Pointer Lock is unavailable in this browser. Touchpad can still be used without it."},
   "pointer.locked": {
     "de": "Relative Maus aktiv. Zum Beenden Escape drücken.",
     "en": "Relative mouse active. Press Escape to leave."
@@ -989,10 +1001,7 @@ export const translations={
     "de": "Relative Maus angefordert. Der Browser entscheidet über die Freigabe.",
     "en": "Relative mouse requested. The browser decides whether to grant it."
   },
-  "pointer.denied": {
-    "de": "Der Browser hat die relative Maus nicht freigegeben.",
-    "en": "The browser did not grant relative mouse control."
-  },
+  "pointer.denied": {"de": "Pointer Lock wurde nicht gewährt. Maus und Browser-Berechtigung prüfen; Touchpad bleibt verfügbar.", "en": "Pointer Lock was not granted. Check the mouse and browser permission; touchpad remains available."},
   "pointer.unlocked": {
     "de": "Relative Maus beendet.",
     "en": "Relative mouse ended."

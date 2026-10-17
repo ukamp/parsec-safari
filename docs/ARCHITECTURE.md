@@ -42,3 +42,7 @@ Overlay subpages and accessible diagnostic tabs live in `features/navigation.js`
 ## 1.3.0 stream UX
 
 See [stream UX notes](IMPLEMENTATION-1.3.md). `quality-settings.js` owns synchronized form/audio state and transient feedback. `FullscreenView.browser()` explicitly requests native fullscreen even from Controller view. The application retains the last successfully streamed peer only in tab memory for manual reconnect; logout/expiry clears it. `videoCodec: auto` maps to the existing guarded HEVC attempt, while stored H.264 remains forced.
+
+## 1.3.1 pointer and capability boundaries
+
+`Input` retains a normalized virtual cursor and sends absolute host coordinates for touchpad gestures. `viewport.js` projects a local helper arrow through the canvas letterbox/zoom geometry; it is not a remote cursor shape/position implementation. `browser/input-capabilities.js` checks usable haptic methods. Pointer Lock closes the overlay before requesting so a grant cannot leave input paused; denial reopens it, and teardown exits/invalidates pending requests. See [input notes](INPUT-1.3.1.md).

@@ -22,7 +22,7 @@ export class Client {
     this.seen=new Set();
     this.displays=[];this.hostEncodeMs=null;
     this.audioPlayer=new AudioPlayer((stage,metrics)=>this.diagnostic(stage,metrics));
-    this.videoPlayer=new VideoPlayer(video,()=>{if(!this.fallbackH264())this.destroy(-6106);},(stage,metrics)=>this.diagnostic(stage,metrics),()=>{clearTimeout(this.codecTimer);this.onEvent({type:'frame'});},()=>{
+    this.videoPlayer=new VideoPlayer(video,()=>{if(!this.fallbackH264())this.destroy(-6106);},(stage,metrics)=>this.diagnostic(stage,metrics),()=>{this.input?.renderPointer();clearTimeout(this.codecTimer);this.onEvent({type:'frame'});},()=>{
       if(this.connected)this.rtc?.send(Msg.reinit(this.config),0);
     });
     this.input=new Input(video,buf=>{

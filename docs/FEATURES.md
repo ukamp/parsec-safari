@@ -1,6 +1,6 @@
-# Feature status — 1.3.0 (2026-10-17)
+# Feature status — 1.3.1 (2026-10-17)
 
-See [the 1.3.0 implementation matrix](IMPLEMENTATION-1.3.md) for current selected-feature details and explicit blocked capabilities.
+See [the 1.3.1 implementation matrix](IMPLEMENTATION-1.3.md) for current selected-feature details and explicit blocked capabilities.
 
 This project is not affiliated with Parsec. Full parity with the official web client is a goal, not the current release status.
 
@@ -30,7 +30,7 @@ Reference: [official web-app guide](https://support.parsec.app/hc/en-us/articles
 | Teams / SAML SSO | Open | Official matrix lists it; requires verified authentication integration and account entitlement |
 | Monitor switching | Conditional / experimental | Enabled only after valid host display data; sends observed output ID; physical confirmation pending |
 | H.265 | Preferred by automatic mode | Annex-B decoder, SPS parsing, support guard and bounded H.264 fallback; owner reports real iPad success; other combinations unconfirmed |
-| Rumble | Conditional / experimental | Opt-in bounded pulses for observed host events and available actuator |
+| Rumble | Conditional / experimental | User reports no vibration on tested iPad; actual actuator methods checked, missing APIs disabled, local test separates browser/hardware from host events |
 | Clipboard / shared links | Open | Remote protocol not verified |
 | Microphone / camera / extra screens / enhanced pen | Not in baseline | Not listed as supported by official web matrix; would require additional browser/host integration |
 
@@ -42,3 +42,5 @@ Reference: [official web-app guide](https://support.parsec.app/hc/en-us/articles
 4. Evaluate clipboard, pointer lock, H.265 and rumble individually; report unsupported capabilities explicitly.
 
 No Windows driver or helper is installed by this project. Host-dependent features cannot silently introduce one.
+
+See [1.3.1 input notes](INPUT-1.3.1.md). The user reports gamecontroller stability only in the installed Home Screen WebApp on the tested iPad. Pointer Lock API presence and a local predicted cursor do not certify browser/host behavior.

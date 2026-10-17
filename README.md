@@ -1,4 +1,4 @@
-# Parsec Safari 1.3.0
+# Parsec Safari 1.3.1
 
 An independent, experimental Parsec web client focused on iPad Safari. It uses an existing Parsec host; no additional software is installed on Windows.
 
@@ -16,7 +16,7 @@ In Safari, open the main URL above. To launch without the usual Safari address/f
 
 The translucent menu button is always at the top right of the stream. Disconnect is available both inside that menu and beside Fullscreen below the stream. Leave expanded view is inside the menu. Input to the PC pauses while the menu is open. Audio is unlocked when connecting; there is no separate audio-unlock button.
 
-Browser fullscreen and Controller view are separate explicit actions, both under the stream and inside the overlay. Browser fullscreen can also be requested from Controller view. If the browser refuses it, the fallback is reported clearly. The owner still reports intermittent RT-related focus loss, mainly in native fullscreen; this is **not confirmed fixed**. Controller view avoids the native fullscreen API but is not guaranteed to eliminate the issue. After a recurrence, download the connection report under Diagnostics. It includes RT and focus counters without recording account credentials or controller/device identifiers.
+Browser fullscreen and Controller view are separate explicit actions, both under the stream and inside the overlay. Browser fullscreen can also be requested from Controller view. If the browser refuses it, the fallback is reported clearly. The owner reports reliable gamecontroller operation **only when launched as a WebApp from the Home Screen** on their tested iPad. Safari-tab controller use remains unstable. This is a user observation, not a guarantee for every iPad. Intermittent RT-related focus loss was reported mainly in native fullscreen; this is **not confirmed fixed**. Controller view avoids the native fullscreen API but is not guaranteed to eliminate the issue. After a recurrence, download the connection report under Diagnostics. It includes RT and focus counters without recording account credentials or controller/device identifiers.
 
 The unauthenticated API access test is under Diagnostics, not on the sign-in form. A running Parsec host and Internet access are required; Home Screen installation does not provide offline streaming.
 
@@ -42,7 +42,7 @@ Account credentials are sent directly to `https://kessel-api.parsec.app`. Passwo
 
 Historical vendor modules retain their MIT license at the published `LICENSE`. Protocol adaptations cite the independent MIT lowlat implementation at `7b4dc4ae79990ea8c59a108c80b3c89b695c3cb4`; see the source `app/LICENSE-lowlat` (published as `LICENSE-lowlat`). No proprietary Parsec bundle is redistributed. New project source is MIT licensed; see [LICENSE](LICENSE).
 
-## 1.3.0
+## 1.3.1
 
 - Overlay: compact horizontal tabs, top-right close X, grouped form fields, on-demand help and short settings feedback.
 - Explicit native fullscreen and Controller view; manual reconnect to the last successful host in this tab.
@@ -50,4 +50,14 @@ Historical vendor modules retain their MIT license at the published `LICENSE`. P
 - Checkbox controls stay left of their label on Windows and iPad.
 - Automatic codec default: prefer HEVC after a positive browser support check, otherwise H.264. Force H.264 remains available; existing H.264 preferences are retained.
 
-The owner reported working HEVC on their iPad. Other hardware/host combinations remain to be validated. See the [1.3.0 verification details](docs/IMPLEMENTATION-1.3.md).
+The owner reported working HEVC on their iPad. Other hardware/host combinations remain to be validated. See the [1.3.1 verification details](docs/IMPLEMENTATION-1.3.md).
+
+## 1.3.1 input corrections
+
+Direct touch jumps to the finger; touchpad motion updates a retained virtual position without jumping when the finger is lifted and placed elsewhere. Touchpad now sends ordinary absolute host coordinates, so it does not depend on Pointer Lock.
+
+A local helper cursor is enabled by default for touch and when the host hides the native cursor. It shows the position this page sends, **not a host-confirmed cursor**, and cannot follow another mouse on the host. It can be disabled in the Controls tab.
+
+Pointer Lock closes the input-pausing overlay before the user-activated request and handles grant, denial, missing API and teardown. Missing APIs disable the option. This does not implement missing iPadOS functionality.
+
+Controller vibration remains unconfirmed/non-working on the owner's iPad. Available actuator methods are checked, and absent APIs disable the controls. A bounded local vibration test is under Diagnostics → Tests. A requested pulse is not labeled as physical success. See [input verification notes](docs/INPUT-1.3.1.md).

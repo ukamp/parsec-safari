@@ -33,12 +33,12 @@ $('accountRefresh').onclick=()=>account.load();
 $('showAvatars').checked=readPreference('parsec-avatars',false,x=>x===true);
 hostList.showAvatars=$('showAvatars').checked;
 $('showAvatars').onchange=()=>{hostList.showAvatars=$('showAvatars').checked;writePreference('parsec-avatars',hostList.showAvatars);hostList.render();};
-const viewport=setupViewport({$,getClient:()=>client});
+const viewport=setupViewport({$,getClient:()=>client,closeMenu:()=>gamepads.close(),openMenu:()=>gamepads.open()});
 const quality=setupQuality({
   getClient:()=>client,$
 }),statistics=new StreamStatistics($('streamStats'));
 const gamepads=setupGamepads({
-  getClient:()=>client,$,diagnostic
+  getClient:()=>client,$,diagnostic,onStatus:()=>viewport.refreshCapabilities()
 }),wake=setupWake({
   getClient:()=>client,$,diagnostic
 });
@@ -72,8 +72,9 @@ function controls(){
   $('refresh').disabled=busy||!!client;
   $('stop').disabled=!client&&reconnect?.timer===null;
   $('menuDisconnect').disabled=!client&&reconnect?.timer===null;
-  for(const id of ['showKeyboard','pointerLock','pip'])$(id).disabled=!client;
-  if(!client)$('displaySelection').disabled=true;
+  for(const id of ['showKeyboard','pip'])$(id).disabled=!client;
+  viewport.refreshCapabilities();
+  if(!client){$('displaySelection').disabled=true;$('touchCursor').hidden=true;}
 }
 function apiError(status){
   return new Error('HTTP '+status)
@@ -82,6 +83,7 @@ function stop(){
   const current=client;client=null;
   reconnect.stop();
   keyboard.close();
+  viewport.cleanup();
   browserCapabilities.cleanup();
   statistics.stop();
   gamepads.close();
@@ -250,7 +252,7 @@ async function connect(peer,retrying=false){
         clearTimeout(frameTimer);
         note('video-frame-decoded',t("text.firstVideoFrameDecodedAndDisplayedPleaseCheckMotion"));
       }else if(event.type==='exit'){
-        keyboard.close();browserCapabilities.cleanup();
+        keyboard.close();viewport.cleanup();browserCapabilities.cleanup();
         $('displaySelection').disabled=true;
         statistics.stop();
         wake.stop();
@@ -313,7 +315,7 @@ $('resumeStream').onclick=()=>{if(session&&lastPeer&&!client&&reconnect.timer===
 $('download').onclick=()=>{
   client?.reportAudio();
   const blob=new Blob([JSON.stringify({
-    version:2,build:'1.3.0',experimental:true,events:diagnostics.events()
+    version:2,build:'1.3.1',experimental:true,events:diagnostics.events()
   },null,2)],{
     type:'application/json'
   }),url=URL.createObjectURL(blob),a=document.createElement('a');
