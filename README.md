@@ -1,4 +1,4 @@
-# Parsec Safari 1.3.9
+# Parsec Safari 1.3.10
 
 An independent, experimental Parsec web client focused on iPad Safari. It uses an existing Parsec host; no additional software is installed on Windows.
 
@@ -92,3 +92,6 @@ Startup with a remembered display now sends an output-selection SET on stream sl
 
 ### 1.3.9 optional detailed logging
 Diagnostics → Overview has a persistent Enable detailed logging checkbox, off by default. Disabled logging returns before timestamps, filtering, history insertion and log-text rebuilding; ordinary status updates and stream statistics remain active. Existing in-memory events are retained while paused, and resume clears rate-limit timestamps. Enable before reproducing an issue. Reports include the current diagnosticsEnabled flag. This reduces logging work; no FPS/latency improvement is claimed without device measurements.
+
+### 1.3.10 monitor regression recovery
+Owner reports the two-phase selection in 1.3.8/1.3.9 broke monitor selection and still changed monitor 1. That path is removed. Startup sends no host-settings SET at all before an explicit monitor choice in the current connection, even if a display preference is stored. Decoder initialization remains 0×0. Manual selection restores the direct slot-0 output/resolution SET used before the regression, validated against the reported display list. Stored choices no longer authorize an automatic resize: the user must select the display each connection. Until then bitrate/FPS requests are also held; audio and decoder controls are unaffected. This is a conservative regression recovery, not a completed automatic startup feature. The owner must validate the restored manual path. Detailed logging toggle remains included.

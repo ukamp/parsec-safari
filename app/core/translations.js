@@ -1,5 +1,6 @@
 // Stable English keys; all German and English UI copy lives here.
 export const translations={
+"display.explicitRequired":{"de":"Automatische Auflösungsänderung pausiert. Wähle den gewünschten Monitor in dieser Verbindung ausdrücklich aus; erst dann werden Monitor und Auflösung angefordert.","en":"Automatic resolution changes are paused. Explicitly select the desired display in this connection before display and resolution settings are requested."},
 "diagnostics.enableDetail":{"de":"Detailprotokoll aktivieren","en":"Enable detailed logging"},
 "diagnostics.recordingOn":{"de":"Detailprotokoll aktiv. Neue Ereignisse werden aufgezeichnet.","en":"Detailed logging is on. New events are being recorded."},
 "diagnostics.recordingOff":{"de":"Detailprotokoll aus. Keine neuen Logeinträge; Statusanzeigen bleiben aktiv.","en":"Detailed logging is off. No new log entries; status indicators remain active."},

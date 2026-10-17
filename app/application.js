@@ -227,7 +227,7 @@ async function connect(peer,retrying=false){
     current=new Client($('video'),event=>{
       if(client!==current&&event.type!=='diagnostic')return;
       if(event.type==='codec'){$('codecStatus').textContent=t('codec.'+event.state);return;}
-      if(event.type==='display-selecting'){$('displayStatus').textContent=t('display.selecting');return;}
+      if(event.type==='display-selection-required'){$('displayStatus').textContent=t('display.explicitRequired');return;}
       if(event.type==='display-mapping-unavailable'){$('displayStatus').textContent=t('display.mappingUnavailable');return;}
       if(event.type==='displays'){
         $('displaySelection').textContent='';
@@ -235,7 +235,7 @@ async function connect(peer,retrying=false){
         for(const display of event.displays){const option=document.createElement('option');option.value=display.id;option.textContent=display.name;$('displaySelection').appendChild(option);}
         $('displaySelection').value=event.displays.some(display=>display.id===event.selected)?event.selected:'';
         $('displaySelection').disabled=!event.displays.length;
-        $('displayStatus').textContent=event.displays.length?t('display.available'):t('display.unavailable');
+        $('displayStatus').textContent=event.displays.length?t(event.requiresSelection?'display.explicitRequired':'display.available'):t('display.unavailable');
         return;
       }
       if(event.type==='gamepad'){
@@ -322,7 +322,7 @@ $('resumeStream').onclick=()=>{if(session&&lastPeer&&!client&&reconnect.timer===
 $('download').onclick=()=>{
   client?.reportAudio();
   const blob=new Blob([JSON.stringify({
-    version:2,build:'1.3.9',experimental:true,diagnosticsEnabled:diagnostics.enabled(),events:diagnostics.events()
+    version:2,build:'1.3.10',experimental:true,diagnosticsEnabled:diagnostics.enabled(),events:diagnostics.events()
   },null,2)],{
     type:'application/json'
   }),url=URL.createObjectURL(blob),a=document.createElement('a');

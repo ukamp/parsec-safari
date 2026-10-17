@@ -36,6 +36,4 @@ const slotPacket=Msg.config({video_index:1,output:'two',server_resolution_x:2048
 assert.deepEqual(slotBody.video[0],slotBase.video[0]);assert.deepEqual(slotBody.video[2],slotBase.video[2]);assert.equal(slotBody.video[1].resolutionX,2048);assert.equal(slotBody.video[1].resolutionY,1536);assert.equal(slotBody.video[1].output,'two');assert.equal(JSON.stringify(slotBase),beforeSlot);assert.throws(()=>Msg.config({video_index:9},slotBase));
 console.log('Selecting slot 1 leaves slots 0 and 2 unchanged; invalid slot indices rejected.');
 
-const outputOnly=Msg.selectOutput('two',slotBase),outputBody=JSON.parse(new TextDecoder().decode(new Uint8Array(outputOnly,13,outputOnly.byteLength-14)));assert.equal(outputBody.video[0].output,'two');for(const item of outputBody.video){assert.equal('resolutionX' in item,false);assert.equal('resolutionY' in item,false);}assert.equal(JSON.stringify(slotBase),beforeSlot);
 const autoPacket=Msg.config({skip_all_resolutions:true,skip_resolution:true},slotBase),autoBody=JSON.parse(new TextDecoder().decode(new Uint8Array(autoPacket,13,autoPacket.byteLength-14)));for(const item of autoBody.video){assert.equal('resolutionX' in item,false);assert.equal('resolutionY' in item,false);}assert.equal(autoBody.video[0].output,'one');
-console.log('Output-only phase and automatic mode never replay resolution fields for any video record.');

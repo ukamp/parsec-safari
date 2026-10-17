@@ -65,3 +65,6 @@ Explicit output selection SET (no resolution fields), followed by GET and matchi
 
 ### 1.3.9 detail logging
 Persistent diagnostics checkbox, off by default. Disabled mode pauses collection and log text construction while status displays stay active; captured history is retained until reload. Enable before reproducing a bug. Performance gain has not been measured on iPad.
+
+### 1.3.10 temporary monitor recovery
+Two-phase selection removed after owner regression report. No automatic host-settings SET before a manual display choice in each connection. Direct explicit selection restored; remembered automatic display/resolution startup remains blocked. Detailed logging toggle retained.
